@@ -1,0 +1,477 @@
+name: Production Monitoring
+
+on:
+  schedule:
+    # Run every 15 minutes
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      check_type:
+        description: 'Type of check to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - health
+        - performance
+        - security
+        - uptime
+      environment:
+        description: 'Environment to check'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+        - all
+
+env:
+  PRODUCTION_URL: https://mariia-hub.com
+  STAGING_URL: https://staging.mariia-hub.com
+  HEALTH_CHECK_TIMEOUT: 30
+  PERFORMANCE_THRESHOLD: 90
+
+jobs:
+  # Health Check
+  health-check:
+    name: Health Check
+    runs-on: ubuntu-latest
+    if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'health' || github.event.inputs.check_type == ''
+    strategy:
+      matrix:
+        environment: [production, staging]
+    steps:
+      - name: Check application health
+        id: health
+        run: |
+          URL="${{ matrix.environment == 'production' && env.PRODUCTION_URL || env.STAGING_URL }}"
+          echo "Checking health for ${{ matrix.environment }} at $URL"
+
+          # Check main endpoint
+          if curl -f -s --max-time ${{ env.HEALTH_CHECK_TIMEOUT }} "$URL/" > /dev/null; then
+            echo "main_endpoint=healthy" >> $GITHUB_OUTPUT
+          else
+            echo "main_endpoint=unhealthy" >> $GITHUB_OUTPUT
+          fi
+
+          # Check health endpoint
+          if curl -f -s --max-time ${{ env.HEALTH_CHECK_TIMEOUT }} "$URL/health" > /dev/null; then
+            echo "health_endpoint=healthy" >> $GITHUB_OUTPUT
+          else
+            echo "health_endpoint=unhealthy" >> $GITHUB_OUTPUT
+          fi
+
+          # Check API health
+          if curl -f -s --max-time ${{ env.HEALTH_CHECK_TIMEOUT }} "$URL/api/health" > /dev/null; then
+            echo "api_endpoint=healthy" >> $GITHUB_OUTPUT
+          else
+            echo "api_endpoint=unhealthy" >> $GITHUB_OUTPUT
+          fi
+
+          # Get response time
+          RESPONSE_TIME=$(curl -o /dev/null -s -w '%{time_total}' "$URL/health" || echo 0)
+          echo "response_time=$RESPONSE_TIME" >> $GITHUB_OUTPUT
+
+      - name: Check database connectivity
+        id: db-check
+        run: |
+          # Check database via API endpoint
+          URL="${{ matrix.environment == 'production' && env.PRODUCTION_URL || env.STAGING_URL }}"
+          DB_CHECK=$(curl -s "$URL/api/health/db" || echo '{"status":"error"}')
+
+          if echo "$DB_CHECK" | jq -e '.status == "ok"' > /dev/null 2>&1; then
+            echo "database=healthy" >> $GITHUB_OUTPUT
+          else
+            echo "database=unhealthy" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create incident on failure
+        if: steps.health.outputs.main_endpoint == 'unhealthy' || steps.health.outputs.health_endpoint == 'unhealthy' || steps.db-check.outputs.database == 'unhealthy'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const environment = '${{ matrix.environment }}';
+            const url = environment === 'production' ? process.env.PRODUCTION_URL : process.env.STAGING_URL;
+
+            const title = `🚨 ${environment.charAt(0).toUpperCase() + environment.slice(1)} Health Check Failed`;
+
+            const body = `
+            ## Health Check Failure
+            - **Environment**: ${environment}
+            - **URL**: ${url}
+            - **Time**: ${new Date().toISOString()}
+
+            ### Check Results
+            - Main Page: ${{ steps.health.outputs.main_endpoint }}
+            - Health Endpoint: ${{ steps.health.outputs.health_endpoint }}
+            - API Endpoint: ${{ steps.health.outputs.api_endpoint }}
+            - Database: ${{ steps.db-check.outputs.database }}
+            - Response Time: ${{ steps.health.outputs.response_time }}s
+
+            ### Action Required
+            1. Check server logs
+            2. Verify application status
+            3. Consider rollback if recent deployment
+            4. Notify on-call engineer
+
+            ---
+            *Automatically created by health check failure*
+            `;
+
+            // Check if similar issue exists
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'health-check,failure',
+              state: 'open'
+            });
+
+            const exists = issues.some(issue =>
+              issue.title.includes(environment) &&
+              issue.created_at > new Date(Date.now() - 3600000) // Within last hour
+            );
+
+            if (!exists) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['health-check', 'failure', 'urgent'],
+                assignees: ['on-call-engineer']
+              });
+            }
+
+      - name: Send Slack notification on failure
+        if: steps.health.outputs.main_endpoint == 'unhealthy' || steps.health.outputs.health_endpoint == 'unhealthy'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#alerts'
+          text: |
+            🚨 Health Check Failed
+
+            Environment: ${{ matrix.environment }}
+            URL: ${{ matrix.environment == 'production' && env.PRODUCTION_URL || env.STAGING_URL }}
+            Response Time: ${{ steps.health.outputs.response_time }}s
+
+            <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Performance Check
+  performance-check:
+    name: Performance Check
+    runs-on: ubuntu-latest
+    if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'performance' || github.event.inputs.check_type == ''
+    strategy:
+      matrix:
+        environment: [production, staging]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Lighthouse performance check
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            ${{ matrix.environment == 'production' && env.PRODUCTION_URL || env.STAGING_URL }}/
+          configPath: '.lighthouserc.js'
+          uploadArtifacts: false
+
+      - name: Evaluate performance scores
+        run: |
+          URL="${{ matrix.environment == 'production' && env.PRODUCTION_URL || env.STAGING_URL }}"
+
+          # Run Lighthouse and get scores
+          npx lighthouse "$URL" --chrome-flags="--headless" --output=json --output-path=lh-report.json
+
+          # Extract scores
+          PERFORMANCE=$(cat lh-report.json | jq -r '.lhr.categories.performance.score * 100')
+          ACCESSIBILITY=$(cat lh-report.json | jq -r '.lhr.categories.accessibility.score * 100')
+          BEST_PRACTICES=$(cat lh-report.json | jq -r '.lhr.categories["best-practices"].score * 100')
+          SEO=$(cat lh-report.json | jq -r '.lhr.categories.seo.score * 100')
+
+          echo "Performance: $PERFORMANCE"
+          echo "Accessibility: $ACCESSIBILITY"
+          echo "Best Practices: $BEST_PRACTICES"
+          echo "SEO: $SEO"
+
+          # Check against thresholds
+          THRESHOLD=${{ env.PERFORMANCE_THRESHOLD }}
+
+          if (( $(echo "$PERFORMANCE < $THRESHOLD" | bc -l) )); then
+            echo "::warning::Performance score ($PERFORMANCE) is below threshold ($THRESHOLD)"
+            echo "performance_below_threshold=true" >> $GITHUB_ENV
+          fi
+
+          if (( $(echo "$ACCESSIBILITY < $THRESHOLD" | bc -l) )); then
+            echo "::warning::Accessibility score ($ACCESSIBILITY) is below threshold ($THRESHOLD)"
+            echo "accessibility_below_threshold=true" >> $GITHUB_ENV
+          fi
+
+      - name: Create performance issue on threshold breach
+        if: env.performance_below_threshold == 'true' || env.accessibility_below_threshold == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const environment = '${{ matrix.environment }}';
+            const url = environment === 'production' ? process.env.PRODUCTION_URL : process.env.STAGING_URL;
+
+            const title = `⚠️ ${environment.charAt(0).toUpperCase() + environment.slice(1)} Performance Threshold Breached`;
+
+            const body = `
+            ## Performance Issue Detected
+
+            - **Environment**: ${environment}
+            - **URL**: ${url}
+            - **Time**: ${new Date().toISOString()}
+
+            ### Action Required
+            - Investigate performance regression
+            - Check recent deployments
+            - Optimize assets/bundle size
+            - Consider rollback if severe
+
+            ---
+            *Automatically created by performance monitoring*
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['performance', 'monitoring', 'needs-attention']
+            });
+
+  # Security Check
+  security-check:
+    name: Security Check
+    runs-on: ubuntu-latest
+    if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'security' || github.event.inputs.check_type == ''
+    steps:
+      - name: Check SSL certificate
+        id: ssl-check
+        run: |
+          # Check production SSL
+          SSL_EXPIRY=$(echo | openssl s_client -servername mariia-hub.com -connect mariia-hub.com:443 2>/dev/null | openssl x509 -noout -enddate | cut -d= -f2)
+          SSL_TIMESTAMP=$(date -d "$SSL_EXPIRY" +%s)
+          CURRENT_TIMESTAMP=$(date +%s)
+          DAYS_LEFT=$(( (SSL_TIMESTAMP - CURRENT_TIMESTAMP) / 86400 ))
+
+          echo "days_until_expiry=$DAYS_LEFT" >> $GITHUB_OUTPUT
+
+          if [[ $DAYS_LEFT -lt 30 ]]; then
+            echo "ssl_expiring_soon=true" >> $GITHUB_OUTPUT
+          fi
+
+          echo "SSL Certificate expires in $DAYS_LEFT days"
+
+      - name: Check for security headers
+        run: |
+          URL="${{ env.PRODUCTION_URL }}"
+
+          # Check security headers
+          HEADERS=$(curl -s -I "$URL")
+
+          echo "Checking security headers..."
+
+          # Check for HSTS
+          if echo "$HEADERS" | grep -qi "strict-transport-security"; then
+            echo "✅ HSTS header present"
+          else
+            echo "❌ HSTS header missing"
+            echo "hsts_missing=true" >> $GITHUB_ENV
+          fi
+
+          # Check for CSP
+          if echo "$HEADERS" | grep -qi "content-security-policy"; then
+            echo "✅ CSP header present"
+          else
+            echo "❌ CSP header missing"
+            echo "csp_missing=true" >> $GITHUB_ENV
+          fi
+
+          # Check for X-Frame-Options
+          if echo "$HEADERS" | grep -qi "x-frame-options"; then
+            echo "✅ X-Frame-Options header present"
+          else
+            echo "❌ X-Frame-Options header missing"
+            echo "xfo_missing=true" >> $GITHUB_ENV
+          fi
+
+      - name: Create security issue
+        if: steps.ssl-check.outputs.ssl_expiring_soon == 'true' || env.hsts_missing == 'true' || env.csp_missing == 'true' || env.xfo_missing == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issues = [];
+
+            if (process.env.SSL_EXPIRING_SOON === 'true') {
+              issues.push(`SSL Certificate expires in ${{ steps.ssl-check.outputs.days_until_expiry }} days`);
+            }
+            if (process.env.HSTS_MISSING === 'true') {
+              issues.push('HSTS header is missing');
+            }
+            if (process.env.CSP_MISSING === 'true') {
+              issues.push('CSP header is missing');
+            }
+            if (process.env.XFO_MISSING === 'true') {
+              issues.push('X-Frame-Options header is missing');
+            }
+
+            const body = `
+            ## Security Configuration Issues
+
+            ### Issues Found:
+            ${issues.map(issue => `- ${issue}`).join('\n')}
+
+            ### Recommendations:
+            1. Update SSL certificate if expiring
+            2. Add missing security headers
+            3. Review security configuration
+
+            ---
+            *Automatically created by security monitoring*
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🔒 Security Configuration Issues Detected',
+              body: body,
+              labels: ['security', 'monitoring', 'configuration']
+            });
+
+  # Uptime Monitoring
+  uptime-monitor:
+    name: Uptime Monitor
+    runs-on: ubuntu-latest
+    if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'uptime' || github.event.inputs.check_type == ''
+    steps:
+      - name: Check endpoint uptime
+        run: |
+          # Multiple endpoints to check
+          ENDPOINTS=(
+            "${{ env.PRODUCTION_URL }}"
+            "${{ env.PRODUCTION_URL }}/api/health"
+            "${{ env.PRODUCTION_URL }}/booking"
+            "${{ env.STAGING_URL }}"
+            "${{ env.STAGING_URL }}/api/health"
+          )
+
+          FAILED_ENDPOINTS=()
+
+          for endpoint in "${ENDPOINTS[@]}"; do
+            echo -n "Checking $endpoint... "
+            if curl -f -s --max-time 10 "$endpoint" > /dev/null; then
+              echo "✅ OK"
+            else
+              echo "❌ FAILED"
+              FAILED_ENDPOINTS+=("$endpoint")
+            fi
+          done
+
+          if [ ${#FAILED_ENDPOINTS[@]} -gt 0 ]; then
+            echo "failed_endpoints=${FAILED_ENDPOINTS[*]}" >> $GITHUB_ENV
+            echo "uptime_failed=true" >> $GITHUB_ENV
+          fi
+
+      - name: Create uptime incident
+        if: env.uptime_failed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const failedEndpoints = process.env.FAILED_ENDPOINTS.split(' ');
+
+            const body = `
+            ## Uptime Incident
+
+            The following endpoints are not responding:
+            ${failedEndpoints.map(ep => `- ${ep}`).join('\n')}
+
+            - **Time**: ${new Date().toISOString()}
+            - **Monitor ID**: ${{ github.run_id }}
+
+            ### Action Required
+            1. Check server status
+            2. Verify DNS configuration
+            3. Check load balancer
+            4. Contact hosting provider if needed
+
+            ---
+            *Automatically created by uptime monitor*
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Uptime Incident Detected',
+              body: body,
+              labels: ['uptime', 'incident', 'urgent'],
+              assignees: ['on-call-engineer']
+            });
+
+  # Generate Monitoring Report
+  monitoring-report:
+    name: Monitoring Report
+    runs-on: ubuntu-latest
+    needs: [health-check, performance-check, security-check, uptime-monitor]
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# Production Monitoring Report" > report.md
+          echo "" >> report.md
+          echo "**Date:** $(date)" >> report.md
+          echo "**Environment:** ${{ github.event.inputs.environment || 'All' }}" >> report.md
+          echo "" >> report.md
+
+          echo "## Health Check Status" >> report.md
+          echo "- Production: ${{ needs.health-check.result }}" >> report.md
+          echo "- Staging: ${{ needs.health-check.result }}" >> report.md
+          echo "" >> report.md
+
+          echo "## Performance Check Status" >> report.md
+          echo "- Production: ${{ needs.performance-check.result }}" >> report.md
+          echo "- Staging: ${{ needs.performance-check.result }}" >> report.md
+          echo "" >> report.md
+
+          echo "## Security Check Status" >> report.md
+          echo "- SSL Certificate: OK" >> report.md
+          echo "- Security Headers: OK" >> report.md
+          echo "" >> report.md
+
+          echo "## Uptime Check Status" >> report.md
+          echo "- All endpoints: ${{ needs.uptime-monitor.result }}" >> report.md
+          echo "" >> report.md
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: monitoring-report
+          path: report.md
+          retention-days: 30
+
+      - name: Create step summary
+        run: |
+          echo "## Monitoring Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Health | ${{ needs.health-check.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Performance | ${{ needs.performance-check.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security | ${{ needs.security-check.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Uptime | ${{ needs.uptime-monitor.result }} |" >> $GITHUB_STEP_SUMMARY

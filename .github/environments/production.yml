@@ -1,0 +1,178 @@
+# Production Environment Configuration
+
+name: production
+url: https://mariia-hub.com
+
+# Protection Rules
+protection_rules:
+  required_reviewers: 2
+  require_admin: true
+  require_last_push_approval: true
+  restrict_fork_dispatches: true
+  restrict_deployments: true
+  wait_timer: 5  # minutes
+
+# Approval Teams
+approval_teams:
+  - backend-lead
+  - frontend-lead
+  - devops
+
+# Environment Variables (to be set in GitHub Settings > Environments)
+environment_variables:
+  # Supabase
+  SUPABASE_URL: ${{ secrets.PRODUCTION_SUPABASE_URL }}
+  SUPABASE_ANON_KEY: ${{ secrets.PRODUCTION_SUPABASE_ANON_KEY }}
+  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PRODUCTION_SUPABASE_SERVICE_KEY }}
+
+  # Stripe
+  STRIPE_PUBLIC_KEY: ${{ secrets.PRODUCTION_STRIPE_PUBLIC_KEY }}
+  STRIPE_SECRET_KEY: ${{ secrets.PRODUCTION_STRIPE_SECRET_KEY }}
+  STRIPE_WEBHOOK_SECRET: ${{ secrets.PRODUCTION_STRIPE_WEBHOOK_SECRET }}
+
+  # Vercel
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  # Monitoring & Error Tracking
+  SENTRY_DSN: ${{ secrets.PRODUCTION_SENTRY_DSN }}
+  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
+  # Analytics
+  GOOGLE_ANALYTICS_ID: ${{ secrets.PRODUCTION_GA_ID }}
+  GOOGLE_TAG_MANAGER_ID: ${{ secrets.PRODUCTION_GTM_ID }}
+  META_PIXEL_ID: ${{ secrets.PRODUCTION_META_PIXEL_ID }}
+  HOTJAR_ID: ${{ secrets.PRODUCTION_HOTJAR_ID }}
+
+  # External APIs
+  BOOKSY_API_KEY: ${{ secrets.PRODUCTION_BOOKSY_API_KEY }}
+  CALENDLY_API_KEY: ${{ secrets.PRODUCTION_CALENDLY_API_KEY }}
+  TWILIO_ACCOUNT_SID: ${{ secrets.PRODUCTION_TWILIO_ACCOUNT_SID }}
+  TWILIO_AUTH_TOKEN: ${{ secrets.PRODUCTION_TWILIO_AUTH_TOKEN }}
+
+  # CDN & Storage
+  AWS_S3_BUCKET: ${{ secrets.PRODUCTION_AWS_S3_BUCKET }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.PRODUCTION_AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.PRODUCTION_AWS_SECRET_ACCESS_KEY }}
+
+  # Email
+  SENDGRID_API_KEY: ${{ secrets.PRODUCTION_SENDGRID_API_KEY }}
+  SMTP_USERNAME: ${{ secrets.PRODUCTION_SMTP_USERNAME }}
+  SMTP_PASSWORD: ${{ secrets.PRODUCTION_SMTP_PASSWORD }}
+
+  # Security
+  RECAPTCHA_SECRET_KEY: ${{ secrets.PRODUCTION_RECAPTCHA_SECRET_KEY }}
+  CLOUDFLARE_API_TOKEN: ${{ secrets.PRODUCTION_CLOUDFLARE_API_TOKEN }}
+
+# Deployment Configuration
+deployment:
+  branch: main
+  auto_merge: false
+  auto_deploy: false
+  require_tests_pass: true
+
+# Pre-deployment Checks
+pre_deployment_checks:
+  - security_scan_required: true
+  - performance_threshold:
+      lighthouse_performance: 90
+      lighthouse_accessibility: 95
+      lighthouse_best_practices: 90
+      lighthouse_seo: 90
+  - test_coverage_threshold: 80
+  - manual_approval_required: true
+
+# Health Checks
+health_checks:
+  - endpoint: /health
+    method: GET
+    expected_status: 200
+    timeout: 30s
+    interval: 30s
+    retries: 10
+
+  - endpoint: /api/health
+    method: GET
+    expected_status: 200
+    timeout: 30s
+    interval: 30s
+    retries: 10
+
+  - endpoint: /api/v1/services
+    method: GET
+    expected_status: 200
+    timeout: 30s
+    interval: 60s
+    retries: 5
+
+  - endpoint: /booking
+    method: GET
+    expected_status: 200
+    timeout: 30s
+    interval: 60s
+    retries: 5
+
+# Rollback Configuration
+rollback:
+  auto_rollback: true
+  rollback_triggers:
+    - health_check_failure
+    - performance_degradation
+    - error_rate_increase
+    - test_failure
+    - manual_trigger
+
+# Blue-Green Deployment
+blue_green:
+  enabled: true
+  switch_traffic_after: 300  # seconds
+  keep_old_version_for: 600  # seconds
+  health_check_grace_period: 60  # seconds
+
+# Monitoring
+monitoring:
+  alerts:
+    - slack: #deployments
+    - slack: #alerts
+    - email: team@mariia-hub.com
+    - email: alerts@mariia-hub.com
+    - discord: alerts
+    - pagerduty: production
+
+  metrics:
+    - response_time_p95: < 500ms
+    - error_rate: < 0.1%
+    - uptime: > 99.9%
+    - cpu_usage: < 70%
+    - memory_usage: < 80%
+
+# Secrets Required
+secrets_required:
+  - PRODUCTION_SUPABASE_URL
+  - PRODUCTION_SUPABASE_ANON_KEY
+  - PRODUCTION_SUPABASE_SERVICE_KEY
+  - PRODUCTION_STRIPE_PUBLIC_KEY
+  - PRODUCTION_STRIPE_SECRET_KEY
+  - PRODUCTION_STRIPE_WEBHOOK_SECRET
+  - VERCEL_TOKEN
+  - VERCEL_ORG_ID
+  - VERCEL_PROJECT_ID
+  - PRODUCTION_SENTRY_DSN
+  - SENTRY_AUTH_TOKEN
+  - PRODUCTION_GA_ID
+  - PRODUCTION_GTM_ID
+  - PRODUCTION_META_PIXEL_ID
+  - PRODUCTION_HOTJAR_ID
+  - PRODUCTION_BOOKSY_API_KEY
+  - PRODUCTION_CALENDLY_API_KEY
+  - PRODUCTION_TWILIO_ACCOUNT_SID
+  - PRODUCTION_TWILIO_AUTH_TOKEN
+  - PRODUCTION_AWS_S3_BUCKET
+  - PRODUCTION_AWS_ACCESS_KEY_ID
+  - PRODUCTION_AWS_SECRET_ACCESS_KEY
+  - PRODUCTION_SENDGRID_API_KEY
+  - PRODUCTION_SMTP_USERNAME
+  - PRODUCTION_SMTP_PASSWORD
+  - PRODUCTION_RECAPTCHA_SECRET_KEY
+  - PRODUCTION_CLOUDFLARE_API_TOKEN

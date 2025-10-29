@@ -1,0 +1,836 @@
+{
+  "nav": {
+    "beauty": "Uroda",
+    "fitness": "Fitness",
+    "about": "O mnie",
+    "blog": "Blog",
+    "contact": "Kontakt",
+    "signIn": "Zaloguj się",
+    "bookNow": "Zarezerwuj",
+    "dashboard": "Panel"
+  },
+  "hero": {
+    "eyebrow": "🕊️ Warszawa · Od 2023",
+    "title1": "Delikatne piękno.",
+    "title2": "Silne nawyki.",
+    "subtitle": "Profesjonalny makijaż permanentny i certyfikowany trening personalny—stworzone dla tych, którzy cenią zarówno sztukę, jak i dobre samopoczucie.",
+    "bookBeauty": "Zarezerwuj makijaż",
+    "startTraining": "Rozpocznij trening",
+    "rating": "Ocena",
+    "followers": "Obserwujący"
+  },
+  "about": {
+    "badge": "Wielopassjonata przedsiębiorca",
+    "title": "O\nMarii",
+    "intro": "Cześć! Jestem Mariia, specjalizuję się w makijażu permanentnym i stylizacji brwi. Jako wielopassjonata przedsiębiorca łączę sztukę i wellness, aby pomóc Ci wyglądać i czuć się najlepiej.",
+    "studio": "Prowadzę studio w warszawskim Śródmieściu od lipca 2023 roku i zbudowałam społeczność ponad 56 000 obserwujących, którzy mi ufają w swojej podróży beauty i fitness.",
+    "mission": "Jako trenerka certyfikowana przez Zdrofit i właścicielka BM Beauty Studio pomagam klientom odkryć na nowo ruch i piękno bez presji i porównań.",
+    "achievements": {
+      "clients": "Zadowolonych Klientów",
+      "community": "Społeczność",
+      "rating": "Ocena",
+      "established": "Założono"
+    },
+    "badges": {
+      "trainer": "Certyfikowana Trenerka",
+      "artist": "Artystka PMU",
+      "location": "Warszawa"
+    }
+  },
+  "beautySection": {
+    "badge": "Podejście healed-first",
+    "title": "Studio\nUrody",
+    "description": "Nagradzany makijaż permanentny w Warszawie. Miękkie, naturalne, długotrwałe efekty, które podkreślają Twoje unikalne piękno.",
+    "bookBooksy": "Zarezerwuj przez Booksy",
+    "viewPortfolio": "Zobacz Portfolio",
+    "location": "Smolna 8, Warszawa",
+    "reviews": "44 opinie",
+    "services": {
+      "lips": {
+        "title": "Usta",
+        "subtitle": "Makijaż Permanentny",
+        "description": "Idealnie zdefiniowane, naturalnie wyglądające usta. Podejście healed-first zapewnia miękkie, trwałe efekty."
+      },
+      "brows": {
+        "title": "Brwi",
+        "subtitle": "Makijaż Permanentny",
+        "description": "Budź się z perfekcyjnymi brwiami każdego dnia. Kształt i kolor dopasowane do Ciebie."
+      },
+      "eyeliner": {
+        "title": "Eyeliner",
+        "subtitle": "Makijaż Permanentny",
+        "description": "Precyzyjna, nierozmazująca się kreska. Subtelne podkreślenie lub odważne oświadczenie."
+      },
+      "styling": {
+        "title": "Stylizacja",
+        "subtitle": "Brwi i Rzęsy",
+        "description": "Profesjonalne kształtowanie, barwienie i laminacja dla codziennej pewności siebie."
+      }
+    },
+    "from": "Od"
+  },
+  "fitnessSection": {
+    "badge": "Łagodny postęp",
+    "title": "Trening\nPersonalny",
+    "description": "Certyfikowana trenerka Zdrofit pomaga Ci odkryć na nowo ruch. Silne nawyki budowane we własnym tempie, bez porównań i presji.",
+    "programs": {
+      "personal": {
+        "number": "01",
+        "title": "Trening Personalny",
+        "description": "Spersonalizowane sesje w Zdrofit skupione na Twoich unikalnych celach. Bez presji, tylko postęp we własnym tempie.",
+        "features": ["Indywidualna uwaga", "Elastyczny grafik", "Wszystkie poziomy"]
+      },
+      "holistic": {
+        "number": "02",
+        "title": "Holistyczne Wellness",
+        "description": "Ruch, mindset i trwałe zmiany stylu życia. Podejście wolne od oceniania, aby połączyć się z własnym ciałem.",
+        "features": ["Połączenie umysłu i ciała", "Zrównoważone nawyki", "Dostosowane do etapu życia"]
+      },
+      "strength": {
+        "number": "03",
+        "title": "Siła i Mobilność",
+        "description": "Buduj funkcjonalną siłę i poprawiaj zakres ruchu. Trening wspierający codzienne życie i długoterminowe zdrowie.",
+        "features": ["Ruch funkcjonalny", "Prewencja kontuzji", "Progresywne obciążenia"]
+      }
+    },
+    "cta": "Gotowa, aby rozpocząć swoją podróż?",
+    "ctaDetails": "Trening w Zdrofit Warszawa · +48 536 200 573",
+    "ctaButton": "Zaplanuj Mój Tydzień"
+  },
+  "blogSection": {
+    "title": "Najnowsze\nArtykuły",
+    "subtitle": "Historie o urodzie, wellness i życiu w Warszawie.",
+    "viewAll": "Zobacz Wszystkie",
+    "readArticle": "Przeczytaj Artykuł",
+    "read": "Czytaj",
+    "posts": {
+      "art": {
+        "title": "Sztuka Naturalnego Makijażu Permanentnego",
+        "excerpt": "Odkryj podejście healed-first, które tworzy miękkie, naturalne efekty.",
+        "category": "Uroda"
+      },
+      "habits": {
+        "title": "Budowanie Zrównoważonych Nawyków Fitness",
+        "excerpt": "Twórz trwałe zmiany poprzez łagodny postęp.",
+        "category": "Fitness"
+      },
+      "lifestyle": {
+        "title": "Życie w Warszawie",
+        "excerpt": "Za kulisami prowadzenia studia urody.",
+        "category": "Styl Życia"
+      }
+    }
+  },
+  "contactSection": {
+    "title": "Skontaktuj\nsię",
+    "subtitle": "Gotowa, aby rozpocząć swoją podróż? Skontaktuj się w sprawie rezerwacji, konsultacji lub pytań.",
+    "formTitle": "Wyślij Wiadomość",
+    "phone": "Telefon",
+    "email": "Email",
+    "studio": "Studio",
+    "hours": "Pon–Pt: 9:00–19:00\nSob: 10:00–16:00 · Niedz: Zamknięte",
+    "form": {
+      "name": "Imię",
+      "namePlaceholder": "Twoje imię",
+      "phoneLabel": "Telefon",
+      "phonePlaceholder": "+48",
+      "email": "Email",
+      "emailPlaceholder": "twoj@email.com",
+      "service": "Usługa",
+      "services": {
+        "beauty": "Usługi Beauty",
+        "training": "Trening Personalny",
+        "consultation": "Konsultacja"
+      },
+      "message": "Wiadomość",
+      "messagePlaceholder": "Opowiedz mi o swoich celach...",
+      "send": "Wyślij Wiadomość",
+      "required": "*"
+    },
+    "toast": {
+      "title": "Otwieranie klienta email",
+      "description": "Odpowiemy w ciągu 24 godzin."
+    }
+  },
+  "auth": {
+    "welcomeBack": "Witaj ponownie",
+    "createAccount": "Utwórz Konto",
+    "loginSubtitle": "Zaloguj się, aby zarządzać rezerwacjami i preferencjami",
+    "signupSubtitle": "Dołącz, aby rezerwować usługi i śledzić swoją podróż",
+    "fullName": "Imię i Nazwisko",
+    "fullNamePlaceholder": "Twoje imię i nazwisko",
+    "email": "Email",
+    "emailPlaceholder": "twoj@email.com",
+    "password": "Hasło",
+    "passwordPlaceholder": "••••••••",
+    "signIn": "Zaloguj się",
+    "signUp": "Zarejestruj się",
+    "loading": "Proszę czekać...",
+    "noAccount": "Nie masz konta? Zarejestruj się",
+    "hasAccount": "Masz już konto? Zaloguj się",
+    "success": "Sukces",
+    "error": "Błąd",
+    "checkEmail": "Sprawdź swój email",
+    "confirmEmail": "Potwierdź swój email, aby zakończyć rejestrację",
+    "backHome": "Powrót do Strony Głównej"
+  },
+  "dashboard": {
+    "welcome": "Witaj",
+    "subtitle": "Zarządzaj swoimi wizytami i preferencjami",
+    "signOut": "Wyloguj",
+    "loading": "Ładowanie...",
+    "error": "Błąd",
+    "adminPanel": "Panel Administratora",
+    "adminDescription": "Zarządzaj wpisami na blogu i generuj treści z AI",
+    "myBookings": "Moje Wizyty",
+    "noBookings": "Brak wizyt. Zarezerwuj swoją pierwszą usługę!",
+    "bookNow": "Zarezerwuj Teraz",
+    "note": "Notatka"
+  },
+  "admin": {
+    "createPost": "Utwórz Nowy Wpis",
+    "postTitle": "Tytuł Wpisu",
+    "postContent": "Napisz swoją treść tutaj...",
+    "generateAI": "Generuj z AI",
+    "generating": "Generowanie...",
+    "existingPosts": "Istniejące Wpisy"
+  },
+  "pwa": {
+    "installTitle": "Zainstaluj Aplikację Mariia",
+    "installDesc": "Uzyskaj natychmiastowy dostęp do rezerwacji i wizyt",
+    "installButton": "Zainstaluj",
+    "installSuccess": "Aplikacja Zainstalowana Pomyślnie!",
+    "installSuccessDesc": "Możesz teraz uzyskać dostęp do Mariia Beauty & Fitness z ekranu głównego",
+    "installError": "Instalacja Nieudana",
+    "installErrorDesc": "Spróbuj ponownie lub użyj menu przeglądarki do instalacji",
+    "showInstructions": "Pokaż Instrukcje",
+    "maybeLater": "Może Później",
+    "featureOffline": "Offline",
+    "offlineDesc": "Działa bez internetu",
+    "featureFast": "Błyskawicznie Szybka",
+    "fastDesc": "Natychmiastowe ładowanie",
+    "featureNative": "Natywny Feel",
+    "nativeDesc": "Płynne animacje",
+    "iosDevice": "iPhone/iPad",
+    "androidDevice": "Android",
+    "desktopDevice": "Komputer",
+    "iosInstructions": "Stuknij przycisk Udostępnij, a następnie 'Dodaj do ekranu głównego'",
+    "androidInstructions": "Stuknij menu (⋮), a następnie 'Dodaj do ekranu głównego'",
+    "desktopInstructions": "Kliknij ikonę instalacji w pasku adresu",
+    "installInstructions": "Instrukcje Instalacji"
+  },
+  "offline": {
+    "online": "Online",
+    "offline": "Offline",
+    "syncing": "Synchronizowanie...",
+    "connected": "Połączono",
+    "disconnected": "Brak Internetu",
+    "noInternet": "Brak połączenia z internetem",
+    "actionsQueued": "Twoje działania zostaną zsynchronizowane, gdy będziesz online",
+    "queuedActions": "{{count}} oczekujących działań",
+    "syncNow": "Synchronizuj Teraz",
+    "lastSync": "Ostatnia synchronizacja: {{time}}",
+    "clearCache": "Wyczyść Pamięć Podręczną",
+    "cacheInfo": "Zbuforowana zawartość zostanie zaktualizowana online",
+    "syncComplete": "Synchronizacja Zakończona",
+    "syncCompleteDesc": "{{count, plural, one {# element} few {# elementy} many {# elementów} other {# elementów}} zsynchronizowano"
+  },
+  "calendar": {
+    "title": "Synchronizacja Kalendarza",
+    "settings": "Ustawienia Kalendarza",
+    "connectedCalendars": "Połączone Kalendarze",
+    "connectNew": "Połącz Nowy Kalendarz",
+    "selectProvider": "Wybierz Dostawcę Kalendarza",
+    "googleDesc": "Google Kalendarz",
+    "outlookDesc": "Kalendarz Outlook",
+    "appleDesc": "Kalendarz Apple",
+    "syncing": "Synchronizowanie",
+    "paused": "Wstrzymano",
+    "syncEnabled": "Synchronizacja Włączona",
+    "syncDisabled": "Synchronizacja Wyłączona",
+    "syncEnabledDesc": "Wydarzenia będą synchronizować się automatycznie",
+    "syncDisabledDesc": "Wydarzenia nie będą synchronizować się do ponownego włączenia",
+    "connected": "Połączono",
+    "disconnected": "Rozłączono",
+    "connectedDesc": "Kalendarz jest połączony i synchronizuje się",
+    "disconnectedDesc": "Kalendarz został rozłączony",
+    "connectError": "Błąd Połączenia",
+    "connectErrorDesc": "Nie udało się połączyć kalendarza. Spróbuj ponownie.",
+    "disconnectError": "Błąd Rozłączenia",
+    "disconnectErrorDesc": "Nie udało się rozłączyć kalendarza. Spróbuj ponownie.",
+    "noConnections": "Brak połączonych kalendarzy",
+    "connectPrompt": "Połącz swój kalendarz, aby automatycznie synchronizować wizyty",
+    "lastSync": "Ostatnia synchronizacja: {{time}}",
+    "syncComplete": "Synchronizacja Zakończona",
+    "syncCompleteDesc": "{{count}} wydarzeń zsynchronizowano",
+    "syncError": "Błąd Synchronizacji",
+    "syncErrorDesc": "Nie udało się zsynchronizować kalendarza. Spróbuj ponownie.",
+    "conflictsFound": "Znaleziono {{count}} konflikt(ów)",
+    "addToCalendar": "Dodaj do Kalendarza",
+    "eventAdded": "Wydarzenie Dodane",
+    "eventAddedDesc": "Wizyta dodana do kalendarza",
+    "addEventError": "Błąd Dodawania Wydarzenia",
+    "addEventErrorDesc": "Nie udało się dodać wydarzenia do kalendarza"
+  },
+  "qr": {
+    "checkInTitle": "QR Rejestracja",
+    "scanQR": "Skanuj Kod QR",
+    "scanQRTitle": "Skanuj Kod Klienta",
+    "cancelScan": "Anuluj",
+    "qrInstructions": "Pokaż ten kod QR, aby się zarejestrować",
+    "refreshQR": "Odśwież QR",
+    "checkInSuccess": "Rejestracja Pomyślna",
+    "checkInSuccessDesc": "Klient został zarejestrowany",
+    "checkInError": "Błąd Rejestracji",
+    "checkInErrorDesc": "Nieprawidłowy lub wygasły kod QR",
+    "checkInComplete": "Rejestracja zakończona pomyślnie",
+    "checkInFailed": "Rejestracja nieudana",
+    "scanError": "Błąd Kamery",
+    "scanErrorDesc": "Nie można uzyskać dostępu do kamery",
+    "cameraBlocked": "Kamera Zablokowana",
+    "validityInfo": "Kod QR jest ważny przez 5 minut",
+    "lastScan": "Ostatnie skanowanie"
+  },
+  "common": {
+    "locale": "pl-PL"
+  },
+  "book": {
+    "title": "Zarezerwuj Wizytę",
+    "back": "Powrót",
+    "authRequired": "Wymagana autoryzacja",
+    "authDescription": "Zaloguj się, aby zarezerwować usługę",
+    "error": "Błąd",
+    "serviceNotFound": "Usługa nie znaleziona",
+    "selectDate": "Wybierz Datę i Godzinę",
+    "notes": "Dodatkowe Uwagi (Opcjonalnie)",
+    "notesPlaceholder": "Specjalne życzenia lub informacje, które powinniśmy wiedzieć...",
+    "service": "Usługa",
+    "date": "Data",
+    "notSelected": "Nie wybrano",
+    "duration": "Czas trwania",
+    "minutes": "minuty",
+    "total": "Razem",
+    "processing": "Przetwarzanie...",
+    "proceed": "Przejdź do Płatności",
+    "success": "Rezerwacja utworzona!",
+    "successDescription": "Dokończ płatność, aby potwierdzić rezerwację",
+    "failed": "Rezerwacja nie powiodła się"
+  },
+  "footer": {
+    "brand": "Mariia Borysevych",
+    "description": "Artystka beauty i trenerka personalna z Warszawy. Pomagam odkryć najlepszą wersję siebie poprzez sztukę i wellness.",
+    "navigate": "Nawigacja",
+    "reachOut": "Kontakt",
+    "preferences": "Preferencje",
+    "copyright": "© 2025 Mariia Borysevych",
+    "privacy": "Prywatność",
+    "terms": "Warunki",
+    "links": {
+      "beauty": "Uroda",
+      "fitness": "Fitness",
+      "about": "O mnie",
+      "blog": "Blog",
+      "contact": "Kontakt"
+    }
+  },
+  "servicesPage": {
+    "loading": "Ładowanie...",
+    "backToHome": "Powrót do Strony Głównej",
+    "price": "Cena",
+    "duration": "Czas trwania",
+    "whatsIncluded": "Co Jest Wliczone",
+    "bookService": "Zarezerwuj Tę Usługę",
+    "error": {
+      "title": "Błąd",
+      "notFound": "Nie znaleziono usługi"
+    }
+  },
+  "bookPage": {
+    "back": "Wstecz",
+    "title": "Zarezerwuj Wizytę",
+    "selectDate": "Wybierz Datę i Godzinę",
+    "notes": "Dodatkowe Uwagi (Opcjonalnie)",
+    "notesPlaceholder": "Jakieś specjalne życzenia lub informacje...",
+    "summary": {
+      "service": "Usługa",
+      "date": "Data",
+      "notSelected": "Nie wybrano",
+      "duration": "Czas trwania",
+      "minutes": "minut",
+      "total": "Suma"
+    },
+    "proceedToPayment": "Przejdź do Płatności",
+    "processing": "Przetwarzanie...",
+    "toast": {
+      "authRequired": "Wymagane uwierzytelnienie",
+      "signInRequired": "Zaloguj się, aby zarezerwować",
+      "success": "Rezerwacja utworzona!",
+      "successDesc": "Dokończ płatność, aby potwierdzić rezerwację",
+      "error": "Rezerwacja nie powiodła się"
+    }
+  },
+  "dashboardPage": {
+    "title": "Portal Klienta",
+    "welcome": "Witaj ponownie!",
+    "email": "Email",
+    "appointments": "Moje Wizyty",
+    "noAppointments": "Nie masz jeszcze wizyt. Zarezerwuj swoją pierwszą usługę!",
+    "status": {
+      "confirmed": "potwierdzona",
+      "pending": "oczekująca"
+    },
+    "note": "Uwaga",
+    "home": "Strona Główna",
+    "signOut": "Wyloguj",
+    "toast": {
+      "signedOut": "Wylogowano",
+      "signedOutDesc": "Zostałeś pomyślnie wylogowany"
+    }
+  },
+  "authPage": {
+    "backToHome": "Powrót do Strony Głównej",
+    "welcomeBack": "Witaj Ponownie",
+    "createAccount": "Utwórz Konto",
+    "signInSubtitle": "Zaloguj się, aby zarządzać rezerwacjami i preferencjami",
+    "signUpSubtitle": "Dołącz, aby rezerwować usługi i śledzić swoją podróż",
+    "fullName": "Pełne Imię",
+    "fullNamePlaceholder": "Maria Kowalska",
+    "email": "Email",
+    "emailPlaceholder": "twoj@email.com",
+    "password": "Hasło",
+    "passwordPlaceholder": "••••••••",
+    "signIn": "Zaloguj się",
+    "createAccountButton": "Utwórz Konto",
+    "pleaseWait": "Proszę czekać...",
+    "dontHaveAccount": "Nie masz konta? Zarejestruj się",
+    "alreadyHaveAccount": "Masz już konto? Zaloguj się",
+    "required": "*",
+    "toast": {
+      "welcomeBack": "Witaj ponownie",
+      "loggedIn": "Pomyślnie zalogowano",
+      "accountCreated": "Konto utworzone",
+      "checkEmail": "Sprawdź swoją pocztę, aby potwierdzić konto",
+      "error": "Błąd"
+    }
+  },
+  "notFoundPage": {
+    "title": "404",
+    "subtitle": "Ups! Nie znaleziono strony",
+    "backToHome": "Powrót do Strony Głównej"
+  },
+  "reviewsPage": {
+    "title": "Opinie Klientów",
+    "filters": { "all": "Wszystkie", "beauty": "Uroda", "fitness": "Fitness" },
+    "loading": "Ładowanie...",
+    "empty": "Brak opinii."
+  },
+  "aftercarePage": {
+    "title": "Pielęgnacja i Przygotowanie",
+    "subtitle": "Postępuj zgodnie z tymi wytycznymi dla najlepszych efektów przed i po wizycie.",
+    "loading": "Ładowanie...",
+    "empty": "Brak treści dotyczących pielęgnacji."
+  },
+  "portfolioPage": {
+    "title": "Portfolio",
+    "filters": { "all": "Wszystkie", "beauty": "Uroda", "fitness": "Fitness" },
+    "loading": "Ładowanie...",
+    "empty": "Brak materiałów w galerii."
+  },
+  "user": {
+    "dashboard": {
+      "greetingMorning": "Dzień dobry",
+      "greetingAfternoon": "Dzień dobry",
+      "greetingEvening": "Dobry wieczór",
+      "defaultGreeting": "Witaj",
+      "subtitle": "Zarządzaj swoimi wizytami i odkrywaj nowe usługi",
+      "stats": {
+        "totalBookings": "Wszystkie Rezerwacje",
+        "upcoming": "Nadchodzące",
+        "completed": "Zakończone",
+        "favorites": "Ulubione"
+      },
+      "nextAppointment": "Następna wizyta",
+      "viewDetails": "Zobacz szczegóły",
+      "quickActions": {
+        "title": "Szybkie Działania",
+        "book": "Zarezerwuj Usługę",
+        "favorites": "Ulubione",
+        "history": "Historia Rezerwacji",
+        "profile": "Mój Profil"
+      },
+      "upcomingBookings": "Nadchodzące Rezerwacje",
+      "upcomingBookingsDesc": "Twoje zaplanowane wizyty",
+      "viewAll": "Zobacz wszystkie",
+      "recommendations": "Polecane dla Ciebie",
+      "recommendationsDesc": "Na podstawie historii rezerwacji",
+      "loyaltyPoints": "Punkty Lojalnościowe",
+      "pointsValue": "Wartość {{points}} PLN w zniżkach",
+      "redeemPoints": "Wymień Punkty",
+      "tips": {
+        "title": "Szybkie Wskazówki",
+        "tip1": "Zarezerwuj następną wizytę 24 godziny wcześniej dla lepszej dostępności",
+        "tip2": "Zostaw opinię po każdej usłudze, aby zdobyć punkty lojalnościowe",
+        "tip3": "Dodaj usługi do ulubionych dla szybkiej rezerwacji"
+      },
+      "needHelp": "Potrzebujesz Pomocy?",
+      "needHelpDesc": "Jesteśmy tutaj, aby pomóc z wszelkimi pytaniami",
+      "managePayment": "Metody Płatności",
+      "updateAddress": "Zaktualizuj Adresy",
+      "notificationSettings": "Powiadomienia"
+    },
+    "profile": {
+      "title": "Mój Profil",
+      "subtitle": "Zarządzaj swoimi danymi osobowymi i preferencjami",
+      "tabs": {
+        "personal": "Dane Osobowe",
+        "security": "Bezpieczeństwo",
+        "preferences": "Preferencje",
+        "notifications": "Powiadomienia"
+      },
+      "personal": {
+        "title": "Dane Osobowe",
+        "description": "Zaktualizuj swoje dane i kontakt"
+      },
+      "security": {
+        "password": "Zmień Hasło",
+        "passwordDescription": "Zabezpiecz swoje konto silnym hasłem",
+        "currentPassword": "Obecne Hasło",
+        "newPassword": "Nowe Hasło",
+        "updatePassword": "Zaktualizuj Hasło",
+        "twoFactor": "Uwierzytelnianie Dwuskładnikowe",
+        "twoFactorDescription": "Dodaj dodatkową warstwę bezpieczeństwa do swojego konta",
+        "twoFactorTitle": "Uwierzytelnianie 2FA",
+        "twoFactorStatus": "Nie włączone",
+        "enable": "Włącz"
+      },
+      "preferences": {
+        "title": "Preferencje",
+        "description": "Dostosuj swoje doświadczenia",
+        "language": "Język",
+        "currency": "Waluta",
+        "timezone": "Strefa Czasowa"
+      },
+      "notifications": {
+        "title": "Preferencje Powiadomień",
+        "description": "Wybierz, jak chcesz otrzymywać aktualizacje",
+        "bookingReminder": "Przypomnienia o Rezerwacjach",
+        "bookingReminderDesc": "Przypomnienia przed wizytami",
+        "bookingConfirmation": "Potwierdzenia Rezerwacji",
+        "bookingConfirmationDesc": "Potwierdzenia podczas rezerwacji",
+        "promotional": "Oferty Promocyjne",
+        "promotionalDesc": "Specjalne okazje i promocje",
+        "reviewRequest": "Prośby o Opinie",
+        "reviewRequestDesc": "Prośby o ocenę zakończonych usług",
+        "quietHours": "Godziny Ciszy",
+        "quietHoursDesc": "Nie przeszkadzać w tych godzinach",
+        "quietStart": "Godzina Rozpoczęcia",
+        "quietEnd": "Godzina Zakończenia"
+      },
+      "avatar": {
+        "title": "Zdjęcie Profilowe",
+        "description": "Prześlij zdjęcie, aby spersonalizować swój profil",
+        "formatHint": "JPG, PNG lub GIF. Maks. 5MB",
+        "sizeError": "Rozmiar obrazu musi być mniejszy niż 5MB",
+        "avatarUpdateSuccess": "Zdjęcie profilowe zaktualizowane pomyślnie",
+        "avatarUpdateError": "Nie udało się zaktualizować zdjęcia profilowego"
+      },
+      "fields": {
+        "firstName": "Imię",
+        "lastName": "Nazwisko",
+        "email": "Adres Email",
+        "phone": "Numer Telefonu",
+        "dateOfBirth": "Data Urodzenia",
+        "gender": "Płeć",
+        "bio": "Bio",
+        "bioDescription": "Opowiedz o sobie (maks. 500 znaków)",
+        "bioPlaceholder": "Podziel się czymś o sobie...",
+        "firstNamePlaceholder": "Wprowadź swoje imię",
+        "lastNamePlaceholder": "Wprowadź swoje nazwisko",
+        "selectGender": "Wybierz płeć",
+        "gender": {
+          "male": "Mężczyzna",
+          "female": "Kobieta",
+          "other": "Inne",
+          "preferNotToSay": "Wolę nie mówić"
+        }
+      },
+      "updateSuccess": "Profil zaktualizowany pomyślnie",
+      "updateError": "Nie udało się zaktualizować profilu"
+    },
+    "addressBook": {
+      "title": "Książka Adresowa",
+      "description": "Zarządzaj zapisanymi adresami dla szybkiej rezerwacji",
+      "addNew": "Dodaj Nowy Adres",
+      "addAddress": "Dodaj Adres",
+      "addAddressDesc": "Dodaj nowy adres do swojej książki adresowej",
+      "editAddress": "Edytuj Adres",
+      "editAddressDesc": "Zaktualizuj szczegóły adresu",
+      "fields": {
+        "label": "Typ Adresu",
+        "street": "Adres",
+        "city": "Miasto",
+        "postalCode": "Kod Pocztowy",
+        "country": "Kraj"
+      },
+      "placeholders": {
+        "street": "Wprowadź adres",
+        "city": "Wprowadź miasto",
+        "postalCode": "Wprowadź kod pocztowy",
+        "country": "Wprowadź kraj"
+      },
+      "labels": {
+        "home": "Dom",
+        "work": "Praca",
+        "other": "Inne"
+      },
+      "default": "Domyślny",
+      "setAsDefault": "Ustaw jako Domyślny",
+      "setDefaultSuccess": "Adres domyślny zaktualizowany",
+      "setDefaultError": "Nie udało się zaktualizować adresu domyślnego",
+      "addSuccess": "Adres dodany pomyślnie",
+      "addError": "Nie udało się dodać adresu",
+      "updateSuccess": "Adres zaktualizowany pomyślnie",
+      "updateError": "Nie udało się zaktualizować adresu",
+      "deleteSuccess": "Adres usunięty pomyślnie",
+      "deleteError": "Nie udało się usunąć adresu",
+      "deleteConfirm": "Czy na pewno chcesz usunąć ten adres?",
+      "searchPlaceholder": "Szukaj adresów...",
+      "noAddresses": "Brak zapisanych adresów",
+      "noSearchResults": "Nie znaleziono adresów pasujących do wyszukiwania",
+      "addFirstAddress": "Dodaj Swój Pierwszy Adres",
+      "addFirstAddressDesc": "Zapisz adres, aby przyspieszyć proces rezerwacji",
+      "tryDifferentSearch": "Spróbuj wyszukać z innymi słowami kluczowymi"
+    },
+    "bookings": {
+      "title": "Moje Rezerwacje",
+      "subtitle": "Zobacz i zarządzaj swoimi wizytami",
+      "tabs": {
+        "listView": "Widok Listy",
+        "calendarView": "Widok Kalendarza"
+      },
+      "searchPlaceholder": "Szukaj rezerwacji...",
+      "filters": {
+        "allStatuses": "Wszystkie Statusy",
+        "search": "Szukaj",
+        "activeFilters": "Aktywne filtry"
+      },
+      "moreFilters": "Więcej Filtrow",
+      "noBookings": "Nie znaleziono rezerwacji",
+      "noBookingsDesc": "Jeszcze nie dokonałeś żadnych rezerwacji",
+      "bookNow": "Zarezerwuj Teraz",
+      "reschedule": "Przełóż",
+      "cancel": "Anuluj",
+      "cancelConfirm": "Czy na pewno chcesz anulować tę rezerwację?",
+      "cancelSuccess": "Rezerwacja anulowana pomyślnie",
+      "cancelError": "Nie udało się anulować rezerwacji",
+      "leaveReview": "Zostaw Opinię",
+      "view": "Zobacz",
+      "calendar": {
+        "events": "Wydarzenia",
+        "selectDate": "Wybierz datę, aby zobaczyć wydarzenia",
+        "noEvents": "Brak wydarzeń w tym dniu"
+      },
+      "review": {
+        "title": "Zostaw Opinię",
+        "description": "Podziel się swoim doświadczeniem",
+        "service": "Usługa",
+        "rating": "Ocena",
+        "ratingRequired": "Proszę wybrać ocenę",
+        "comment": "Komentarz",
+        "commentPlaceholder": "Opowiedz o swoim doświadczeniu...",
+        "reviewSuccess": "Opinia przesłana pomyślnie",
+        "reviewError": "Nie udało się przesłać opinii"
+      }
+    },
+    "favorites": {
+      "title": "Moje Ulubione",
+      "subtitle": "Twoje ulubione usługi dla szybkiej rezerwacji",
+      "searchPlaceholder": "Szukaj ulubionych...",
+      "allCategories": "Wszystkie Kategorie",
+      "noFavorites": "Brak ulubionych",
+      "noSearchResults": "Nie znaleziono ulubionych pasujących do wyszukiwania",
+      "startAdding": "Zacznij dodawać usługi do ulubionych dla szybkiego dostępu",
+      "browseServices": "Przeglądaj Usługi",
+      "removeConfirm": "Czy na pewno chcesz usunąć to z ulubionych?",
+      "removeSuccess": "Usunięto z ulubionych",
+      "removeError": "Nie udało się usunąć z ulubionych",
+      "editNotes": "Edytuj Notatki",
+      "notes": "Notatki",
+      "notesDescription": "Dodaj osobiste notatki o tej usłudze",
+      "notesPlaceholder": "Dlaczego lubisz tę usługę?",
+      "notesUpdateSuccess": "Notatki zaktualizowane pomyślnie",
+      "notesUpdateError": "Nie udało się zaktualizować notatek",
+      "notifications": "Powiadomienia",
+      "notificationUpdateSuccess": "Preferencja powiadomień zaktualizowana",
+      "tipTitle": "Wskazówka Eksperta",
+      "tipDescription": "Włącz powiadomienia dla ulubionych, aby otrzymywać alerty o dostępności i specjalnych ofertach"
+    },
+    "notifications": {
+      "title": "Ustawienia Powiadomień",
+      "description": "Zarządzaj sposobem otrzymywania powiadomień",
+      "updateSuccess": "Preferencje powiadomień zaktualizowane",
+      "updateError": "Nie udało się zaktualizować preferencji powiadomień",
+      "quickSettings": {
+        "title": "Szybkie Ustawienia",
+        "enableAll": "Włącz Wszystko",
+        "essentialOnly": "Tylko Niezbędne",
+        "disableAll": "Wyłącz Wszystko"
+      },
+      "tabs": {
+        "notifications": "Powiadomienia",
+        "channels": "Kanały",
+        "schedule": "Harmonogram"
+      },
+      "recommended": "Polecane",
+      "email": "Email",
+      "push": "Push",
+      "sms": "SMS",
+      "types": {
+        "bookingReminder": {
+          "title": "Przypomnienia o Rezerwacjach",
+          "description": "Otrzymuj przypomnienia o nadchodzących wizytach"
+        },
+        "bookingConfirmation": {
+          "title": "Potwierdzenia Rezerwacji",
+          "description": "Potwierdzenia podczas rezerwacji usługi"
+        },
+        "promotional": {
+          "title": "Oferty Promocyjne",
+          "description": "Specjalne okazje i zniżki"
+        },
+        "reviewRequest": {
+          "title": "Prośby o Opinie",
+          "description": "Prośby o ocenę zakończonych usług"
+        },
+        "newMessage": {
+          "title": "Nowe Wiadomości",
+          "description": "Wiadomości od specjalistów lub wsparcia"
+        },
+        "paymentReminder": {
+          "title": "Przypomnienia o Płatnościach",
+          "description": "Przypomnienia o oczekujących płatnościach"
+        }
+      },
+      "channelsInfo": "Wybierz, jak chcesz otrzymywać powiadomienia. Możesz włączyć lub wyłączyć kanały dla każdego typu.",
+      "emailSettings": {
+        "title": "Powiadomienia Email",
+        "description": "Zarządzaj preferencjami powiadomień email",
+        "address": "Adres Email",
+        "digest": "Codzienny Przegląd",
+        "digestDescription": "Otrzymuj codzienne podsumowanie wszystkich powiadomień"
+      },
+      "pushSettings": {
+        "title": "Powiadomienia Push",
+        "description": "Powiadomienia push przeglądarki dla aktualizacji w czasie rzeczywistym",
+        "browser": "Powiadomienia Przeglądarki",
+        "browserDescription": "Otrzymuj powiadomienia w przeglądarce",
+        "enabled": "Włączone",
+        "sound": "Dźwięk",
+        "soundDescription": "Odtwarzaj dźwięk z powiadomieniami"
+      },
+      "smsSettings": {
+        "title": "Powiadomienia SMS",
+        "description": "Powiadomienia SMS dla ważnych aktualizacji",
+        "phone": "Numer Telefonu",
+        "info": "Standardowe stawki za wiadomości mogą obowiązywać"
+      },
+      "quietHours": {
+        "title": "Godziny Ciszy",
+        "description": "Ustaw godziny, w których nie chcesz otrzymywać powiadomień",
+        "start": "Godzina Rozpoczęcia",
+        "end": "Godzina Zakończenia",
+        "info": "Tylko niezbędne powiadomienia (jak potwierdzenia rezerwacji) będą wysyłane podczas godzin ciszy",
+        "active": "Godziny Ciszy Aktywne",
+        "localTime": "czas lokalny"
+      },
+      "frequency": {
+        "title": "Częstotliwość Powiadomień",
+        "description": "Kontroluj, jak często otrzymujesz niektóre powiadomienia",
+        "digest": "Codzienny Przegląd",
+        "digestDescription": "Łącz niepilne powiadomienia w codzienny email",
+        "weekly": "Tygodniowe Podsumowanie",
+        "weeklyDescription": "Otrzymuj tygodniowe podsumowanie swoich aktywności",
+        "marketing": "Email Marketingowe",
+        "marketingDescription": "Otrzymuj oferty promocyjne i biuletyny"
+      },
+      "saving": "Zapisywanie..."
+    }
+  },
+  "search": {
+    "placeholder": "Szukaj usług, zabiegów lub specjalistów...",
+    "searching": "Wyszukiwanie...",
+    "types": {
+      "beauty": "Usługi Beauty",
+      "fitness": "Programy Fitness",
+      "lifestyle": "Usługi Lifestyle"
+    },
+    "filters": {
+      "serviceType": "Typ Usługi",
+      "category": "Kategoria",
+      "location": "Lokalizacja",
+      "priceRange": "Przedział Cenowy",
+      "duration": "Czas Trwania",
+      "minRating": "Minimalna Ocena",
+      "availability": "Dostępność",
+      "features": "Cechy",
+      "sortBy": "Sortuj według",
+      "selectType": "Wybierz typ",
+      "selectCategory": "Wybierz kategorię",
+      "enterLocation": "Wprowadź lokalizację",
+      "anyTime": "Kiedykolwiek"
+    },
+    "sort": {
+      "relevance": "Trafność",
+      "priceLow": "Cena: Od najniższej",
+      "priceHigh": "Cena: Od najwyższej",
+      "rating": "Najwyżej Oceniane",
+      "popularity": "Najpopularniejsze",
+      "newest": "Najnowsze"
+    },
+    "availability": {
+      "today": "Dziś",
+      "tomorrow": "Jutro",
+      "thisWeek": "W tym Tygodniu",
+      "nextWeek": "W następnym Tygodniu",
+      "any": "Kiedykolwiek"
+    },
+    "advancedFilters": "Zaawansowane Filtry",
+    "activeFilters": "Aktywne filtry",
+    "clearAll": "Wyczyść wszystko",
+    "stars": "gwiazdki",
+    "popular": {
+      "title": "Popularne Wyszukania",
+      "description": "Trendujące usługi w tym tygodniu"
+    }
+  },
+  "comparison": {
+    "empty": {
+      "title": "Brak Wybranych Usług",
+      "description": "Wybierz usługi, aby porównać ich cechy i ceny"
+    },
+    "comparing": "Porównywanie",
+    "clear": "Wyczyść",
+    "compare": "Porównaj Usługi",
+    "criteria": "Kryteria",
+    "price": "Cena",
+    "priceTooltip": "Podstawowa cena usługi",
+    "duration": "Czas Trwania",
+    "short": "Krótki",
+    "medium": "Średni",
+    "long": "Długi",
+    "location": "Lokalizacja",
+    "warsawCenter": "Centrum Warszawy",
+    "rating": "Ocena",
+    "reviews": "opinie",
+    "features": "Cechy",
+    "more": "więcej",
+    "availability": "Dostępność",
+    "availableToday": "Dostępne Dziś",
+    "summary": {
+      "title": "Podsumowanie Porównania",
+      "bestValue": "Najlepsza Wartość",
+      "shortest": "Najkrótszy Czas Trwania",
+      "mostPopular": "Najpopularniejszy"
+    }
+  }
+}

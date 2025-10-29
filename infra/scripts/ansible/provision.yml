@@ -1,0 +1,405 @@
+---
+- name: Provision Production Infrastructure
+  hosts: production,monitoring,database,edge_nodes
+  become: yes
+  vars:
+    system_packages:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - software-properties-common
+      - htop
+      - iotop
+      - nethogs
+      - sysstat
+      - fail2ban
+      - ufw
+      - logrotate
+      - jq
+      - git
+      - vim
+      - tmux
+
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Upgrade all packages
+      ansible.builtin.apt:
+        upgrade: dist
+        autoclean: yes
+        autoremove: yes
+
+    - name: Install system packages
+      ansible.builtin.apt:
+        name: "{{ system_packages }}"
+        state: present
+
+    - name: Configure sysctl parameters
+      ansible.builtin.lineinfile:
+        path: /etc/sysctl.conf
+        line: "{{ item }}"
+        state: present
+      loop:
+        - "net.core.rmem_max = 16777216"
+        - "net.core.wmem_max = 16777216"
+        - "net.ipv4.tcp_rmem = 4096 87380 16777216"
+        - "net.ipv4.tcp_wmem = 4096 65536 16777216"
+        - "net.ipv4.tcp_congestion_control = bbr"
+        - "net.core.default_qdisc = fq"
+        - "vm.swappiness = 10"
+        - "fs.file-max = 2097152"
+      notify: Reload sysctl
+
+    - name: Create application user
+      ansible.builtin.user:
+        name: appuser
+        shell: /bin/bash
+        create_home: yes
+        groups: docker
+        append: yes
+        state: present
+
+    - name: Create application directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+        owner: appuser
+        group: appuser
+      loop:
+        - /opt/mariia
+        - /opt/mariia/configs
+        - /opt/mariia/logs
+        - /opt/mariia/data
+
+    - name: Configure logrotate for application logs
+      ansible.builtin.template:
+        src: templates/logrotate-app.j2
+        dest: /etc/logrotate.d/mariia-app
+        mode: '0644'
+
+    - name: Configure UFW firewall
+      community.general.ufw:
+        state: enabled
+        policy: deny
+        direction: incoming
+
+    - name: Allow SSH through firewall
+      community.general.ufw:
+        rule: allow
+        port: ssh
+        proto: tcp
+
+    - name: Allow HTTP through firewall
+      community.general.ufw:
+        rule: allow
+        port: http
+        proto: tcp
+
+    - name: Allow HTTPS through firewall
+      community.general.ufw:
+        rule: allow
+        port: https
+        proto: tcp
+
+    - name: Configure fail2ban
+      ansible.builtin.lineinfile:
+        path: /etc/fail2ban/jail.local
+        line: "{{ item }}"
+        create: yes
+        mode: '0644'
+      loop:
+        - "[DEFAULT]"
+        - "bantime = 3600"
+        - "findtime = 600"
+        - "maxretry = 3"
+        - ""
+        - "[sshd]"
+        - "enabled = true"
+        - "port = ssh"
+        - ""
+        - "[nginx-http-auth]"
+        - "enabled = true"
+        - "filter = nginx-http-auth"
+        - "logpath = /var/log/nginx/error.log"
+        - ""
+        - "[nginx-limit-req]"
+        - "enabled = true"
+        - "filter = nginx-limit-req"
+        - "logpath = /var/log/nginx/error.log"
+      notify: Restart fail2ban
+
+    - name: Configure automatic security updates
+      ansible.builtin.lineinfile:
+        path: /etc/apt/apt.conf.d/50unattended-upgrades
+        line: "{{ item }}"
+        state: present
+      loop:
+        - 'Unattended-Upgrade::Automatic-Reboot "false";'
+        - 'Unattended-Upgrade::Remove-Unused-Dependencies "true";'
+        - 'Unattended-Upgrade::Automatic-Reboot-WithUsers "false";'
+
+    - name: Install Docker
+      block:
+        - name: Add Docker GPG key
+          ansible.builtin.apt_key:
+            url: https://download.docker.com/linux/ubuntu/gpg
+            state: present
+
+        - name: Add Docker repository
+          ansible.builtin.apt_repository:
+            repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+            state: present
+
+        - name: Install Docker packages
+          ansible.builtin.apt:
+            name:
+              - docker-ce
+              - docker-ce-cli
+              - containerd.io
+              - docker-compose-plugin
+            state: present
+
+        - name: Add user to docker group
+          ansible.builtin.user:
+            name: "{{ ansible_user }}"
+            groups: docker
+            append: yes
+
+        - name: Configure Docker daemon
+          ansible.builtin.copy:
+            dest: /etc/docker/daemon.json
+            content: |
+              {
+                "log-driver": "json-file",
+                "log-opts": {
+                  "max-size": "10m",
+                  "max-file": "3"
+                },
+                "storage-driver": "overlay2",
+                "storage-opts": [
+                  "overlay2.override_kernel_check=true"
+                ],
+                "live-restore": true,
+                "userland-proxy": false,
+                "experimental": false
+              }
+            mode: '0644'
+          notify: Restart Docker
+
+    - name: Install monitoring agents
+      block:
+        - name: Install Node Exporter
+          ansible.builtin.get_url:
+            url: https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz
+            dest: /tmp/node_exporter.tar.gz
+            mode: '0644'
+
+        - name: Extract Node Exporter
+          ansible.builtin.unarchive:
+            src: /tmp/node_exporter.tar.gz
+            dest: /tmp
+            remote_src: yes
+
+        - name: Copy Node Exporter binary
+          ansible.builtin.copy:
+            src: /tmp/node_exporter-1.6.1.linux-amd64/node_exporter
+            dest: /usr/local/bin/node_exporter
+            mode: '0755'
+            remote_src: yes
+
+        - name: Create Node Exporter user
+          ansible.builtin.user:
+            name: node_exporter
+            shell: /bin/false
+            system: yes
+            create_home: no
+
+        - name: Create Node Exporter service
+          ansible.builtin.copy:
+            dest: /etc/systemd/system/node_exporter.service
+            content: |
+              [Unit]
+              Description=Node Exporter
+              Wants=network-online.target
+              After=network-online.target
+
+              [Service]
+              User=node_exporter
+              Group=node_exporter
+              Type=simple
+              ExecStart=/usr/local/bin/node_exporter
+
+              [Install]
+              WantedBy=multi-user.target
+            mode: '0644'
+
+        - name: Start and enable Node Exporter
+          ansible.builtin.systemd:
+            name: node_exporter
+            state: started
+            enabled: yes
+            daemon_reload: yes
+
+    - name: Cleanup temporary files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /tmp/node_exporter.tar.gz
+        - /tmp/node_exporter-1.6.1.linux-amd64
+
+  handlers:
+    - name: Reload sysctl
+      ansible.builtin.command: sysctl -p
+
+    - name: Restart Docker
+      ansible.builtin.systemd:
+        name: docker
+        state: restarted
+        daemon_reload: yes
+
+    - name: Restart fail2ban
+      ansible.builtin.systemd:
+        name: fail2ban
+        state: restarted
+
+- name: Configure Database Servers
+  hosts: database
+  become: yes
+
+  tasks:
+    - name: Install PostgreSQL client tools
+      ansible.builtin.apt:
+        name:
+          - postgresql-client
+          - postgresql-common
+        state: present
+
+    - name: Create backup directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+        owner: appuser
+        group: appuser
+      loop:
+        - /opt/backups
+        - /opt/backups/databases
+        - /opt/backups/logs
+
+    - name: Configure backup scripts
+      ansible.builtin.template:
+        src: templates/backup-database.sh.j2
+        dest: /opt/backups/backup-database.sh
+        mode: '0755'
+        owner: appuser
+        group: appuser
+
+    - name: Setup backup cron job
+      ansible.builtin.cron:
+        name: "Database backup"
+        job: "/opt/backups/backup-database.sh"
+        minute: "0"
+        hour: "2"
+        user: appuser
+
+    - name: Configure PostgreSQL connection pooling
+      ansible.builtin.copy:
+        dest: /etc/postgresql-common/pg_hba.conf
+        content: |
+          local   all             postgres                                md5
+          host    all             all             127.0.0.1/32           md5
+          host    all             all             10.0.0.0/16            md5
+        mode: '0644'
+
+- name: Configure Edge Nodes
+  hosts: edge_nodes
+  become: yes
+
+  tasks:
+    - name: Install CDN software
+      ansible.builtin.apt:
+        name:
+          - nginx
+          - varnish
+        state: present
+
+    - name: Configure Varnish
+      ansible.builtin.copy:
+        dest: /etc/varnish/default.vcl
+        content: |
+          vcl 4.0;
+
+          backend default {
+              .host = "127.0.0.1";
+              .port = "8080";
+          }
+
+          sub vcl_recv {
+              if (req.method == "PURGE") {
+                  if (client.ip !~ purge) {
+                      return (synth(405, "Not allowed"));
+                  }
+                  return (purge);
+              }
+
+              if (req.http.X-Forwarded-Proto == "https") {
+                  set req.http.X-Forwarded-Proto = "https";
+              }
+
+              if (req.url ~ "^/api/") {
+                  return (pass);
+              }
+
+              if (req.url ~ "^/health") {
+                  return (pass);
+              }
+          }
+
+          sub vcl_backend_response {
+              if (bereq.url ~ "\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$") {
+                  set beresp.ttl = 1w;
+                  set beresp.grace = 1d;
+              }
+          }
+
+          sub vcl_deliver {
+              if (obj.hits > 0) {
+                  set resp.http.X-Cache = "HIT";
+              } else {
+                  set resp.http.X-Cache = "MISS";
+              }
+          }
+
+          acl purge {
+              "127.0.0.1";
+              "10.0.0.0"/16;
+          }
+        mode: '0644'
+
+    - name: Configure systemd for Varnish
+      ansible.builtin.lineinfile:
+        path: /etc/default/varnish
+        regexp: '^DAEMON_OPTS='
+        line: 'DAEMON_OPTS="-a :80 -T localhost:6082 -f /etc/varnish/default.vcl -S /etc/varnish/secret -s malloc,256m"'
+        state: present
+
+    - name: Start and enable Varnish
+      ansible.builtin.systemd:
+        name: varnish
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+
+    - name: Start and enable Nginx
+      ansible.builtin.systemd:
+        name: nginx
+        state: started
+        enabled: yes
+        daemon_reload: yes

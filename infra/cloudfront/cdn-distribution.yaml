@@ -1,0 +1,655 @@
+# CloudFront Distribution Configuration
+# Optimized for high-performance asset delivery
+
+Resources:
+  MariiaCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        # Basic Configuration
+        Comment: "Mariia Hub Production CDN - High-performance asset delivery"
+        Enabled: true
+        HttpVersion: http2
+        IsIPV6Enabled: true
+        PriceClass: PriceClass_100  # US, Canada, Europe
+
+        # Origins Configuration
+        Origins:
+          # S3 Origin for static assets
+          - Id: "S3-mariia-production-assets"
+            DomainName: !GetAtt MariiaAssetsBucket.DomainName
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${AWS::AccountId}"
+            OriginShield:
+              Enabled: true
+              OriginShieldRegion: "EU-West-1"
+
+          # Application Load Balancer Origin for dynamic content
+          - Id: "ALB-mariia-app"
+            DomainName: !GetAtt MariiaApplicationLoadBalancer.DNSName
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: "https-only"
+              OriginSSLProtocols:
+                - "TLSv1.2"
+              OriginReadTimeout: 30
+              OriginKeepaliveTimeout: 5
+              OriginCustomHeaders:
+                Headers:
+                  - HeaderName: "User-Agent"
+                    HeaderValue: "CloudFront"
+                  - HeaderName: "X-Forwarded-For"
+                    HeaderValue: "cloudfront"
+
+        # Default Cache Behavior
+        DefaultCacheBehavior:
+          TargetOriginId: "ALB-mariia-app"
+          ViewerProtocolPolicy: "redirect-to-https"
+          AllowedMethods:
+            - "DELETE"
+            - "GET"
+            - "HEAD"
+            - "OPTIONS"
+            - "PATCH"
+            - "POST"
+            - "PUT"
+          CachedMethods:
+            - "GET"
+            - "HEAD"
+            - "OPTIONS"
+          Compress: true
+          MinTTL: 0
+          DefaultTTL: 3600
+          MaxTTL: 86400
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: "none"
+            Headers:
+              - "Origin"
+              - "Access-Control-Request-Headers"
+              - "Access-Control-Request-Method"
+              - "Authorization"
+              - "Accept"
+              - "Accept-Language"
+              - "User-Agent"
+          LambdaFunctionAssociations:
+            - EventType: "origin-request"
+              LambdaFunctionARN: !GetAtt EdgeLambdaFunction.Arn
+            - EventType: "viewer-request"
+              LambdaFunctionARN: !GetAtt RequestLambdaFunction.Arn
+
+        # Cache Behaviors for different content types
+        CacheBehaviors:
+          # Static Assets - Aggressive Caching
+          - PathPattern: "/assets/*"
+            TargetOriginId: "S3-mariia-production-assets"
+            ViewerProtocolPolicy: "redirect-to-https"
+            AllowedMethods:
+              - "GET"
+              - "HEAD"
+              - "OPTIONS"
+            CachedMethods:
+              - "GET"
+              - "HEAD"
+            Compress: true
+            MinTTL: 86400
+            DefaultTTL: 31536000  # 1 year
+            MaxTTL: 31536000
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: "none"
+              Headers: []
+            CachePolicyId: !GetAtt StaticAssetsCachePolicy.Id
+            ResponseHeadersPolicyId: !GetAtt StaticHeadersPolicy.Id
+
+          # Images - Long caching with optimization
+          - PathPattern: "*.jpg"
+            TargetOriginId: "S3-mariia-production-assets"
+            ViewerProtocolPolicy: "redirect-to-https"
+            AllowedMethods:
+              - "GET"
+              - "HEAD"
+              - "OPTIONS"
+            CachedMethods:
+              - "GET"
+              - "HEAD"
+            Compress: true
+            MinTTL: 2592000  # 30 days
+            DefaultTTL: 31536000  # 1 year
+            MaxTTL: 31536000
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: "none"
+              Headers: []
+            CachePolicyId: !GetAtt ImagesCachePolicy.Id
+
+          - PathPattern: "*.png"
+            TargetOriginId: "S3-mariia-production-assets"
+            ViewerProtocolPolicy: "redirect-to-https"
+            AllowedMethods:
+              - "GET"
+              - "HEAD"
+              - "OPTIONS"
+            CachedMethods:
+              - "GET"
+              - "HEAD"
+            Compress: true
+            MinTTL: 2592000  # 30 days
+            DefaultTTL: 31536000  # 1 year
+            MaxTTL: 31536000
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: "none"
+              Headers: []
+            CachePolicyId: !GetAtt ImagesCachePolicy.Id
+
+          - PathPattern: "*.svg"
+            TargetOriginId: "S3-mariia-production-assets"
+            ViewerProtocolPolicy: "redirect-to-https"
+            AllowedMethods:
+              - "GET"
+              - "HEAD"
+              - "OPTIONS"
+            CachedMethods:
+              - "GET"
+              - "HEAD"
+            Compress: true
+            MinTTL: 2592000  # 30 days
+            DefaultTTL: 31536000  # 1 year
+            MaxTTL: 31536000
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: "none"
+              Headers: []
+            CachePolicyId: !GetAtt ImagesCachePolicy.Id
+
+          # Fonts - Long caching with CORS headers
+          - PathPattern: "*.woff"
+            TargetOriginId: "S3-mariia-production-assets"
+            ViewerProtocolPolicy: "redirect-to-https"
+            AllowedMethods:
+              - "GET"
+              - "HEAD"
+              - "OPTIONS"
+            CachedMethods:
+              - "GET"
+              - "HEAD"
+            Compress: true
+            MinTTL: 31536000  # 1 year
+            DefaultTTL: 31536000  # 1 year
+            MaxTTL: 31536000
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: "none"
+              Headers:
+                - "Origin"
+              - "Access-Control-Request-Headers"
+            CachePolicyId: !GetAtt FontsCachePolicy.Id
+            ResponseHeadersPolicyId: !GetAtt FontHeadersPolicy.Id
+
+          - PathPattern: "*.woff2"
+            TargetOriginId: "S3-mariia-production-assets"
+            ViewerProtocolPolicy: "redirect-to-https"
+            AllowedMethods:
+              - "GET"
+              - "HEAD"
+              - "OPTIONS"
+            CachedMethods:
+              - "GET"
+              - "HEAD"
+            Compress: true
+            MinTTL: 31536000  # 1 year
+            DefaultTTL: 31536000  # 1 year
+            MaxTTL: 31536000
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: "none"
+              Headers:
+                - "Origin"
+                - "Access-Control-Request-Headers"
+            CachePolicyId: !GetAtt FontsCachePolicy.Id
+            ResponseHeadersPolicyId: !GetAtt FontHeadersPolicy.Id
+
+          - PathPattern: "*.ttf"
+            TargetOriginId: "S3-mariia-production-assets"
+            ViewerProtocolPolicy: "redirect-to-https"
+            AllowedMethods:
+              - "GET"
+              - "HEAD"
+              - "OPTIONS"
+            CachedMethods:
+              - "GET"
+              - "HEAD"
+            Compress: true
+            MinTTL: 31536000  # 1 year
+            DefaultTTL: 31536000  # 1 year
+            MaxTTL: 31536000
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: "none"
+              Headers:
+                - "Origin"
+                - "Access-Control-Request-Headers"
+            CachePolicyId: !GetAtt FontsCachePolicy.Id
+            ResponseHeadersPolicyId: !GetAtt FontHeadersPolicy.Id
+
+          # API Endpoints - No caching for dynamic content
+          - PathPattern: "/api/*"
+            TargetOriginId: "ALB-mariia-app"
+            ViewerProtocolPolicy: "redirect-to-https"
+            AllowedMethods:
+              - "DELETE"
+              - "GET"
+              - "HEAD"
+              - "OPTIONS"
+              - "PATCH"
+              - "POST"
+              - "PUT"
+            CachedMethods:
+              - "GET"
+              - "HEAD"
+              - "OPTIONS"
+            Compress: true
+            MinTTL: 0
+            DefaultTTL: 0
+            MaxTTL: 0
+            ForwardedValues:
+              QueryString: true
+              Cookies:
+                Forward: "all"
+              Headers:
+                - "*"
+            CachePolicyId: !GetAtt NoCachePolicy.Id
+
+          - PathPattern: "/auth/*"
+            TargetOriginId: "ALB-mariia-app"
+            ViewerProtocolPolicy: "redirect-to-https"
+            AllowedMethods:
+              - "DELETE"
+              - "GET"
+              - "HEAD"
+              - "OPTIONS"
+              - "PATCH"
+              - "POST"
+              - "PUT"
+            CachedMethods:
+              - "GET"
+              - "HEAD"
+              - "OPTIONS"
+            Compress: true
+            MinTTL: 0
+            DefaultTTL: 0
+            MaxTTL: 0
+            ForwardedValues:
+              QueryString: true
+              Cookies:
+                Forward: "all"
+              Headers:
+                - "*"
+            CachePolicyId: !GetAtt NoCachePolicy.Id
+
+          # Service Worker - No cache, immediate updates
+          - PathPattern: "/sw.js"
+            TargetOriginId: "S3-mariia-production-assets"
+            ViewerProtocolPolicy: "redirect-to-https"
+            AllowedMethods:
+              - "GET"
+              - "HEAD"
+              - "OPTIONS"
+            CachedMethods:
+              - "GET"
+              - "HEAD"
+              - "OPTIONS"
+            Compress: true
+            MinTTL: 0
+            DefaultTTL: 0
+            MaxTTL: 0
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: "none"
+              Headers:
+                - "Service-Worker"
+            CachePolicyId: !GetAtt NoCachePolicy.Id
+
+          # HTML Pages - Short caching for dynamic content
+          - PathPattern: "*.html"
+            TargetOriginId: "ALB-mariia-app"
+            ViewerProtocolPolicy: "redirect-to-https"
+            AllowedMethods:
+              - "GET"
+              - "HEAD"
+              - "OPTIONS"
+            CachedMethods:
+              - "GET"
+              - "HEAD"
+            Compress: true
+            MinTTL: 0
+            DefaultTTL: 600  # 10 minutes
+            MaxTTL: 3600  # 1 hour
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: "all"
+              Headers:
+                - "Accept"
+                - "Accept-Language"
+                - "Accept-Encoding"
+            CachePolicyId: !GetAtt DefaultCachePolicy.Id
+
+        # Aliases (Custom Domain Names)
+        Aliases:
+          - "mariia.pl"
+          - "www.mariia.pl"
+          - "cdn.mariia.pl"
+          - "assets.mariia.pl"
+
+        # SSL Certificate
+        ViewerCertificate: !Ref MariiaSSLCertificate
+
+        # Logging Configuration
+        Logging:
+          Bucket: !Ref MariiaCloudFrontLogsBucket
+          IncludeCookies: true
+          Prefix: "cdn-logs/"
+
+        # Geo Restrictions
+        Restrictions:
+          GeoRestriction:
+            RestrictionType: "whitelist"
+            Locations:
+              - "PL"  # Poland
+              - "US"  # United States
+              - "GB"  # United Kingdom
+              - "DE"  # Germany
+              - "FR"  # France
+              - "IT"  # Italy
+              - "ES"  # Spain
+              - "NL"  # Netherlands
+              - "SE"  # Sweden
+              - "DK"  # Denmark
+              - "NO"  # Norway
+              - "FI"  # Finland
+
+        # Custom Error Pages
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ErrorCachingMinTTL: 300
+            ResponseCode: 403
+            ResponsePagePath: "/error/403.html"
+          - ErrorCode: 404
+            ErrorCachingMinTTL: 60
+            ResponseCode: 404
+            ResponsePagePath: "/error/404.html"
+          - ErrorCode: 500
+            ErrorCachingMinTTL: 60
+            ResponseCode: 500
+            ResponsePagePath: "/error/500.html"
+
+  # Cache Policies
+  StaticAssetsCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Name: "MariiaStaticAssetsCache"
+        DefaultTTL: 31536000
+        MaxTTL: 31536000
+        MinTTL: 86400
+        ParametersInCacheKeyAndForwardedToOrigin:
+          EnableAcceptEncodingGzip: true
+          EnableAcceptEncodingBrotli: true
+          HeadersConfig:
+            HeaderBehavior: "whitelist"
+            Headers:
+              - "Origin"
+              - "Access-Control-Request-Headers"
+          CookiesConfig:
+            CookieBehavior: "none"
+          QueryStringsConfig:
+            QueryStringBehavior: "none"
+
+  ImagesCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Name: "MariiaImagesCache"
+        DefaultTTL: 31536000
+        MaxTTL: 31536000
+        MinTTL: 2592000
+        ParametersInCacheKeyAndForwardedToOrigin:
+          EnableAcceptEncodingGzip: true
+          EnableAcceptEncodingBrotli: true
+          HeadersConfig:
+            HeaderBehavior: "none"
+          CookiesConfig:
+            CookieBehavior: "none"
+          QueryStringsConfig:
+            QueryStringBehavior: "none"
+
+  FontsCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Name: "MariiaFontsCache"
+        DefaultTTL: 31536000
+        MaxTTL: 31536000
+        MinTTL: 31536000
+        ParametersInCacheKeyAndForwardedToOrigin:
+          EnableAcceptEncodingGzip: true
+          EnableAcceptEncodingBrotli: true
+          HeadersConfig:
+            HeaderBehavior: "whitelist"
+            Headers:
+              - "Origin"
+              - "Access-Control-Request-Headers"
+              - "Access-Control-Request-Method"
+          CookiesConfig:
+            CookieBehavior: "none"
+          QueryStringsConfig:
+            QueryStringBehavior: "none"
+
+  DefaultCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Name: "MariiaDefaultCache"
+        DefaultTTL: 3600
+        MaxTTL: 86400
+        MinTTL: 0
+        ParametersInCacheKeyAndForwardedToOrigin:
+          EnableAcceptEncodingGzip: true
+          EnableAcceptEncodingBrotli: true
+          HeadersConfig:
+            HeaderBehavior: "whitelist"
+            Headers:
+              - "Accept"
+              - "Accept-Language"
+              - "Accept-Encoding"
+              - "User-Agent"
+          CookiesConfig:
+            CookieBehavior: "whitelist"
+            Cookies:
+              - "session_id"
+              - "auth_token"
+              - "user_preferences"
+          QueryStringsConfig:
+            QueryStringBehavior: "whitelist"
+            QueryStrings:
+              - "version"
+              - "locale"
+              - "currency"
+
+  NoCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Name: "MariiaNoCache"
+        DefaultTTL: 0
+        MaxTTL: 0
+        MinTTL: 0
+        ParametersInCacheKeyAndForwardedToOrigin:
+          EnableAcceptEncodingGzip: true
+          EnableAcceptEncodingBrotli: true
+          HeadersConfig:
+            HeaderBehavior: "all"
+          CookiesConfig:
+            CookieBehavior: "all"
+          QueryStringsConfig:
+            QueryStringBehavior: "all"
+
+  # Response Headers Policies
+  StaticHeadersPolicy:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: "MariiaStaticHeaders"
+        SecurityHeadersConfig:
+          FrameOptions:
+            FrameOption: "DENY"
+            Override: true
+          ContentTypeOptions:
+            Override: true
+          XSSProtection:
+            Protection: "enabled"
+            ModeBlock: true
+            Override: true
+          ReferrerPolicy:
+            ReferrerPolicy: "strict-origin-when-cross-origin"
+            Override: true
+          ContentSecurityPolicy:
+            ContentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self';"
+            Override: true
+        CustomHeadersConfig:
+          Items:
+            - Header: "X-CDN"
+              Value: "CloudFront"
+              Override: true
+            - Header: "X-Content-Type-Options"
+              Value: "nosniff"
+              Override: true
+            - Header: "Cache-Control"
+              Value: "public, max-age=31536000, immutable"
+              Override: true
+
+  FontHeadersPolicy:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: "MariiaFontHeaders"
+        CustomHeadersConfig:
+          Items:
+            - Header: "Access-Control-Allow-Origin"
+              Value: "*"
+              Override: true
+            - Header: "Access-Control-Allow-Methods"
+              Value: "GET, OPTIONS"
+              Override: true
+            - Header: "Access-Control-Allow-Headers"
+              Value: "Origin, X-Requested-With, Content-Type, Accept"
+              Override: true
+            - Header: "Cache-Control"
+              Value: "public, max-age=31536000, immutable"
+              Override: true
+            - Header: "X-CDN"
+              Value: "CloudFront-Fonts"
+              Override: true
+
+  # Origin Access Identity
+  MariiaOriginAccessIdentity:
+    Type: AWS::CloudFront::OriginAccessIdentity
+    Properties:
+      OriginAccessIdentityConfig:
+        Comment: "Origin Access Identity for Mariia Assets Bucket"
+
+  # Edge Lambda Functions
+  EdgeLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: "mariia-edge-optimizer"
+      Runtime: "nodejs18.x"
+      Handler: "index.handler"
+      Role: !GetAtt EdgeLambdaRole.Arn
+      Timeout: 5
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          exports.handler = (event, context, callback) => {
+            const request = event.Records[0].cf.request;
+            const headers = request.headers;
+
+            // Add security headers
+            headers['x-frame-options'] = { value: 'DENY' };
+            headers['x-content-type-options'] = { value: 'nosniff' };
+            headers['x-xss-protection'] = { value: '1; mode=block' };
+            headers['strict-transport-security'] = {
+              value: 'max-age=31536000; includeSubDomains; preload'
+            };
+
+            // Add performance headers
+            headers['x-cache-status'] = { value: 'MISS' };
+
+            callback(null, request);
+          };
+
+  RequestLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: "mariia-request-optimizer"
+      Runtime: "nodejs18.x"
+      Handler: "index.handler"
+      Role: !GetAtt EdgeLambdaRole.Arn
+      Timeout: 30
+      MemorySize: 256
+      Code:
+        ZipFile: |
+          exports.handler = (event, context, callback) => {
+            const request = event.Records[0].cf.request;
+            const headers = request.headers;
+            const querystring = request.querystring;
+
+            // Handle URL normalization
+            let uri = request.uri;
+
+            // Add trailing slash for consistency
+            if (!uri.endsWith('/') && !uri.includes('.')) {
+              uri += '/';
+            }
+
+            // Add version parameter for cache busting
+            if (!querystring.includes('version=')) {
+              const separator = querystring ? '&' : '?';
+              uri += separator + 'version=' + Date.now();
+            }
+
+            request.uri = uri;
+
+            callback(null, request);
+          };
+
+  # IAM Roles
+  EdgeLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: "mariia-edge-lambda-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+            Condition:
+              StringEquals:
+                aws:SourceArn: "arn:aws:iam::${AWS::AccountId}:role/mariia-edge-lambda-role"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"

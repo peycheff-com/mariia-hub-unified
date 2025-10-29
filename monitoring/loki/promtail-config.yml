@@ -1,0 +1,148 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Frontend logs
+  - job_name: frontend
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: frontend
+          service: mariia-hub-frontend
+          __path__: /var/log/mariia-hub/frontend/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            level: level
+            message: message
+            timestamp: timestamp
+            userId: userId
+            sessionId: sessionId
+            component: component
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+      - labels:
+          level:
+          userId:
+          sessionId:
+          component:
+      - output:
+          source: message
+
+  # Nginx access logs
+  - job_name: nginx
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: nginx
+          service: mariia-hub-nginx
+          __path__: /var/log/nginx/*.log
+    pipeline_stages:
+      - regex:
+          expression: '(?P<remote_addr>\S+) - (?P<remote_user>\S+) \[(?P<time_local>.+)\] "(?P<method>\S+) (?P<path>\S+) (?P<protocol>\S+)" (?P<status>\d+) (?P<body_bytes_sent>\d+) "(?P<http_referer>.*)" "(?P<http_user_agent>.*)"'
+      - timestamp:
+          source: time_local
+          format: '02/Jan/2006:15:04:05 -0700'
+      - labels:
+          method:
+          status:
+          remote_addr:
+      - output:
+          source: message
+
+  # Supabase logs
+  - job_name: supabase
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: supabase
+          service: mariia-hub-supabase
+          __path__: /var/log/supabase/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            level: level
+            message: message
+            timestamp: timestamp
+            error: error
+            pg_error: pg_error
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+      - labels:
+          level:
+          error:
+      - output:
+          source: message
+
+  # Application error logs
+  - job_name: errors
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: errors
+          service: mariia-hub-errors
+          __path__: /var/log/mariia-hub/errors/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            level: level
+            message: message
+            timestamp: timestamp
+            stack: stack
+            component: component
+            userId: userId
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+      - labels:
+          level:
+          component:
+          userId:
+          error_type: error
+      - output:
+          source: message
+
+  # API logs
+  - job_name: api
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: api
+          service: mariia-hub-api
+          __path__: /var/log/mariia-hub/api/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            level: level
+            message: message
+            timestamp: timestamp
+            method: method
+            path: path
+            status: status
+            duration: duration
+            userId: userId
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+      - labels:
+          level:
+          method:
+          path:
+          status:
+          userId:
+      - output:
+          source: message

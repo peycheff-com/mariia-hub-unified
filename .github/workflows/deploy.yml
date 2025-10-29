@@ -1,0 +1,458 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      version:
+        description: 'Version tag (e.g., v1.0.0)'
+        required: false
+        type: string
+      force:
+        description: 'Force deployment (skip checks)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '20.x'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+permissions:
+  contents: read
+  packages: write
+  deployments: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  # Pre-deployment validation
+  pre-deploy:
+    name: Pre-deployment Validation
+    runs-on: ubuntu-latest
+    outputs:
+      should-deploy: ${{ steps.check.outputs.should-deploy }}
+      deploy-env: ${{ steps.check.outputs.deploy-env }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine deployment target
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "deploy-env=${{ github.event.inputs.environment || 'staging' }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" = "refs/heads/main" ] && [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "deploy-env=production" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" = "refs/heads/develop" ] && [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+            echo "deploy-env=staging" >> $GITHUB_OUTPUT
+          else
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+            echo "deploy-env=none" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          elif [ "${{ github.ref_type }}" = "tag" ]; then
+            VERSION="${{ github.ref_name }}"
+          else
+            TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+            SHA_SHORT="${{ github.sha }}"
+            VERSION="v0.0.0-${TIMESTAMP}-${SHA_SHORT:0:7}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Validate environment
+        run: |
+          if [ ! -f ".env.${{ steps.check.outputs.deploy-env }}" ]; then
+            echo "❌ Environment file .env.${{ steps.check.outputs.deploy-env }} not found"
+            exit 1
+          fi
+
+  # Build and test application
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    needs: pre-deploy
+    if: needs.pre-deploy.outputs.should-deploy == 'true'
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      image-tag: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run type check
+        run: npx tsc --noEmit
+
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        if: github.event_name != 'pull_request'
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+
+      - name: Build application
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          VITE_STRIPE_PUBLIC_KEY: ${{ secrets.STAGING_STRIPE_PUBLIC_KEY }}
+
+      - name: Generate build metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=${{ needs.pre-deploy.outputs.version }}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: false
+          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          outputs: type=digest,dest=/tmp/digest
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            dist/
+            coverage/
+            /tmp/digest
+          retention-days: 7
+
+      - name: Output digest
+        run: |
+          DIGEST=$(cat /tmp/digest)
+          echo "digest=$DIGEST" >> $GITHUB_OUTPUT
+
+  # Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [pre-deploy, build-and-test]
+    if: needs.pre-deploy.outputs.deploy-env == 'staging'
+    environment:
+      name: staging
+      url: https://staging.mariia-hub.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: .
+
+      - name: Deploy to Vercel Staging
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--scope=${{ secrets.VERCEL_ORG_ID }}'
+          working-directory: ./
+          alias-domains: |
+            staging.mariia-hub.com
+            pr-${{ github.event.number }}.mariia-hub.com
+
+      - name: Run smoke tests
+        run: |
+          # Wait for deployment to be ready
+          sleep 30
+
+          # Health checks
+          curl -f https://staging.mariia-hub.com/ || exit 1
+          curl -f https://staging.mariia-hub.com/health || exit 1
+
+          # API health checks
+          curl -f https://staging.mariia-hub.com/api/health || exit 1
+
+      - name: Run integration tests
+        run: |
+          npx playwright test --config=playwright.config.ts --grep "integration" --project=chromium
+
+      - name: Trigger staging workflow tests
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'integration-tests.yml',
+              ref: 'main',
+              inputs: {
+                environment: 'staging',
+                url: 'https://staging.mariia-hub.com'
+              }
+            });
+
+      - name: Create deployment status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: context.payload.deployment?.id || 0,
+              state: 'success',
+              environment_url: 'https://staging.mariia-hub.com',
+              log_url: `https://github.com/${{github.context.repo.owner}}/${{github.context.repo.repo}}/actions/runs/${{github.run_id}}`
+            });
+
+  # Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [pre-deploy, build-and-test]
+    if: needs.pre-deploy.outputs.deploy-env == 'production'
+    environment:
+      name: production
+      url: https://mariia-hub.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: .
+
+      - name: Run production smoke tests
+        run: |
+          # Additional production-specific tests
+          npm run test:integration:production
+
+      - name: Deploy to Vercel Production
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod --scope=${{ secrets.VERCEL_ORG_ID }}'
+          working-directory: ./
+
+      - name: Wait for production deployment
+        run: |
+          # Wait for DNS propagation and deployment to be active
+          sleep 60
+
+          # Retry health checks with backoff
+          for i in {1..10}; do
+            if curl -f https://mariia-hub.com/ && curl -f https://mariia-hub.com/health; then
+              echo "✅ Production deployment verified"
+              break
+            fi
+            echo "Attempt $i failed, retrying in 30 seconds..."
+            sleep 30
+          done
+
+      - name: Run production smoke tests
+        run: |
+          # Critical path tests
+          curl -f https://mariia-hub.com/ || exit 1
+          curl -f https://mariia-hub.com/health || exit 1
+          curl -f https://mariia-hub.com/api/health || exit 1
+          curl -f https://mariia-hub.com/beauty || exit 1
+          curl -f https://mariia-hub.com/fitness || exit 1
+
+      - name: Run E2E tests on production
+        run: |
+          npx playwright test --config=playwright.config.ts --grep "smoke" --project=chromium
+
+      - name: Create deployment tag
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "${{ needs.pre-deploy.outputs.version }}" -m "Production deployment ${{ needs.pre-deploy.outputs.version }}"
+          git push origin --tags
+
+      - name: Update deployment status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: context.payload.deployment?.id || 0,
+              state: 'success',
+              environment_url: 'https://mariia-hub.com',
+              log_url: `https://github.com/${{github.context.repo.owner}}/${{github.context.repo.repo}}/actions/runs/${{github.run_id}}`,
+              environment: 'production'
+            });
+
+  # Rollback function
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    if: failure() && (needs.deploy-staging.result == 'failure' || needs.deploy-production.result == 'failure')
+    needs: [pre-deploy, deploy-staging, deploy-production]
+    environment:
+      name: ${{ needs.pre-deploy.outputs.deploy-env }}
+    steps:
+      - name: Rollback Vercel deployment
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--scope=${{ secrets.VERCEL_ORG_ID }}'
+          alias-domains: |
+            rollback-${{ github.run_number }}.mariia-hub.com
+          working-directory: ./
+
+      - name: Notify rollback
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue_number = context.issue.number || 0;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue_number,
+              body: `🚨 **Deployment Rollback Triggered**\n\nEnvironment: ${{ needs.pre-deploy.outputs.deploy-env }}\nReason: Deployment failed or smoke tests failed\nRollback URL: https://rollback-${{ github.run_number }}.mariia-hub.com\n\n[View deployment logs](https://github.com/${{github.context.repo.owner}}/${{github.context.repo.repo}}/actions/runs/${{github.run_id}})`
+            });
+
+  # Notification
+  notify:
+    name: Notify Team
+    runs-on: ubuntu-latest
+    needs: [pre-deploy, deploy-staging, deploy-production]
+    if: always()
+    steps:
+      - name: Determine notification message
+        id: message
+        run: |
+          if [ "${{ needs.deploy-production.result }}" == "success" ]; then
+            echo "title=✅ Production Deployment Successful" >> $GITHUB_OUTPUT
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "url=https://mariia-hub.com" >> $GITHUB_OUTPUT
+          elif [ "${{ needs.deploy-staging.result }}" == "success" ]; then
+            echo "title=🚀 Staging Deployment Successful" >> $GITHUB_OUTPUT
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "url=https://staging.mariia-hub.com" >> $GITHUB_OUTPUT
+          else
+            echo "title=❌ Deployment Failed" >> $GITHUB_OUTPUT
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "url=https://github.com/${{github.context.repo.owner}}/${{github.context.repo.repo}}/actions/runs/${{github.run_id}}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ steps.message.outputs.status }}
+          channel: '#deployments'
+          text: |
+            ${{ steps.message.outputs.title }}
+
+            **Environment:** ${{ needs.pre-deploy.outputs.deploy-env }}
+            **Version:** ${{ needs.pre-deploy.outputs.version }}
+            **URL:** ${{ steps.message.outputs.url }}
+
+            <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Discord
+        uses: Ilshidur/action-discord@0.3.0
+        if: always()
+        with:
+          args: |
+            **${{ steps.message.outputs.title }}**
+            Environment: ${{ needs.pre-deploy.outputs.deploy-env }}
+            Version: ${{ needs.pre-deploy.outputs.version }}
+            URL: ${{ steps.message.outputs.url }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Send email notification
+        if: needs.pre-deploy.outputs.deploy-env == 'production'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "Production Deployment: ${{ steps.message.outputs.title }}"
+          to: ${{ secrets.TEAM_EMAIL }}
+          from: "GitHub Actions <noreply@mariia-hub.com>"
+          body: |
+            ${{ steps.message.outputs.title }}
+
+            Environment: Production
+            Version: ${{ needs.pre-deploy.outputs.version }}
+            URL: ${{ steps.message.outputs.url }}
+
+            View deployment details: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}

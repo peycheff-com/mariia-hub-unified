@@ -1,0 +1,314 @@
+name: Preview Deploy
+
+on:
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened]
+
+env:
+  NODE_VERSION: '20.x'
+  NODE_OPTIONS: '--max-old-space-size=4096'
+
+jobs:
+  # Preview Environment Tests
+  preview-tests:
+    name: Preview Environment Tests
+    runs-on: ubuntu-latest
+    outputs:
+      should-deploy: ${{ steps.changes.outputs.should-deploy }}
+      pr-number: ${{ steps.pr.outputs.number }}
+      pr-title: ${{ steps.pr.outputs.title }}
+      branch-name: ${{ github.head_ref }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get PR info
+        id: pr
+        run: |
+          echo "::set-output name=number::$(echo ${{ github.event.number }})"
+          echo "::set-output name=title::$(echo '${{ github.event.pull_request.title }}' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//')"
+
+      - name: Check for relevant changes
+        id: changes
+        run: |
+          # Get changed files
+          CHANGED=$(git diff --name-only HEAD~1 | tr '\n' ' ')
+          echo "Changed files: $CHANGED"
+
+          # Check if changes affect build
+          if echo "$CHANGED" | grep -E '\.(ts|tsx|js|jsx|css|json|md)$'; then
+            echo "::set-output name=should-deploy::true"
+            echo "✅ Found relevant changes for deployment"
+          else
+            echo "::set-output name=should-deploy::false"
+            echo "⏭️  No relevant changes, skipping deployment"
+          fi
+
+      - name: Setup Node.js
+        if: steps.changes.outputs.should-deploy == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: steps.changes.outputs.should-deploy == 'true'
+        run: npm ci
+
+      - name: Run linting
+        if: steps.changes.outputs.should-deploy == 'true'
+        run: npm run lint
+
+      - name: Run type checking
+        if: steps.changes.outputs.should-deploy == 'true'
+        run: npx tsc --noEmit
+
+      - name: Build for preview
+        if: steps.changes.outputs.should-deploy == 'true'
+        run: npm run build
+        env:
+          VITE_APP_ENV: preview
+          VITE_SUPABASE_URL: ${{ secrets.PREVIEW_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.PREVIEW_SUPABASE_ANON_KEY }}
+          VITE_STRIPE_PUBLIC_KEY: ${{ secrets.PREVIEW_STRIPE_PUBLIC_KEY }}
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.PREVIEW_GOOGLE_MAPS_API_KEY }}
+          VITE_GA_MEASUREMENT_ID: ${{ secrets.PREVIEW_GA_MEASUREMENT_ID }}
+          VITE_DEBUG_MODE: true
+          VITE_ENABLE_ANALYTICS: false
+
+      - name: Run unit tests
+        if: steps.changes.outputs.should-deploy == 'true'
+        run: npm run test:coverage
+
+  # Deploy to Preview Environment
+  preview-deploy:
+    name: Deploy to Preview
+    runs-on: ubuntu-latest
+    needs: preview-tests
+    if: needs.preview-tests.outputs.should-deploy == 'true'
+    environment:
+      name: preview-${{ needs.preview-tests.outputs.pr-number }}
+      url: ${{ steps.deploy.outputs.preview-url }}
+      concurrency: preview-${{ github.ref }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          VITE_APP_ENV: preview
+          VITE_SUPABASE_URL: ${{ secrets.PREVIEW_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.PREVIEW_SUPABASE_ANON_KEY }}
+          VITE_STRIPE_PUBLIC_KEY: ${{ secrets.PREVIEW_STRIPE_PUBLIC_KEY }}
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.PREVIEW_GOOGLE_MAPS_API_KEY }}
+          VITE_GA_MEASUREMENT_ID: ${{ secrets.PREVIEW_GA_MEASUREMENT_ID }}
+          VITE_DEBUG_MODE: true
+          VITE_ENABLE_ANALYTICS: false
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        id: deploy
+        run: |
+          # Deploy with custom preview URL
+          PREVIEW_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} \
+            --meta commitAuthor="${{ github.actor }}" \
+            --meta commitMessage="${{ github.event.head_commit.message }}" \
+            --meta commitSha="${{ github.sha }}" \
+            --meta prNumber="${{ needs.preview-tests.outputs.pr-number }}" \
+            --meta branchName="${{ github.head_ref }}")
+
+          echo "::set-output name=preview-url::$PREVIEW_URL"
+          echo "🚀 Preview URL: $PREVIEW_URL"
+
+      - name: Seed preview database
+        run: |
+          # Wait for deployment to be ready
+          sleep 30
+
+          # Check if preview URL is accessible
+          curl -f "$PREVIEW_URL" || exit 1
+
+          # Seed preview database with test data
+          if [ -n "${{ secrets.PREVIEW_SUPABASE_URL }}" ]; then
+            npm run db:seed:preview || echo "Database seeding skipped"
+          fi
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.preview-url }}
+          PREVIEW_SUPABASE_URL: ${{ secrets.PREVIEW_SUPABASE_URL }}
+          PREVIEW_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PREVIEW_SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Run smoke tests
+        run: |
+          # Wait for deployment to be fully ready
+          sleep 60
+
+          # Basic smoke tests
+          curl -f "${{ steps.deploy.outputs.preview-url }}" || exit 1
+          curl -f "${{ steps.deploy.outputs.preview-url }}/health" || exit 1
+          curl -f "${{ steps.deploy.outputs.preview-url }}/api/health" || exit 1
+
+      - name: Run visual regression tests
+        run: |
+          npm install -g @playwright/test
+          npx playwright test --grep="visual" --project=chromium
+        env:
+          BASE_URL: ${{ steps.deploy.outputs.preview-url }}
+
+  # Comment on PR with Preview Link
+  pr-comment:
+    name: Comment on PR
+    runs-on: ubuntu-latest
+    needs: [preview-tests, preview-deploy]
+    if: needs.preview-tests.outputs.should-deploy == 'true'
+    steps:
+      - name: Comment PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const previewUrl = '${{ needs.preview-deploy.outputs.preview-url }}';
+            const prNumber = '${{ needs.preview-tests.outputs.pr-number }}';
+            const branchName = '${{ needs.preview-tests.outputs.branch-name }}';
+            const prTitle = '${{ needs.preview-tests.outputs.pr-title }}';
+
+            const comment = `
+            ## 🚀 Preview Environment Ready!
+
+            **Preview URL**: ${previewUrl}
+
+            **Environment Details**:
+            - PR: #${prNumber}
+            - Branch: ${branchName}
+            - Environment: Preview
+
+            **Test Credentials**:
+            - Admin: admin1@staging.mariia-hub.com / staging123!
+            - Client: Any email / client123!
+
+            **Test Features**:
+            - ✅ All features enabled for testing
+            - ✅ Test data populated in database
+            - ✅ Stripe test mode enabled
+            - ✅ Analytics disabled
+
+            **Quick Checklist**:
+            - [ ] Visual testing completed
+            - [ ] Core functionality working
+            - [ ] Responsive design checked
+            - [ ] Performance acceptable
+            - [ ] No console errors
+
+            **Access Controls**:
+            - Environment is automatically cleaned after 7 days
+            - Test data is isolated from production
+            - All external services use test credentials
+
+            📝 This preview will be automatically deleted when the PR is closed.
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Add preview deployment status check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: 'success',
+              target_url: '${{ needs.preview-deploy.outputs.preview-url }}',
+              description: 'Preview deployment successful',
+              context: 'preview/deployment'
+            });
+
+  # Cleanup old preview deployments
+  cleanup:
+    name: Cleanup Old Previews
+    runs-on: ubuntu-latest
+    if: github.event.action == 'closed'
+    steps:
+      - name: Cleanup Vercel Preview
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--scope=${{ secrets.VERCEL_ORG_ID }} rm ${{ github.head_ref }}'
+          working-directory: ./
+        continue-on-error: true
+
+      - name: Cleanup Preview Database
+        run: |
+          echo "Cleaning up preview database for branch: ${{ github.head_ref }}"
+          # Add database cleanup logic here if needed
+        env:
+          PREVIEW_SUPABASE_URL: ${{ secrets.PREVIEW_SUPABASE_URL }}
+          PREVIEW_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PREVIEW_SUPABASE_SERVICE_ROLE_KEY }}
+        continue-on-error: true
+
+  # Notify team
+  notify:
+    name: Notify Team
+    runs-on: ubuntu-latest
+    needs: [preview-tests, preview-deploy]
+    if: always() && needs.preview-tests.outputs.should-deploy == 'true'
+    steps:
+      - name: Notify Slack on Success
+        if: needs.preview-deploy.result == 'success'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#deployments'
+          text: |
+            🚀 New preview deployment is ready!
+
+            PR: #${{ needs.preview-tests.outputs.pr-number }} - ${{ github.event.pull_request.title }}
+            Branch: ${{ github.head_ref }}
+            Author: ${{ github.actor }}
+
+            Preview URL: ${{ needs.preview-deploy.outputs.preview-url }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Slack on Failure
+        if: needs.preview-deploy.result == 'failure'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#deployments'
+          text: |
+            ❌ Preview deployment failed!
+
+            PR: #${{ needs.preview-tests.outputs.pr-number }} - ${{ github.event.pull_request.title }}
+            Branch: ${{ github.head_ref }}
+            Author: ${{ github.actor }}
+
+            Please check the logs for more details.
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

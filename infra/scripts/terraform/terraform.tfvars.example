@@ -1,0 +1,27 @@
+# Copy this file to terraform.tfvars and fill in your values
+
+# Project configuration
+project_name = "mariia-hub"
+environment  = "production"
+
+# AWS configuration
+aws_region         = "eu-west-1"
+kubernetes_version = "1.28"
+ssh_key_name       = "mariia-prod-key"
+
+# Network configuration
+vpc_cidr              = "10.0.0.0/16"
+public_subnet_cidrs    = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+private_subnet_cidrs   = ["10.0.11.0/24", "10.0.12.0/24", "10.0.13.0/24"]
+database_subnet_cidrs  = ["10.0.21.0/24", "10.0.22.0/24"]
+
+# Domain configuration
+domain_name        = "mariia.pl"
+additional_domains = ["www.mariia.pl", "api.mariia.pl"]
+
+# Notification email for alerts and certificates
+notification_email = "admin@mariia.pl"
+
+# Sensitive values (replace with your actual values)
+# cloudflare_api_token = "your-cloudflare-api-token"
+# redis_auth_token    = "your-strong-redis-auth-token"

@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Booksy Data Extractor",
+  "version": "1.0.0",
+  "description": "Extract appointment and client data from Booksy for migration to other platforms",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://biz.booksy.com/*",
+    "https://booksy.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://biz.booksy.com/*",
+        "https://booksy.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Extract Data"
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}

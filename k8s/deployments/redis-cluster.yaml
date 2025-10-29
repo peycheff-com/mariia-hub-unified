@@ -1,0 +1,564 @@
+# Redis High-Availability Cluster Deployment
+# Configures Redis with replication for production caching
+
+---
+# Redis ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: mariia-platform
+  labels:
+    app: mariia-hub
+    component: cache
+data:
+  redis.conf: |
+    # Redis Configuration for Production High-Performance Caching
+
+    # Network Settings
+    bind 0.0.0.0
+    port 6379
+    timeout 0
+    tcp-keepalive 300
+    tcp-backlog 511
+
+    # Memory Management
+    maxmemory 512mb
+    maxmemory-policy allkeys-lru
+    maxmemory-samples 5
+
+    # Persistence Settings
+    save 900 1
+    save 300 10
+    save 60 10000
+    stop-writes-on-bgsave-error yes
+    rdbcompression yes
+    rdbchecksum yes
+    dbfilename dump.rdb
+    rdb-del-sync-files no
+    dir /data
+
+    # Append Only File (AOF)
+    appendonly yes
+    appendfilename "appendonly.aof"
+    appendfsync everysec
+    no-appendfsync-on-rewrite no
+    auto-aof-rewrite-percentage 100
+    auto-aof-rewrite-min-size 64mb
+    aof-load-truncated yes
+    aof-use-rdb-preamble yes
+
+    # Logging Settings
+    loglevel notice
+    logfile ""
+    syslog-enabled no
+    syslog-ident redis
+    syslog-facility local0
+
+    # Security Settings
+    protected-mode yes
+    rename-command FLUSH ""
+    rename-command FLUSHALL ""
+    rename-command KEYS ""
+    rename-command DEBUG ""
+    rename-command CONFIG "CONFIG-b8353a9c3d4e8f8"
+    rename-command SHUTDOWN REDIS_SHUTDOWN_CMD
+    rename-command BGSAVE REDIS_BGSAVE_CMD
+
+    # Client Settings
+    maxclients 10000
+    tcp-keepalive 300
+
+    # Performance Tuning
+    io-threads 4
+    io-threads-do-reads yes
+    lazyfree-lazy-eviction yes
+    lazyfree-lazy-expire yes
+    lazyfree-lazy-server-del yes
+
+    # Client Output Buffer Limits
+    client-output-buffer-limit normal 0 0 0
+    client-output-buffer-limit replica 256mb 64mb 60
+    client-output-buffer-limit pubsub 32mb 8mb 60
+
+    # Slow Log Settings
+    slowlog-log-slower-than 10000
+    slowlog-max-len 128
+
+    # Latency Monitor
+    latency-monitor-threshold 100
+
+---
+# Redis Master Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-master
+  namespace: mariia-platform
+  labels:
+    app: mariia-hub
+    component: cache
+    role: master
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: mariia-hub
+      component: cache
+      role: master
+  template:
+    metadata:
+      labels:
+        app: mariia-hub
+        component: cache
+        role: master
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9121"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: redis
+      securityContext:
+        fsGroup: 999
+        runAsUser: 999
+        runAsGroup: 999
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: redis
+          containerPort: 6379
+          protocol: TCP
+        command:
+        - redis-server
+        - /etc/redis/redis.conf
+        - --requirepass
+        - $(REDIS_PASSWORD)
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: redis-password
+        volumeMounts:
+        - name: redis-config
+          mountPath: /etc/redis/redis.conf
+          subPath: redis.conf
+          readOnly: true
+        - name: redis-data
+          mountPath: /data
+        - name: redis-logs
+          mountPath: /var/log/redis
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - -a
+            - $(REDIS_PASSWORD)
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - -a
+            - $(REDIS_PASSWORD)
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        lifecycle:
+          preStop:
+            exec:
+              command: ["redis-cli", "-a", "$(REDIS_PASSWORD)", "shutdown", "save", "1"]
+      - name: redis-exporter
+        image: oliver006/redis_exporter:latest
+        ports:
+        - name: metrics
+          containerPort: 9121
+          protocol: TCP
+        env:
+        - name: REDIS_ADDR
+          value: "redis://localhost:6379"
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: redis-password
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+      volumes:
+      - name: redis-config
+        configMap:
+          name: redis-config
+      - name: redis-data
+        persistentVolumeClaim:
+          claimName: redis-data-pvc
+      - name: redis-logs
+        persistentVolumeClaim:
+          claimName: redis-logs-pvc
+      nodeSelector:
+        node-role.kubernetes.io/worker: "true"
+        workload-type: "cache"
+      tolerations:
+      - key: "workload"
+        operator: "Equal"
+        value: "cache"
+        effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "workload-type"
+                operator: In
+                values: ["cache"]
+
+---
+# Redis Replica Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-replica
+  namespace: mariia-platform
+  labels:
+    app: mariia-hub
+    component: cache
+    role: replica
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: mariia-hub
+      component: cache
+      role: replica
+  template:
+    metadata:
+      labels:
+        app: mariia-hub
+        component: cache
+        role: replica
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9121"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: redis
+      securityContext:
+        fsGroup: 999
+        runAsUser: 999
+        runAsGroup: 999
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: redis
+          containerPort: 6379
+          protocol: TCP
+        command:
+        - redis-server
+        - /etc/redis/redis.conf
+        - --requirepass
+        - $(REDIS_PASSWORD)
+        - --replicaof
+        - $(REDIS_MASTER_HOST)
+        - 6379
+        - --masterauth
+        - $(REDIS_PASSWORD)
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: redis-password
+        - name: REDIS_MASTER_HOST
+          value: redis-cache-service
+        volumeMounts:
+        - name: redis-config
+          mountPath: /etc/redis/redis.conf
+          subPath: redis.conf
+          readOnly: true
+        - name: redis-data
+          mountPath: /data
+        - name: redis-logs
+          mountPath: /var/log/redis
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: 400m
+            memory: 512Mi
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - -a
+            - $(REDIS_PASSWORD)
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - -a
+            - $(REDIS_PASSWORD)
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+      - name: redis-exporter
+        image: oliver006/redis_exporter:latest
+        ports:
+        - name: metrics
+          containerPort: 9121
+          protocol: TCP
+        env:
+        - name: REDIS_ADDR
+          value: "redis://localhost:6379"
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: redis-password
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+      volumes:
+      - name: redis-config
+        configMap:
+          name: redis-config
+      - name: redis-data
+        persistentVolumeClaim:
+          claimName: redis-replica-data-pvc
+      - name: redis-logs
+        persistentVolumeClaim:
+          claimName: redis-replica-logs-pvc
+      nodeSelector:
+        node-role.kubernetes.io/worker: "true"
+        workload-type: "cache"
+      tolerations:
+      - key: "workload"
+        operator: "Equal"
+        value: "cache"
+        effect: "NoSchedule"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: "app"
+                  operator: In
+                  values: ["mariia-hub"]
+              topologyKey: "kubernetes.io/hostname"
+
+---
+# Redis Service Account
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: redis
+  namespace: mariia-platform
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/mariia-redis-role
+
+---
+# Redis ServiceAccount and RBAC
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: redis
+  namespace: mariia-platform
+rules:
+- apiGroups: [""]
+  resources: ["pods", "nodes"]
+  verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: redis
+  namespace: mariia-platform
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: redis
+subjects:
+- kind: ServiceAccount
+  name: redis
+  namespace: mariia-platform
+
+---
+# Persistent Volume Claims
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-data-pvc
+  namespace: mariia-platform
+  labels:
+    app: mariia-hub
+    component: cache
+    role: master
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: fast-ssd
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-replica-data-pvc
+  namespace: mariia-platform
+  labels:
+    app: mariia-hub
+    component: cache
+    role: replica
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: fast-ssd
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-logs-pvc
+  namespace: mariia-platform
+  labels:
+    app: mariia-hub
+    component: cache
+    role: master
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: standard-ssd
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-replica-logs-pvc
+  namespace: mariia-platform
+  labels:
+    app: mariia-hub
+    component: cache
+    role: replica
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: standard-ssd
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# Redis Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: redis-hpa
+  namespace: mariia-platform
+  labels:
+    app: mariia-hub
+    component: cache
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: redis-replica
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+      selectPolicy: Max
+
+---
+# Redis Pod Disruption Budget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: redis-pdb
+  namespace: mariia-platform
+  labels:
+    app: mariia-hub
+    component: cache
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: mariia-hub
+      component: cache

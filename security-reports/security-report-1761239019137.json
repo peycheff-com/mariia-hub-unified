@@ -1,0 +1,247 @@
+{
+  "timestamp": "2025-10-23T17:03:39.136Z",
+  "summary": {
+    "totalIssues": 29,
+    "secretsFound": 29,
+    "vulnerabilitiesFound": 0,
+    "permissionIssues": 0
+  },
+  "findings": {
+    "secrets": [
+      {
+        "file": "src/components/StudioContact.tsx",
+        "type": "Generic API key",
+        "matches": [
+          "2zNTLCsDE0JzA4LjQiTiAyMcKwMDEnMDMuMSJF"
+        ]
+      },
+      {
+        "file": "src/components/admin/UnifiedAvailabilityCalendar.tsx",
+        "type": "Generic API key",
+        "matches": [
+          "UnifiedAvailabilityCalendarProps",
+          "UnifiedAvailabilityCalendarProps"
+        ]
+      },
+      {
+        "file": "src/components/admin/content/AIServiceDescriptionGenerator.tsx",
+        "type": "Generic API key",
+        "matches": [
+          "AIServiceDescriptionGeneratorProps",
+          "AIServiceDescriptionGeneratorProps"
+        ]
+      },
+      {
+        "file": "src/components/ai/RecommendationEngine.tsx",
+        "type": "Generic API key",
+        "matches": [
+          "generateCollaborativeRecommendations",
+          "generateContentBasedRecommendations",
+          "generateCollaborativeRecommendations"
+        ]
+      },
+      {
+        "file": "src/components/booking/UnifiedAvailabilityCalendar.tsx",
+        "type": "Generic API key",
+        "matches": [
+          "UnifiedAvailabilityCalendarProps",
+          "UnifiedAvailabilityCalendarProps"
+        ]
+      },
+      {
+        "file": "src/components/ui/chart.tsx",
+        "type": "XSS: dangerouslySetInnerHTML without sanitization",
+        "matches": [
+          "dangerouslySetInnerHTML"
+        ]
+      },
+      {
+        "file": "src/hooks/usePaymentSystem.ts",
+        "type": "Generic API key",
+        "matches": [
+          "CancellationFeeCalculationParams",
+          "CancellationFeeCalculationParams",
+          "calculateCancellationFeeMutation"
+        ]
+      },
+      {
+        "file": "src/integrations/ai/advanced-recommendations.ts",
+        "type": "Generic API key",
+        "matches": [
+          "generatePersonalizedRecommendations",
+          "generatePersonalizedRecommendations",
+          "generatePersonalizedRecommendations"
+        ]
+      },
+      {
+        "file": "src/integrations/ai/recommendations.ts",
+        "type": "Generic API key",
+        "matches": [
+          "generatePersonalizedRecommendations"
+        ]
+      },
+      {
+        "file": "src/integrations/ai/service.ts",
+        "type": "Generic API key",
+        "matches": [
+          "ServiceDescriptionResponseSchema",
+          "ServiceDescriptionResponseSchema",
+          "ServiceDescriptionResponseSchema"
+        ]
+      },
+      {
+        "file": "src/integrations/supabase/client.ts",
+        "type": "Supabase anon key",
+        "matches": [
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ"
+        ]
+      },
+      {
+        "file": "src/integrations/supabase/client.ts",
+        "type": "Generic API key",
+        "matches": [
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+          "eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxja3h2aW1kcW5manprYnJ1c2d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MTA0NTUsImV4cCI6MjA3NjA4NjQ1NX0"
+        ]
+      },
+      {
+        "file": "src/integrations/supabase/types.ts",
+        "type": "Generic API key",
+        "matches": [
+          "PublicCompositeTypeNameOrOptions",
+          "PublicCompositeTypeNameOrOptions",
+          "PublicCompositeTypeNameOrOptions"
+        ]
+      },
+      {
+        "file": "src/lib/enhanced-security.ts",
+        "type": "Generic API key",
+        "matches": [
+          "initSuspiciousActivityMonitoring",
+          "initSuspiciousActivityMonitoring"
+        ]
+      },
+      {
+        "file": "src/lib/invoice/invoice-delivery.ts",
+        "type": "Generic API key",
+        "matches": [
+          "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPj4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovUmVzb3VyY2VzIDw8Ci9Gb250IDw8Ci9GMSA0IDAgUgo",
+          "PgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovQ29udGVudHMgNSAwIFIKPj4KZW5kb2JqCjQgMCBvYmoKPDwKL1R5cGUgL0ZvbnQKL1N1YnR5cGUgL1R5cGUxCi9CYXNlRm9udCAvSGVsdmV0aWNhCj4",
+          "CmVuZG9iago1IDAgb2JqCjw8Ci9MZW5ndGggNDQKPj4Kc3RyZWFtCkJUCi9GMSAxMiBUZgo3MCA1ODAgVGQKKChGYWt0dXJhICkpIFRqCkVUCmVuZHN0cmVhbQplbmRvYmoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDIyIDAwMDAwIG4gCjAwMDAwMDA3NyAwMDAwMCBuIAowMDAwMDAwMTc1IDAwMDAwIG4gCjAwMDAwMDAyMDkgMDAwMDAgbiAKMDAwMDAwMDM2NiAwMDAwMCBuIAp0cmFpbGVyCjw8Ci9TaXplIDYKL1Jvb3QgMSAwIFIKPj4Kc3RhcnR4cmVmCjQ0MgolJUVPRg"
+        ]
+      },
+      {
+        "file": "src/lib/invoice/invoice-generator.ts",
+        "type": "Generic API key",
+        "matches": [
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77yQAAAABJRU5ErkJggg"
+        ]
+      },
+      {
+        "file": "src/lib/security.ts",
+        "type": "Generic API key",
+        "matches": [
+          "initSuspiciousActivityMonitoring",
+          "initSuspiciousActivityMonitoring"
+        ]
+      },
+      {
+        "file": "src/services/bookingDomainService.ts",
+        "type": "Generic API key",
+        "matches": [
+          "applyBusinessRulesForStatusChange",
+          "applyBusinessRulesForStatusChange"
+        ]
+      },
+      {
+        "file": "src/services/groupBooking.service.ts",
+        "type": "Generic API key",
+        "matches": [
+          "getAvailableTimeSlotsWithCapacity"
+        ]
+      },
+      {
+        "file": "src/services/index.ts",
+        "type": "Generic API key",
+        "matches": [
+          "developmentReliabilityMiddleware"
+        ]
+      },
+      {
+        "file": "src/services/loyaltyProgramService.ts",
+        "type": "Generic API key",
+        "matches": [
+          "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+          "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+          "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        ]
+      },
+      {
+        "file": "src/services/middleware/index.ts",
+        "type": "Generic API key",
+        "matches": [
+          "developmentReliabilityMiddleware"
+        ]
+      },
+      {
+        "file": "src/services/middleware/reliability-middleware.ts",
+        "type": "Generic API key",
+        "matches": [
+          "developmentReliabilityMiddleware"
+        ]
+      },
+      {
+        "file": "src/services/paymentSystemService.ts",
+        "type": "Generic API key",
+        "matches": [
+          "CancellationFeeCalculationParams",
+          "CancellationFeeCalculationParams",
+          "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        ]
+      },
+      {
+        "file": "src/services/recurringAppointments.service.ts",
+        "type": "Generic API key",
+        "matches": [
+          "getRecurringAppointmentAnalytics"
+        ]
+      },
+      {
+        "file": "src/types/content.ts",
+        "type": "Generic API key",
+        "matches": [
+          "ServiceDescriptionGenerationRequestSchema",
+          "EmailTemplateGenerationRequestSchema",
+          "SocialMediaGenerationRequestSchema"
+        ]
+      },
+      {
+        "file": "src/types/payment-loyalty.ts",
+        "type": "Generic API key",
+        "matches": [
+          "CancellationFeeCalculationParams"
+        ]
+      },
+      {
+        "file": ".env",
+        "type": "Supabase anon key",
+        "matches": [
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ"
+        ]
+      },
+      {
+        "file": ".env",
+        "type": "Generic API key",
+        "matches": [
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+          "eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxja3h2aW1kcW5manprYnJ1c2d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1MTA0NTUsImV4cCI6MjA3NjA4NjQ1NX0"
+        ]
+      }
+    ],
+    "vulnerabilities": [],
+    "permissions": []
+  },
+  "recommendations": [
+    "IMMEDIATE: Remove or rotate any exposed secrets"
+  ]
+}

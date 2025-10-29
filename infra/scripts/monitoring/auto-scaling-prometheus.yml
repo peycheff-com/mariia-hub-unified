@@ -1,0 +1,221 @@
+# Prometheus Configuration for Auto-scaling Metrics
+# Collects metrics for intelligent auto-scaling decisions
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'mariia-production'
+    region: 'eu-west-1'
+
+rule_files:
+  - "auto-scaling-rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  # Kubernetes API Server
+  - job_name: 'kubernetes-apiservers'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - default
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: default;kubernetes;https
+
+  # Node Exporter
+  - job_name: 'kubernetes-nodes'
+    kubernetes_sd_configs:
+      - role: node
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics
+
+  # Kubelet
+  - job_name: 'kubernetes-kubelet'
+    kubernetes_sd_configs:
+      - role: node
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecure_skip_verify: true
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics
+
+  # cAdvisor
+  - job_name: 'kubernetes-cadvisor'
+    kubernetes_sd_configs:
+      - role: node
+    scheme: https
+    metrics_path: /metrics/cadvisor
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecure_skip_verify: true
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+
+  # Application Pods
+  - job_name: 'kubernetes-pods'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - mariia-platform
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+
+  # Mariia App Specific
+  - job_name: 'mariia-app'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - mariia-platform
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_service_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_service_name]
+        action: replace
+        target_label: kubernetes_name
+
+  # Redis Exporter
+  - job_name: 'redis-exporter'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - mariia-platform
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: redis-cache-service
+      - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+
+  # Cluster Autoscaler
+  - job_name: 'cluster-autoscaler'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - kube-system
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: cluster-autoscaler
+      - source_labels: [__address__]
+        target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_endpoint_port_name]
+        target_label: __metrics_path__
+        replacement: /proxy/metrics
+
+  # AWS CloudWatch Exporter
+  - job_name: 'aws-cloudwatch'
+    static_configs:
+      - targets: ['cloudwatch-exporter:9106']
+    scrape_interval: 5m
+    metrics_path: /metrics
+
+  # Custom Application Metrics
+  - job_name: 'mariia-custom-metrics'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - mariia-platform
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: mariia-metrics
+      - source_labels: [__address__]
+        target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_endpoint_port_name]
+        target_label: __metrics_path__
+        replacement: /proxy/metrics
+
+# Auto-scaling Rules Configuration
+# This would be in a separate file referenced above
+# auto-scaling-rules.yml contains rules like:
+# - record: kubernetes_pod_cpu_utilization
+#   expr: rate(container_cpu_usage_seconds_total{image!="",container!="POD"}[5m]) * 100
+#
+# - record: kubernetes_pod_memory_utilization
+#   expr: container_memory_usage_bytes{image!="",container!="POD"} / container_spec_memory_limit_bytes * 100
+#
+# - record: mariia_http_requests_per_second
+#   expr: rate(http_requests_total{job="mariia-app"}[5m])
+#
+# - record: mariia_response_time_p95
+#   expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="mariia-app"}[5m]))

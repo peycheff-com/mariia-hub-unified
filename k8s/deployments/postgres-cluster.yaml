@@ -1,0 +1,557 @@
+# PostgreSQL High-Availability Cluster Deployment
+# Configures primary and read replicas for production workloads
+
+---
+# Primary PostgreSQL Deployment
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-primary
+  namespace: mariia-platform
+  labels:
+    app: mariia-hub
+    component: database
+    role: primary
+spec:
+  serviceName: postgres-primary
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariia-hub
+      component: database
+      role: primary
+  template:
+    metadata:
+      labels:
+        app: mariia-hub
+        component: database
+        role: primary
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9187"
+        prometheus.io/path: "/metrics"
+    spec:
+      securityContext:
+        fsGroup: 26
+        runAsUser: 26
+        runAsGroup: 26
+      serviceAccountName: postgres
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: postgres
+          containerPort: 5432
+          protocol: TCP
+        env:
+        - name: POSTGRES_DB
+          value: "mariia_production"
+        - name: POSTGRES_USER
+          value: "mariia_app_user"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: postgres-password
+        - name: POSTGRES_REPLICATION_USER
+          value: "replicator"
+        - name: POSTGRES_REPLICATION_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: replication-password
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        - name: POSTGRES_INITDB_ARGS
+          value: "-A md5"
+        - name: POSTGRES_INITDB_WALDIR
+          value: /var/lib/postgresql/wal
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        - name: postgres-wal
+          mountPath: /var/lib/postgresql/wal
+        - name: postgres-config
+          mountPath: /etc/postgresql/postgresql.conf
+          subPath: postgresql.conf
+        - name: postgres-config
+          mountPath: /etc/postgresql/pg_hba.conf
+          subPath: pg_hba.conf
+        - name: postgres-logs
+          mountPath: /var/log/postgresql
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 8Gi
+          limits:
+            cpu: 2000m
+            memory: 16Gi
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -p 5432
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -p 5432
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "pg_ctl stop -D /var/lib/postgresql/data/pgdata -m fast"]
+      - name: postgres-exporter
+        image: prometheuscommunity/postgres-exporter:latest
+        ports:
+        - name: metrics
+          containerPort: 9187
+          protocol: TCP
+        env:
+        - name: DATA_SOURCE_NAME
+          value: "postgresql://mariia_app_user:$(POSTGRES_PASSWORD)@localhost:5432/mariia_production?sslmode=disable"
+        - name: PG_EXPORTER_AUTO_DISCOVER_DATABASES
+          value: "true"
+        - name: PG_EXPORTER_EXCLUDE_DATABASES
+          value: "template0,template1,postgres"
+        - name: PG_EXPORTER_INCLUDE_SCHEMAS
+          value: "public"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: postgres-password
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-primary-pvc
+      - name: postgres-wal
+        persistentVolumeClaim:
+          claimName: postgres-wal-pvc
+      - name: postgres-config
+        configMap:
+          name: postgres-config
+      - name: postgres-logs
+        persistentVolumeClaim:
+          claimName: postgres-logs-pvc
+      nodeSelector:
+        node-role.kubernetes.io/worker: "true"
+        workload-type: "database"
+      tolerations:
+      - key: "workload"
+        operator: "Equal"
+        value: "database"
+        effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "workload-type"
+                operator: In
+                values: ["database"]
+
+---
+# PostgreSQL Read Replica Deployment
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-replica
+  namespace: mariia-platform
+  labels:
+    app: mariia-hub
+    component: database
+    role: replica
+spec:
+  serviceName: postgres-replica
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mariia-hub
+      component: database
+      role: replica
+  template:
+    metadata:
+      labels:
+        app: mariia-hub
+        component: database
+        role: replica
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9187"
+        prometheus.io/path: "/metrics"
+    spec:
+      securityContext:
+        fsGroup: 26
+        runAsUser: 26
+        runAsGroup: 26
+      serviceAccountName: postgres
+      initContainers:
+      - name: setup-replica
+        image: postgres:15-alpine
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Setting up read replica..."
+          until pg_isready -h postgres-primary -p 5432 -U replicator -d mariia_production; do
+            echo "Waiting for primary to be ready..."
+            sleep 2
+          done
+
+          echo "Creating base backup from primary..."
+          pg_basebackup -h postgres-primary -D /var/lib/postgresql/data/pgdata -U replicator -v -P -W -Xs -R
+
+          echo "Replica setup completed"
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: replication-password
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: postgres
+          containerPort: 5432
+          protocol: TCP
+        env:
+        - name: POSTGRES_DB
+          value: "mariia_production"
+        - name: POSTGRES_USER
+          value: "mariia_read_user"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: postgres-password
+        - name: POSTGRES_REPLICATION_USER
+          value: "replicator"
+        - name: POSTGRES_REPLICATION_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: replication-password
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        - name: POSTGRES_INITDB_ARGS
+          value: "-A md5"
+        - name: POSTGRES_INITDB_WALDIR
+          value: /var/lib/postgresql/wal
+        command:
+        - postgres
+        - -c
+        - config_file=/etc/postgresql/postgresql-replica.conf
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        - name: postgres-wal
+          mountPath: /var/lib/postgresql/wal
+        - name: postgres-config
+          mountPath: /etc/postgresql/postgresql-replica.conf
+          subPath: postgresql-replica.conf
+        - name: postgres-logs
+          mountPath: /var/log/postgresql
+        resources:
+          requests:
+            cpu: 500m
+            memory: 4Gi
+          limits:
+            cpu: 1000m
+            memory: 8Gi
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -p 5432
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -p 5432 && pg_is_in_recovery"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+      - name: postgres-exporter
+        image: prometheuscommunity/postgres-exporter:latest
+        ports:
+        - name: metrics
+          containerPort: 9187
+          protocol: TCP
+        env:
+        - name: DATA_SOURCE_NAME
+          value: "postgresql://mariia_read_user:$(POSTGRES_PASSWORD)@localhost:5432/mariia_production?sslmode=disable"
+        - name: PG_EXPORTER_AUTO_DISCOVER_DATABASES
+          value: "true"
+        - name: PG_EXPORTER_EXCLUDE_DATABASES
+          value: "template0,template1,postgres"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: postgres-password
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-replica-pvc
+      - name: postgres-wal
+        persistentVolumeClaim:
+          claimName: postgres-replica-wal-pvc
+      - name: postgres-config
+        configMap:
+          name: postgres-config
+      - name: postgres-logs
+        persistentVolumeClaim:
+          claimName: postgres-replica-logs-pvc
+      nodeSelector:
+        node-role.kubernetes.io/worker: "true"
+        workload-type: "database"
+      tolerations:
+      - key: "workload"
+        operator: "Equal"
+        value: "database"
+        effect: "NoSchedule"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: "app"
+                  operator: In
+                  values: ["mariia-hub"]
+              topologyKey: "kubernetes.io/hostname"
+
+---
+# PostgreSQL ServiceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: postgres
+  namespace: mariia-platform
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/mariia-postgres-role
+
+---
+# PostgreSQL ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: mariia-platform
+data:
+  postgresql.conf: |
+    # PostgreSQL Configuration for Production
+    max_connections = 400
+    shared_buffers = 8GB
+    effective_cache_size = 24GB
+    work_mem = 64MB
+    maintenance_work_mem = 1GB
+    checkpoint_completion_target = 0.9
+    wal_buffers = 64MB
+    wal_level = replica
+    max_wal_senders = 10
+    max_replication_slots = 10
+    archive_mode = on
+    archive_command = 'rsync -a %p /var/lib/postgresql/wal_archive/%f'
+    hot_standby = on
+    track_activities = on
+    track_counts = on
+    track_io_timing = on
+    log_min_duration_statement = 1000
+    log_checkpoints = on
+    log_connections = on
+    log_disconnections = on
+    log_lock_waits = on
+    autovacuum = on
+    autovacuum_max_workers = 6
+    effective_io_concurrency = 200
+    random_page_cost = 1.1
+    seq_page_cost = 1.0
+    cpu_tuple_cost = 0.01
+    cpu_index_tuple_cost = 0.005
+    default_statistics_target = 1000
+    log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '
+    logging_collector = on
+    log_directory = 'pg_log'
+    log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+    log_file_mode = 0600
+    log_rotation_age = 1d
+    log_rotation_size = 100MB
+    log_truncate_on_rotation = on
+
+  postgresql-replica.conf: |
+    # PostgreSQL Configuration for Read Replica
+    include = '/etc/postgresql/postgresql.conf'
+
+    # Replica-specific settings
+    hot_standby = on
+    max_standby_archive_delay = 30s
+    max_standby_streaming_delay = 30s
+    hot_standby_feedback = on
+
+    # Performance tuning for read replicas
+    shared_buffers = 4GB
+    work_mem = 32MB
+    maintenance_work_mem = 512MB
+    random_page_cost = 1.1
+    effective_cache_size = 20GB
+
+    # Logging for replica
+    log_line_prefix = 'replica %t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '
+
+  pg_hba.conf: |
+    # PostgreSQL Host-Based Authentication
+    local   all             postgres                                peer
+    host    all             all             127.0.0.1/32            md5
+    host    all             all             10.0.0.0/8              md5
+    host    all             all             172.16.0.0/12            md5
+    host    replication     replicator       10.0.0.0/8              md5
+    hostssl all             all             0.0.0.0/0               md5 clientcert=1
+
+---
+# Persistent Volume Claims for Primary
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-primary-pvc
+  namespace: mariia-platform
+  labels:
+    app: mariia-hub
+    component: database
+    role: primary
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: fast-ssd
+  resources:
+    requests:
+      storage: 200Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-wal-pvc
+  namespace: mariia-platform
+  labels:
+    app: mariia-hub
+    component: database
+    role: primary
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: fast-ssd
+  resources:
+    requests:
+      storage: 50Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-logs-pvc
+  namespace: mariia-platform
+  labels:
+    app: mariia-hub
+    component: database
+    role: primary
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: standard-ssd
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+# Persistent Volume Claims for Replicas
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-replica-pvc
+  namespace: mariia-platform
+  labels:
+    app: mariia-hub
+    component: database
+    role: replica
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: fast-ssd
+  resources:
+    requests:
+      storage: 200Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-replica-wal-pvc
+  namespace: mariia-platform
+  labels:
+    app: mariia-hub
+    component: database
+    role: replica
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: fast-ssd
+  resources:
+    requests:
+      storage: 50Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-replica-logs-pvc
+  namespace: mariia-platform
+  labels:
+    app: mariia-hub
+    component: database
+    role: replica
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: standard-ssd
+  resources:
+    requests:
+      storage: 20Gi

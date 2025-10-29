@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Performance: Preconnect to font and analytics origins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <!-- If using Google Fonts CSS, ensure font-display swap in CSS load -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#D4A574" />
+    <title>Mariia Borysevych | Beauty Studio, Personal Training & Lifestyle</title>
+    <meta name="description" content="Award-winning permanent makeup artist and certified personal trainer in Warsaw. Transform your beauty with BM Beauty Studio and achieve fitness goals with expert training." />
+    <meta name="author" content="Mariia Borysevych" />
+    <meta name="keywords" content="permanent makeup Warsaw, personal trainer Warsaw, beauty studio, fitness training, lifestyle blog, microblading, Zdrofit" />
+
+    <meta property="og:title" content="Mariia Borysevych | Beauty Studio, Personal Training & Lifestyle" />
+    <meta property="og:description" content="Transform your beauty and strength with expert permanent makeup services and personalized fitness training in Warsaw." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Mariia Borysevych | Beauty & Fitness Expert" />
+    <meta name="twitter:description" content="Award-winning permanent makeup and certified personal training in Warsaw" />
+    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Variable fonts: Inter for body, Space Grotesk for headings -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&family=Space+Grotesk:wght@400..700&display=swap" rel="preload" as="style" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&family=Space+Grotesk:wght@400..700&display=swap" rel="stylesheet" />
+    <script>
+      // Early apply saved mode to prevent FOUC on first paint
+      (function(){
+        try {
+          var m = localStorage.getItem('bm_mode');
+          if (m === 'beauty' || m === 'fitness') {
+            document.documentElement.setAttribute('data-mode', m);
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PLACEHOLDER" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
+  </body>
+</html>

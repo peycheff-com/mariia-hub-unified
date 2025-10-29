@@ -1,0 +1,222 @@
+{
+  "title": "Mariia Hub Status",
+  "description": "Real-time status of Mariia Hub services",
+  "theme": {
+    "primaryColor": "#8B4513",
+    "backgroundColor": "#F5DEB3",
+    "textColor": "#333333",
+    "successColor": "#28a745",
+    "warningColor": "#ffc107",
+    "errorColor": "#dc3545"
+  },
+  "services": [
+    {
+      "id": "website",
+      "name": "Website",
+      "description": "Main booking website",
+      "url": "https://mariia-hub.com",
+      "checks": [
+        {
+          "type": "http",
+          "target": "https://mariia-hub.com",
+          "interval": 30000,
+          "timeout": 10000,
+          "expectedStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "name": "API",
+      "description": "Backend API services",
+      "url": "https://api.mariia-hub.com",
+      "checks": [
+        {
+          "type": "http",
+          "target": "https://api.mariia-hub.com/health",
+          "interval": 30000,
+          "timeout": 5000,
+          "expectedStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "booking-system",
+      "name": "Booking System",
+      "description": "Booking and appointment management",
+      "checks": [
+        {
+          "type": "http",
+          "target": "https://api.mariia-hub.com/v1/bookings/health",
+          "interval": 30000,
+          "timeout": 5000,
+          "expectedStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "payments",
+      "name": "Payment Processing",
+      "description": "Stripe payment integration",
+      "checks": [
+        {
+          "type": "http",
+          "target": "https://api.stripe.com/v1",
+          "interval": 60000,
+          "timeout": 10000,
+          "expectedStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "database",
+      "name": "Database",
+      "description": "Supabase database",
+      "checks": [
+        {
+          "type": "tcp",
+          "target": "db.mariia-hub.supabase.co:5432",
+          "interval": 30000,
+          "timeout": 5000
+        }
+      ]
+    },
+    {
+      "id": "auth",
+      "name": "Authentication",
+      "description": "User authentication service",
+      "checks": [
+        {
+          "type": "http",
+          "target": "https://auth.mariia-hub.supabase.co/auth/v1/user",
+          "interval": 30000,
+          "timeout": 5000,
+          "expectedStatus": [200, 401]
+        }
+      ]
+    },
+    {
+      "id": "storage",
+      "name": "File Storage",
+      "description": "Image and file storage",
+      "checks": [
+        {
+          "type": "http",
+          "target": "https://storage.mariia-hub.supabase.co/storage/v1/status",
+          "interval": 60000,
+          "timeout": 10000,
+          "expectedStatus": 200
+        }
+      ]
+    },
+    {
+      "id": "cdn",
+      "name": "CDN",
+      "description": "Content delivery network",
+      "checks": [
+        {
+          "type": "http",
+          "target": "https://cdn.mariia-hub.com/health.txt",
+          "interval": 60000,
+          "timeout": 5000,
+          "expectedStatus": 200
+        }
+      ]
+    }
+  ],
+  "incidents": [
+    {
+      "id": "incident-1",
+      "title": "Scheduled Maintenance",
+      "description": "We will be performing scheduled maintenance to upgrade our database systems.",
+      "status": "scheduled",
+      "severity": "maintenance",
+      "startTime": "2025-01-25T02:00:00Z",
+      "endTime": "2025-01-25T04:00:00Z",
+      "servicesAffected": ["database", "api"]
+    }
+  ],
+  "notifications": {
+    "email": {
+      "enabled": true,
+      "recipients": ["team@mariia-hub.com"]
+    },
+    "slack": {
+      "enabled": true,
+      "webhook": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+      "channel": "#status-updates"
+    },
+    "twitter": {
+      "enabled": false,
+      "consumerKey": "",
+      "consumerSecret": "",
+      "accessToken": "",
+      "accessTokenSecret": ""
+    }
+  },
+  "metrics": {
+    "responseTime": {
+      "enabled": true,
+      "retention": 7
+    },
+    "uptime": {
+      "enabled": true,
+      "retention": 30
+    },
+    "apdex": {
+      "enabled": true,
+      "threshold": 500
+    }
+  },
+  "customization": {
+    "logo": "/assets/logo.png",
+    "favicon": "/assets/favicon.ico",
+    "footer": {
+      "text": "© 2025 Mariia Hub. All rights reserved.",
+      "links": [
+        {
+          "text": "Support",
+          "url": "mailto:support@mariia-hub.com"
+        },
+        {
+          "text": "API Docs",
+          "url": "https://docs.mariia-hub.com/api"
+        },
+        {
+          "text": "Status API",
+          "url": "https://status.mariia-hub.com/api/v1/status"
+        }
+      ]
+    },
+    "announcement": {
+      "enabled": false,
+      "text": "",
+      "type": "info"
+    }
+  },
+  "security": {
+    "cors": {
+      "enabled": true,
+      "origins": ["*"]
+    },
+    "rateLimit": {
+      "enabled": true,
+      "windowMs": 900000,
+      "max": 100
+    },
+    "authentication": {
+      "enabled": false,
+      "type": "basic"
+    }
+  },
+  "api": {
+    "version": "v1",
+    "baseUrl": "https://status.mariia-hub.com/api",
+    "endpoints": {
+      "status": "/status",
+      "services": "/services",
+      "incidents": "/incidents",
+      "metrics": "/metrics"
+    }
+  }
+}

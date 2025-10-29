@@ -1,0 +1,9 @@
+/*
+  Content-Security-Policy: default-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data:; font-src 'self' data: fonts.gstatic.com fonts.googleapis.com; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://browser.sentry-cdn.com https://www.google-analytics.com https://js.stripe.com https://checkout.stripe.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; connect-src 'self' https://api.stripe.com https://checkout.stripe.com https://www.google-analytics.com https://o457228.ingest.sentry.io https://bmbeauty.supabase.co; media-src 'self' blob: data:; frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests;
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(self)
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+

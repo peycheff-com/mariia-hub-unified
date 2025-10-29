@@ -1,0 +1,87 @@
+---
+all:
+  children:
+    production:
+      hosts:
+        prod-1.mariia.pl:
+          ansible_host: 10.0.11.10
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/mariia-prod-key
+        prod-2.mariia.pl:
+          ansible_host: 10.0.12.10
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/mariia-prod-key
+        prod-3.mariia.pl:
+          ansible_host: 10.0.13.10
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/mariia-prod-key
+      vars:
+        environment: production
+        app_name: mariia-hub
+        app_port: 8080
+
+    staging:
+      hosts:
+        staging-1.mariia.pl:
+          ansible_host: 10.0.11.20
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/mariia-staging-key
+      vars:
+        environment: staging
+        app_name: mariia-hub-staging
+        app_port: 8081
+
+    monitoring:
+      hosts:
+        monitor-1.mariia.pl:
+          ansible_host: 10.0.11.30
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/mariia-monitoring-key
+      vars:
+        grafana_admin_password: "{{ vault_grafana_admin_password }}"
+
+    database:
+      hosts:
+        db-primary.mariia.pl:
+          ansible_host: 10.0.21.10
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/mariia-db-key
+        db-replica.mariia.pl:
+          ansible_host: 10.0.22.10
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/mariia-db-key
+
+    edge_nodes:
+      hosts:
+        edge-1.mariia.pl:
+          ansible_host: 10.0.1.10
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/mariia-edge-key
+        edge-2.mariia.pl:
+          ansible_host: 10.0.2.10
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: ~/.ssh/mariia-edge-key
+
+vars:
+  ansible_python_interpreter: /usr/bin/python3
+  ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+
+  # Application configuration
+  docker_registry: registry.gitlab.com/mariia-hub
+  app_image: "{{ docker_registry }}/mariia-app"
+  app_health_check_path: /health
+  app_startup_timeout: 300
+
+  # Security
+  enable_fail2ban: true
+  enable_ufw: true
+  ufw_allowed_ports: [22, 80, 443]
+
+  # Monitoring
+  prometheus_port: 9090
+  grafana_port: 3001
+  node_exporter_port: 9100
+
+  # Backup
+  backup_s3_bucket: "mariia-backups"
+  backup_retention_days: 30

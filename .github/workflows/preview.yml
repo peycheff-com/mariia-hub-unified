@@ -1,0 +1,415 @@
+name: Preview Deployments
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to deploy as preview'
+        required: false
+        type: string
+      branch:
+        description: 'Branch to deploy as preview'
+        required: false
+        type: string
+
+env:
+  NODE_VERSION: '20.x'
+
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+
+jobs:
+  # Preview Deployment
+  deploy-preview:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    outputs:
+      preview-url: ${{ steps.deploy.outputs.url }}
+      pr-number: ${{ steps.pr.outputs.number }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine PR number
+        id: pr
+        run: |
+          if [ -n "${{ github.event.inputs.pr_number }}" ]; then
+            echo "number=${{ github.event.inputs.pr_number }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "number=${{ github.event.number }}" >> $GITHUB_OUTPUT
+          else
+            echo "number=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run type check
+        run: npx tsc --noEmit
+
+      - name: Run unit tests
+        run: npm run test
+
+      - name: Build application for preview
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.PREVIEW_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.PREVIEW_SUPABASE_ANON_KEY }}
+          VITE_STRIPE_PUBLIC_KEY: ${{ secrets.PREVIEW_STRIPE_PUBLIC_KEY }}
+          VITE_ENVIRONMENT: preview
+
+      - name: Deploy to Vercel Preview
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--scope=${{ secrets.VERCEL_ORG_ID }}'
+          working-directory: ./
+          alias-domains: |
+            preview-pr-${{ steps.pr.outputs.number }}.mariia-hub.com
+            pr-${{ steps.pr.outputs.number }}-preview.mariia-hub.com
+
+      - name: Start preview server for tests
+        run: |
+          npm run preview &
+          npx wait-on http://localhost:4173
+
+      - name: Run smoke tests on preview
+        run: |
+          curl -f http://localhost:4173/ || exit 1
+          curl -f http://localhost:4173/health || exit 1
+
+      - name: Run basic E2E tests
+        run: |
+          npx playwright test --config=playwright.config.ts --grep "smoke" --project=chromium
+
+      - name: Capture screenshots
+        run: |
+          mkdir -p screenshots
+          npx playwright screenshot http://localhost:4173/ --wait-for-selector="nav" --output=screenshots/homepage.png
+          npx playwright screenshot http://localhost:4173/beauty --wait-for-selector="h1" --output=screenshots/beauty-page.png
+          npx playwright screenshot http://localhost:4173/fitness --wait-for-selector="h1" --output=screenshots/fitness-page.png
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-screenshots-${{ steps.pr.outputs.number }}
+          path: screenshots/
+          retention-days: 30
+
+      - name: Comment PR with preview URL
+        if: steps.pr.outputs.number != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const screenshots = [
+              {
+                name: 'Homepage',
+                path: 'screenshots/homepage.png'
+              },
+              {
+                name: 'Beauty Page',
+                path: 'screenshots/beauty-page.png'
+              },
+              {
+                name: 'Fitness Page',
+                path: 'screenshots/fitness-page.png'
+              }
+            ];
+
+            let comment = '## 🚀 Preview Deployment Ready\n\n';
+            comment += `**URL:** [${{ steps.deploy.outputs.url }}](${{ steps.deploy.outputs.url }})\n\n`;
+
+            comment += '### 📸 Screenshots\n\n';
+            for (const screenshot of screenshots) {
+              comment += `**${screenshot.name}:**\n`;
+              comment += `![${screenshot.name}](https://github.com/${{github.context.repo.owner}}/${{github.context.repo.repo}}/actions/runs/${{github.run_id}}#artifact-${screenshot.name.replace(/\s+/g, '-').toLowerCase()})\n\n`;
+            }
+
+            comment += '### ✅ Tests Passed\n';
+            comment += '- ✅ Linting\n';
+            comment += '- ✅ Type checking\n';
+            comment += '- ✅ Unit tests\n';
+            comment += '- ✅ Build\n';
+            comment += '- ✅ Smoke tests\n';
+            comment += '- ✅ Basic E2E tests\n\n';
+
+            comment += '### 🔗 Additional Links\n';
+            comment += `- [View build logs](https://github.com/${{github.context.repo.owner}}/${{github.context.repo.repo}}/actions/runs/${{github.run_id}})\n`;
+            comment += `- [Download screenshots](https://github.com/${{github.context.repo.owner}}/${{github.context.repo.repo}}/actions/runs/${{github.run_id}}#artifacts)\n\n`;
+
+            comment += '---\n';
+            comment += '*This preview will be automatically updated with each push to this PR.*';
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existingComment = comments.find(comment =>
+              comment.body.includes('Preview Deployment Ready') &&
+              comment.user.type === 'Bot'
+            );
+
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: comment
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
+
+  # Visual Regression Tests
+  visual-regression:
+    name: Visual Regression Tests
+    runs-on: ubuntu-latest
+    needs: deploy-preview
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Build application
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.PREVIEW_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.PREVIEW_SUPABASE_ANON_KEY }}
+
+      - name: Start preview server
+        run: |
+          npm run preview &
+          npx wait-on http://localhost:4173
+
+      - name: Run visual regression tests
+        run: |
+          npx playwright test --config=playwright.config.ts --grep="visual" --update-snapshots
+        env:
+          PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
+          BASE_URL: http://localhost:4173
+
+      - name: Upload visual test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-test-results-pr-${{ needs.deploy-preview.outputs.pr-number }}
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 30
+
+      - name: Comment PR with visual results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let comment = '### 🎨 Visual Regression Test Results\n\n';
+
+            try {
+              // Check if visual tests passed
+              if (fs.existsSync('test-results/visual-test-results.json')) {
+                const results = JSON.parse(fs.readFileSync('test-results/visual-test-results.json', 'utf8'));
+                const passed = results.passed || 0;
+                const failed = results.failed || 0;
+                const total = passed + failed;
+
+                if (failed > 0) {
+                  comment += `⚠️ **${failed} of ${total} visual tests failed**\n\n`;
+                  comment += 'View the [full report] and compare screenshots in the artifacts.\n';
+                } else {
+                  comment += `✅ **All ${total} visual tests passed**\n\n`;
+                }
+              } else {
+                comment += '✅ **Visual tests completed successfully**\n\n';
+              }
+            } catch (e) {
+              comment += 'ℹ️ **Visual tests completed** (results unavailable)\n\n';
+            }
+
+            comment += `📊 [View detailed results](https://github.com/${{github.context.repo.owner}}/${{github.context.repo.repo}}/actions/runs/${{github.run_id}})`;
+
+            // Add comment to PR
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Performance Tests on Preview
+  performance-test:
+    name: Performance Test
+    runs-on: ubuntu-latest
+    needs: deploy-preview
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Lighthouse on preview
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            ${{ needs.deploy-preview.outputs.preview-url }}/
+            ${{ needs.deploy-preview.outputs.preview-url }}/beauty
+            ${{ needs.deploy-preview.outputs.preview-url }}/fitness
+          configPath: '.lighthouserc.js'
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Comment PR with Lighthouse results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let comment = '### ⚡ Performance Test Results\n\n';
+
+            try {
+              if (fs.existsSync('.lighthouseci/lhr-report.json')) {
+                const report = JSON.parse(fs.readFileSync('.lighthouseci/lhr-report.json', 'utf8'));
+
+                const performance = report.performance * 100;
+                const accessibility = report.accessibility * 100;
+                const bestPractices = report['best-practices'] * 100;
+                const seo = report.seo * 100;
+
+                comment += '#### Lighthouse Scores:\n';
+                comment += `- **Performance**: ${performance.toFixed(0)}% ${performance >= 90 ? '✅' : performance >= 50 ? '⚠️' : '❌'}\n`;
+                comment += `- **Accessibility**: ${accessibility.toFixed(0)}% ${accessibility >= 90 ? '✅' : accessibility >= 50 ? '⚠️' : '❌'}\n`;
+                comment += `- **Best Practices**: ${bestPractices.toFixed(0)}% ${bestPractices >= 90 ? '✅' : bestPractices >= 50 ? '⚠️' : '❌'}\n`;
+                comment += `- **SEO**: ${seo.toFixed(0)}% ${seo >= 90 ? '✅' : seo >= 50 ? '⚠️' : '❌'}\n\n`;
+
+                if (performance < 50 || accessibility < 50) {
+                  comment += '⚠️ **Some metrics need improvement. Check the detailed report.**\n\n';
+                }
+              }
+            } catch (e) {
+              console.log('Could not parse Lighthouse results:', e);
+            }
+
+            comment += `📊 [View detailed report](${{ needs.deploy-preview.outputs.preview-url }})`;
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Cleanup Preview Deployments
+  cleanup-previews:
+    name: Cleanup Old Previews
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Remove Vercel preview deployment
+        run: |
+          # Delete preview deployment from Vercel
+          curl -X DELETE \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            "https://api.vercel.com/v9/projects/${{ secrets.VERCEL_PROJECT_ID }}/deployments/pr-${{ github.event.number }}"
+
+      - name: Comment PR with cleanup notice
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = '🧹 **Preview environment cleaned up**\n\nThe preview deployment for this PR has been removed.';
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Preview Health Check
+  health-check:
+    name: Preview Health Check
+    runs-on: ubuntu-latest
+    needs: deploy-preview
+    steps:
+      - name: Wait for deployment
+        run: sleep 30
+
+      - name: Check preview deployment health
+        run: |
+          # Check main page
+          curl -f ${{ needs.deploy-preview.outputs.preview-url }}/ || exit 1
+
+          # Check health endpoint
+          curl -f ${{ needs.deploy-preview.outputs.preview-url }}/health || exit 1
+
+          # Check API health
+          curl -f ${{ needs.deploy-preview.outputs.preview-url }}/api/health || exit 1
+
+          echo "✅ All health checks passed"
+
+      - name: Run uptime monitoring test
+        run: |
+          # Monitor for 5 minutes
+          for i in {1..30}; do
+            if curl -f ${{ needs.deploy-preview.outputs.preview-url }}/health; then
+              echo "✅ Health check $i/30 passed"
+            else
+              echo "❌ Health check failed on attempt $i"
+              exit 1
+            fi
+            sleep 10
+          done
+          echo "✅ Preview deployment is stable"

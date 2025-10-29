@@ -1,0 +1,26 @@
+{
+  "reporter": [
+    "text",
+    "text-summary",
+    "html",
+    "json",
+    "lcov"
+  ],
+  "exclude": [
+    "src/test/**",
+    "src/mocks/**",
+    "**/*.d.ts",
+    "**/*.config.*",
+    "**/*.stories.{ts,tsx}",
+    "**/*.mock.{ts,tsx}"
+  ],
+  "check-coverage": true,
+  "lines": 90,
+  "functions": 90,
+  "branches": 90,
+  "statements": 90,
+  "report-dir": "./coverage",
+  "temp-directory": "./coverage/.nyc_output",
+  "clean": true,
+  "all": true
+}

@@ -1,0 +1,215 @@
+:root {
+  /* ========== Design Tokens ========== */
+  /* This file consolidates all design tokens for consistency */
+
+  /* ========== Border Radius ========== */
+  /* Standardized to 3 levels for consistency */
+  --radius-xs: 0.375rem;   /* 6px - Small elements */
+  --radius-sm: 0.5rem;     /* 8px - Buttons, inputs */
+  --radius-md: 0.75rem;    /* 12px - Cards, large elements */
+  --radius-lg: 1rem;       /* 16px - Special cases */
+  --radius-full: 9999px;   /* Pill shape */
+
+  /* ========== Spacing ========== */
+  /* 8px grid system for consistency */
+  --space-0: 0;
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+  --space-20: 5rem;    /* 80px */
+  --space-24: 6rem;    /* 96px */
+  --space-32: 8rem;    /* 128px */
+
+  /* ========== Colors - Primary Palette ========== */
+  /* Luxury cocoa and champagne tones */
+  --color-primary-50: #fefcf8;
+  --color-primary-100: #fdf8f0;
+  --color-primary-200: #f8efe0;
+  --color-primary-300: #f1e1c8;
+  --color-primary-400: #e8cea8;
+  --color-primary-500: #d4a574;  /* Champagne - Main brand color */
+  --color-primary-600: #c1965f;
+  --color-primary-700: #a67f49;
+  --color-primary-800: #8b633c;  /* Cocoa - Dark brand color */
+  --color-primary-900: #734f2e;
+
+  /* ========== Colors - Secondary Palette ========== */
+  /* Bronze and gold accents */
+  --color-secondary-50: #fffdf8;
+  --color-secondary-100: #fefcf0;
+  --color-secondary-200: #fcf7e0;
+  --color-secondary-300: #f9f0c8;
+  --color-secondary-400: #f4e6a6;
+  --color-secondary-500: #edd774;  /* Gold */
+  --color-secondary-600: #e5c85c;
+  --color-secondary-700: #d6af44;
+  --color-secondary-800: #c19c31;  /* Bronze */
+  --color-secondary-900: #a68528;
+
+  /* ========== Colors - Neutrals ========== */
+  /* Cream and soft whites for luxury feel */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #fefcf9;
+  --color-neutral-100: #fcf8f3;
+  --color-neutral-200: #f8f1e8;
+  --color-neutral-300: #f2e6d5;
+  --color-neutral-400: #e6d4b8;
+  --color-neutral-500: #d4b892;
+  --color-neutral-600: #b8956d;
+  --color-neutral-700: #947455;
+  --color-neutral-800: #735942;
+  --color-neutral-900: #5c4635;
+
+  /* ========== Colors - Text ========== */
+  /* WCAG AA compliant contrast ratios */
+  --text-primary: #2c1810;        /* Dark cocoa - 16.31:1 contrast on white */
+  --text-secondary: #6b4423;      /* Medium brown - 9.06:1 contrast on white */
+  --text-tertiary: #947455;       /* Light brown - 4.98:1 contrast on white */
+  --text-inverse: #ffffff;        /* White text */
+  --text-accent: var(--color-primary-700); /* Brand color for emphasis */
+
+  /* ========== Colors - Status ========== */
+  --color-success: #22c55e;      /* Green */
+  --color-success-light: #86efac;
+  --color-warning: #f59e0b;      /* Amber */
+  --color-warning-light: #fcd34d;
+  --color-error: #ef4444;        /* Red */
+  --color-error-light: #fca5a5;
+  --color-info: #3b82f6;         /* Blue */
+  --color-info-light: #93c5fd;
+
+  /* ========== Typography ========== */
+  /* Fluid type scale */
+  --font-size-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --font-size-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
+  --font-size-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+  --font-size-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);
+  --font-size-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+  --font-size-2xl: clamp(1.5rem, 1.3rem + 1vw, 2rem);
+  --font-size-3xl: clamp(2rem, 1.7rem + 1.5vw, 3rem);
+  --font-size-4xl: clamp(3rem, 2.5rem + 2.5vw, 4rem);
+
+  /* Font weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line heights */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* Letter spacing */
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
+
+  /* ========== Shadows ========== */
+  /* Luxury shadow system */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-luxury-subtle: 0 2px 20px rgba(139, 69, 19, 0.1);
+  --shadow-luxury-medium: 0 4px 30px rgba(139, 69, 19, 0.15);
+  --shadow-luxury-strong: 0 8px 40px rgba(139, 69, 19, 0.2);
+
+  /* ========== Glass Morphism ========== */
+  /* Consistent glass effects */
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-bg-strong: rgba(255, 255, 255, 0.15);
+  --glass-bg-subtle: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-blur: blur(12px);
+  --glass-blur-strong: blur(24px);
+
+  /* ========== Animations ========== */
+  /* Consistent timing functions */
+  --ease-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-slow: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* ========== Z-Index ========== */
+  /* Consistent z-index scale */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+
+  /* ========== Breakpoints ========== */
+  /* Responsive breakpoints */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  /* ========== Touch Targets ========== */
+  /* Minimum touch target sizes for accessibility */
+  --touch-target-min: 44px;   /* 44px minimum for WCAG */
+  --touch-target-comfortable: 48px;
+
+  /* ========== Component-Specific Tokens ========== */
+  /* Button heights */
+  --button-height-sm: 2.5rem;  /* 40px */
+  --button-height-md: 3rem;    /* 48px */
+  --button-height-lg: 3.5rem;  /* 56px */
+
+  /* Input heights */
+  --input-height-sm: 2.5rem;   /* 40px */
+  --input-height-md: 3rem;     /* 48px */
+  --input-height-lg: 3.5rem;   /* 56px */
+
+  /* Card padding */
+  --card-padding-sm: var(--space-4);
+  --card-padding-md: var(--space-6);
+  --card-padding-lg: var(--space-8);
+
+  /* ========== Accessibility ========== */
+  /* Focus outline */
+  --focus-width: 2px;
+  --focus-offset: 2px;
+  --focus-color: var(--color-primary-600);
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    --ease-fast: 0s;
+    --ease-base: 0s;
+    --ease-slow: 0s;
+    --ease-bounce: 0s;
+  }
+}
+
+/* ========== Dark Mode Support ========== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark mode text colors with proper contrast */
+    --text-primary: #fefcf9;        /* Light cream on dark */
+    --text-secondary: #f2e6d5;      /* Light cream */
+    --text-tertiary: #d4b892;       /* Muted cream */
+    --text-inverse: #2c1810;        /* Dark text on light */
+
+    /* Dark mode glass */
+    --glass-bg: rgba(0, 0, 0, 0.2);
+    --glass-bg-strong: rgba(0, 0, 0, 0.3);
+    --glass-bg-subtle: rgba(0, 0, 0, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.1);
+  }
+}

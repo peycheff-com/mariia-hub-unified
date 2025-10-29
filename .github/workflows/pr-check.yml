@@ -1,0 +1,279 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main, develop]
+
+jobs:
+  # Quick tests on PR
+  quick-checks:
+    name: Quick Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for package changes
+        id: changes
+        run: |
+          if git diff --name-only origin/${{ github.base_ref }} HEAD | grep -E "package\.json|package-lock\.json"; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Audit dependencies if changed
+        if: steps.changes.outputs.changed == 'true'
+        run: npm audit --audit-level=moderate
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Run unit tests
+        run: npm run test
+
+      - name: Build check
+        run: npm run build:dev
+
+  # Size check
+  bundle-size-check:
+    name: Bundle Size Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and analyze bundle
+        run: |
+          npm run build:analyze
+          node scripts/check-bundle-size.js
+
+      - name: Comment PR with size changes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const bundleStats = JSON.parse(fs.readFileSync('./dist/stats.json', 'utf8'));
+
+            const comment = `
+            ## 📦 Bundle Size Analysis
+            - **Total Size**: ${bundleStats.totalSize} KB
+            - **Chunks**: ${bundleStats.chunks.length}
+            - **Largest Chunk**: ${bundleStats.largestChunk.name} (${bundleStats.largestChunk.size} KB)
+
+            <details>
+            <summary>View Details</summary>
+
+            \`\`\`json
+            ${JSON.stringify(bundleStats.chunks, null, 2)}
+            \`\`\`
+            </details>
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Accessibility check
+  accessibility-check:
+    name: Accessibility Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run accessibility tests
+        run: |
+          npm install -pa @axe-core/cli
+          npm run build
+          npx axe http://localhost:4173 --exit
+
+      - name: Upload accessibility report
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-report
+          path: axe-report.json
+          retention-days: 7
+
+  # Mobile responsiveness check
+  mobile-check:
+    name: Mobile Responsiveness Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start application
+        run: npm run preview &
+
+      - name: Wait for application
+        run: npx wait-on http://localhost:4173
+
+      - name: Run mobile tests
+        run: npx playwright test tests/e2e/mobile.spec.ts --project="Mobile Chrome"
+
+      - name: Upload mobile test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-test-results
+          path: test-results/
+          retention-days: 7
+
+  # Code quality check
+  code-quality:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run SonarCloud scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Check test coverage
+        run: npm run test:coverage
+
+      - name: Enforce coverage thresholds
+        run: |
+          COVERAGE=$(cat coverage/coverage-summary.json | jq '.total.lines.pct')
+          if (( $(echo "$COVERAGE < 90" | bc -l) )); then
+            echo "Coverage $COVERAGE% is below 90% threshold"
+            exit 1
+          fi
+
+  # PR Labeler
+  pr-labeler:
+    name: Label Pull Request
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Label PR based on changes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+
+            const labels = new Set();
+
+            // Analyze changed files
+            files.forEach(file => {
+              if (file.filename.includes('src/components/')) labels.add('component');
+              if (file.filename.includes('src/pages/')) labels.add('page');
+              if (file.filename.includes('src/test/') || file.filename.includes('.test.')) labels.add('test');
+              if (file.filename.includes('src/integrations/')) labels.add('integration');
+              if (file.filename.includes('package.json')) labels.add('dependency');
+              if (file.filename.includes('README.md') || file.filename.includes('docs/')) labels.add('documentation');
+            });
+
+            // Add size label
+            if (files.length > 20) labels.add('large');
+            else if (files.length > 10) labels.add('medium');
+            else labels.add('small');
+
+            // Add type label
+            const additions = files.reduce((sum, file) => sum + file.additions, 0);
+            const deletions = files.reduce((sum, file) => sum + file.deletions, 0);
+            if (additions - deletions > 500) labels.add('feature');
+            else if (Math.abs(additions - deletions) < 100) labels.add('refactor');
+            else labels.add('fix');
+
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: Array.from(labels),
+            });
+
+  # Prevent merge conflicts
+  conflict-check:
+    name: Check for Merge Conflicts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for merge conflicts
+        run: |
+          git fetch origin ${{ github.base_ref }}
+          git merge-tree $(git merge-base HEAD origin/${{ github.base_ref }}) HEAD origin/${{ github.base_ref }}
+          if [ $? -ne 0 ]; then
+            echo "Merge conflicts detected"
+            exit 1
+          fi

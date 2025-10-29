@@ -1,0 +1,33 @@
+# Development Dockerfile
+FROM node:18-alpine
+
+# Install development tools
+RUN apk add --no-cache \
+    curl \
+    git \
+    vim \
+    bash-completion
+
+# Create app directory
+WORKDIR /app
+
+# Install dependencies
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Create non-root user for development
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S developer -u 1001 -G nodejs
+
+# Change ownership
+RUN chown -R developer:nodejs /app
+USER developer
+
+# Expose development port
+EXPOSE 8080
+
+# Development command
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

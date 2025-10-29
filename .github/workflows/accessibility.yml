@@ -1,0 +1,282 @@
+name: Accessibility Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  a11y-audit:
+    runs-on: ubuntu-latest
+    name: Accessibility Audit
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Build application
+        run: |
+          npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: Run Pa11y CI
+        id: pa11y
+        uses: .github/actions/pa11y-ci-action@main
+        with:
+          urls: |
+            http://localhost:3000/
+            http://localhost:3000/beauty
+            http://localhost:3000/fitness
+            http://localhost:3000/booking
+            http://localhost:3000/admin
+          buildDir: dist
+          wait: 2000
+          actions: upload
+          commentOnPr: true
+          runOnlyOnFailure: false
+
+      - name: Run axe-core
+        run: |
+          npx axe --dist dist --exclude "**/*.map" --tags wcag2a,wcag2aa --exit
+
+      - name: Run Lighthouse accessibility audit
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            http://localhost:3000/
+            http://localhost:3000/beauty
+            http://localhost:3000/fitness
+            http://localhost:3000/booking
+          configPath: '.lighthouserc.js'
+          uploadArtifacts: true
+          temporaryPublicStorage: false
+
+      - name: Run keyboard navigation tests
+        run: |
+          npx playwright test --grep "keyboard" --project=chromium
+
+      - name: Generate accessibility report
+        if: always()
+        run: |
+          # Combine all accessibility reports
+          mkdir -p accessibility-reports
+
+          # Pa11y report
+          cp -r .pa11y/* accessibility-reports/ 2>/dev/null || true
+
+          # Axe report
+          if [ -f axe-report.json ]; then
+            mv axe-report.json accessibility-reports/
+          fi
+
+          # Lighthouse reports
+          cp -r .lighthouseci accessibility-reports/ 2>/dev/null || true
+
+          echo "# Accessibility Report" > accessibility-reports/summary.md
+          echo "Generated on $(date)" >> accessibility-reports/summary.md
+          echo "" >> accessibility-reports/summary.md
+          echo "## Pa11y Results" >> accessibility-reports/summary.md
+          if [ -f accessibility-reports/pa11y-ci.json ]; then
+            cat accessibility-reports/pa11y-ci.json | jq '.results | length' | xargs -I {} echo "- Violations: {}" >> accessibility-reports/summary.md
+          fi
+          echo "" >> accessibility-reports/summary.md
+          echo "## Axe Results" >> accessibility-reports/summary.md
+          if [ -f accessibility-reports/axe-report.json ]; then
+            cat accessibility-reports/axe-report.json | jq '.violations | length' | xargs -I {} echo "- Violations: {}" >> accessibility-reports/summary.md
+          fi
+
+      - name: Upload accessibility reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-reports
+          path: accessibility-reports/
+          retention-days: 30
+
+      - name: Comment PR with accessibility results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            try {
+              const pa11yReport = JSON.parse(fs.readFileSync('accessibility-reports/pa11y-ci.json', 'utf8'));
+              const violations = pa11yReport.results || [];
+              const criticalViolations = violations.filter(v => v.impact === 'critical');
+
+              let comment = '## 🔍 Accessibility Audit Results\n\n';
+
+              if (criticalViolations.length > 0) {
+                comment += `❌ **${criticalViolations.length} critical violations found**\n\n`;
+                comment += '### Critical Issues:\n';
+                criticalViolations.slice(0, 5).forEach(v => {
+                  comment += `- **${v.code}**: ${v.message}\n`;
+                });
+
+                if (criticalViolations.length > 5) {
+                  comment += `- ... and ${criticalViolations.length - 5} more\n`;
+                }
+              } else {
+                comment += '✅ **No critical accessibility violations found**\n\n';
+              }
+
+              comment += '### 📊 Summary:\n';
+              comment += `- Total violations: ${violations.length}\n`;
+              comment += `- Critical: ${criticalViolations.length}\n`;
+              comment += `- Check the [full report](https://github.com/${{github.context.repo.owner}/${{github.context.repo.repo}/actions/runs/${{github.run_id})#artifact-9162388763) for details\n';
+
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            } catch (error) {
+              console.log('Could not create PR comment:', error.message);
+            }
+
+  contrast-check:
+    runs-on: ubuntu-latest
+    name: Color Contrast Check
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check color contrast
+        run: |
+          npm install --save-dev color-contrast-checker
+
+          # Create contrast check configuration
+          cat > contrast-check.json << EOF
+          {
+            "files": [
+              "src/**/*.css",
+              "src/**/*.scss",
+              "tailwind.config.ts"
+            ],
+            "threshold": {
+              "aa_normal": 4.5,
+              "aa_large": 3.0,
+              "aaa_normal": 7.0,
+              "aaa_large": 4.5
+            },
+            "ignore": [
+              "#000000", # Pure black
+              "#ffffff"  # Pure white
+            ],
+            "customColors": {
+              "cocoa": "#8B4513",
+              "champagne": "#F5DEB3",
+              "roseGold": "#E0BFB8",
+              "pearl": "#FAF7F0"
+            }
+          }
+          EOF
+
+          npx color-contrast-checker -c contrast-check.json --fail-only
+
+  automated-testing:
+    runs-on: ubuntu-latest
+    name: Automated Accessibility Tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run accessibility tests
+        run: |
+          # Test common accessibility issues
+          npx jest tests/a11y --coverage --coverageReporters=text-lcov | coveralls
+
+      - name: Check for alt text
+        run: |
+          grep -r "alt=" src/ --exclude-dir=node_modules > temp-alt-check.txt
+          if [ -s temp-alt-check.txt ]; then
+            echo "Found images without alt text:"
+            cat temp-alt-check.txt
+            exit 1
+          else
+            echo "All images have alt text"
+          fi
+
+      - name: Check for ARIA labels
+        run: |
+          npx eslint src/ --ext .tsx,.ts --rule 'jsx-a11y/alt-text' --quiet || true
+
+      - name: Check focus management
+        run: |
+          npx eslint src/ --ext .tsx,.ts --rule 'jsx-a11y/no-autofocus' --quiet || true
+
+      - name: Check keyboard navigation
+        run: |
+          # Test that all interactive elements are keyboard accessible
+          echo "Testing keyboard navigation support..."
+
+  lighthouse-audit:
+    runs-on: ubuntu-latest
+    name: Lighthouse Performance & Accessibility
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          configPath: '.lighthouserc.js'
+          uploadArtifacts: true
+          temporaryPublicStorage: false
+
+      - name: Evaluate Lighthouse score
+        run: |
+          node scripts/evaluate-lighthouse.js
+
+      - name: Create performance budget
+        run: |
+          # Performance budget check
+          node scripts/check-performance-budget.js

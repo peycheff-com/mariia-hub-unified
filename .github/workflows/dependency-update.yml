@@ -1,0 +1,417 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    # Run daily at 4 AM UTC
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+    inputs:
+      update_type:
+        description: 'Type of update'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - major
+        - minor
+        - patch
+        - security
+      create_pr:
+        description: 'Create pull request'
+        required: true
+        default: true
+        type: boolean
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  # Check for outdated dependencies
+  check-outdated:
+    name: Check Outdated Dependencies
+    runs-on: ubuntu-latest
+    outputs:
+      has_updates: ${{ steps.check.outputs.has_updates }}
+      has_security: ${{ steps.check.outputs.has_security }}
+      update_count: ${{ steps.check.outputs.update_count }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for outdated packages
+        id: check
+        run: |
+          # Get outdated packages
+          OUTDATED=$(npm outdated --json || true)
+          echo "$OUTDATED" > outdated.json
+
+          # Count updates
+          UPDATE_COUNT=$(echo "$OUTDATED" | jq 'keys | length' || echo 0)
+          echo "update_count=$UPDATE_COUNT" >> $GITHUB_OUTPUT
+
+          # Check for security updates
+          SECURITY_AUDIT=$(npm audit --json || true)
+          VULNS=$(echo "$SECURITY_AUDIT" | jq -r '.vulnerabilities | keys | length' || echo 0)
+
+          if [[ $UPDATE_COUNT -gt 0 ]]; then
+            echo "has_updates=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_updates=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [[ $VULNS -gt 0 ]]; then
+            echo "has_security=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_security=false" >> $GITHUB_OUTPUT
+          fi
+
+          echo "Found $UPDATE_COUNT outdated packages"
+          echo "Found $VULNS vulnerabilities"
+
+      - name: Upload outdated packages report
+        uses: actions/upload-artifact@v4
+        with:
+          name: outdated-packages
+          path: |
+            outdated.json
+            package-lock.json
+          retention-days: 7
+
+  # Update patch dependencies
+  update-patch:
+    name: Update Patch Dependencies
+    runs-on: ubuntu-latest
+    needs: check-outdated
+    if: needs.check-outdated.outputs.has_updates == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Update patch dependencies
+        run: |
+          # Update patch versions
+          npx npm-check-updates -u --target patch
+          npm install
+
+      - name: Run tests
+        run: |
+          npm run lint
+          npm run test
+          npm run build
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update patch dependencies'
+          title: 'chore(deps): update patch dependencies'
+          body: |
+            ## 📦 Patch Dependency Updates
+
+            This PR updates all patch dependencies to their latest versions.
+
+            ### 📋 Changes
+            - All patch dependencies updated
+            - Automated security fixes included
+
+            ### ✅ Checks
+            - [x] Linting passed
+            - [x] Tests passed
+            - [x] Build successful
+
+            ### 🔄 Merge Instructions
+            1. Review the changes
+            2. Run additional tests if needed
+            3. Merge if all checks pass
+
+            ---
+            *This PR was created automatically by the dependency update workflow*
+          branch: chore/update-patch-deps
+          delete-branch: true
+          labels: |
+            dependencies
+            patch
+            automated
+
+  # Update minor dependencies
+  update-minor:
+    name: Update Minor Dependencies
+    runs-on: ubuntu-latest
+    needs: [check-outdated, update-patch]
+    if: needs.check-outdated.outputs.has_updates == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Update minor dependencies
+        run: |
+          # Update minor versions
+          npx npm-check-updates -u --target minor
+          npm install
+
+      - name: Run tests
+        run: |
+          npm run lint
+          npm run test
+          npm run build
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update minor dependencies'
+          title: 'chore(deps): update minor dependencies'
+          body: |
+            ## 📦 Minor Dependency Updates
+
+            This PR updates all minor dependencies to their latest versions.
+
+            ### 📋 Changes
+            - All minor dependencies updated
+            - May include new features and improvements
+            - No breaking changes expected
+
+            ### ⚠️ Important
+            - Please review for any breaking changes
+            - Run full test suite including E2E
+            - Check integration with external services
+
+            ### ✅ Checks
+            - [x] Linting passed
+            - [x] Tests passed
+            - [x] Build successful
+
+            ### 🔍 Additional Testing Recommended
+            - [ ] E2E tests
+            - [ ] Integration tests
+            - [ ] Manual testing of critical features
+
+            ---
+            *This PR was created automatically by the dependency update workflow*
+          branch: chore/update-minor-deps
+          delete-branch: true
+          labels: |
+            dependencies
+            minor
+            automated
+            requires-review
+
+  # Security updates
+  security-update:
+    name: Security Updates
+    runs-on: ubuntu-latest
+    if: needs.check-outdated.outputs.has_security == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fix security vulnerabilities
+        run: |
+          # Fix security issues
+          npm audit fix
+          npm install
+
+      - name: Run tests
+        run: |
+          npm run lint
+          npm run test
+          npm run build
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'security: fix vulnerabilities'
+          title: '🔒 security: fix dependency vulnerabilities'
+          body: |
+            ## 🔒 Security Fix
+
+            This PR addresses security vulnerabilities in dependencies.
+
+            ### 🚨 Critical Information
+            - High/Critical vulnerabilities fixed
+            - Immediate review and merge recommended
+            - Coordinate with security team
+
+            ### 📋 Fixes Applied
+            - Automated vulnerability fixes via npm audit fix
+            - All packages updated to secure versions
+
+            ### ✅ Validation
+            - [x] Linting passed
+            - [x] Tests passed
+            - [x] Build successful
+            - [x] Security audit passed
+
+            ### 🚀 Deployment
+            - **Priority**: HIGH
+            - **Action**: Merge ASAP
+            - **Deploy**: To staging for verification
+            - **Release**: To production after verification
+
+            ---
+            *This is a critical security update. Please handle with priority.*
+          branch: security/fix-vulnerabilities
+          delete-branch: true
+          labels: |
+            security
+            critical
+            automated
+          assignees: |
+            security-team-lead
+          reviewers: |
+            security-team-lead
+            backend-lead
+            frontend-lead
+
+  # Update major dependencies (manual review required)
+  check-major:
+    name: Check Major Updates
+    runs-on: ubuntu-latest
+    needs: check-outdated
+    if: needs.check-outdated.outputs.has_updates == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for major updates
+        run: |
+          # Get major updates
+          npx npm-check-updates --target major --format group
+          echo "Major updates detected. Manual review required."
+
+      - name: Create issue for major updates
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let body = '## 📦 Major Dependency Updates Available\n\n';
+            body += 'The following major updates are available:\n\n';
+            body += 'Please review and create manual PRs if these updates are desired.\n\n';
+            body += '### 📋 Checklist for Major Updates\n';
+            body += '- [ ] Review breaking changes\n';
+            body += '- [ ] Update code for breaking changes\n';
+            body += '- [ ] Test thoroughly\n';
+            body += '- [ ] Update documentation\n\n';
+            body += '### 🔍 Resources\n';
+            body += '- Check each package\'s changelog\n';
+            body += '- Review migration guides\n';
+            body += '- Test in staging environment\n\n';
+            body += '---\n';
+            body += '*Automatically created by dependency update workflow*';
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '📦 Major Dependency Updates Available',
+              body: body,
+              labels: ['dependencies', 'major', 'enhancement', 'help-wanted']
+            });
+
+  # Generate dependency report
+  dependency-report:
+    name: Dependency Report
+    runs-on: ubuntu-latest
+    needs: [check-outdated, update-patch, update-minor, security-update]
+    if: always()
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Generate report
+        run: |
+          echo "# Dependency Update Report" > report.md
+          echo "" >> report.md
+          echo "**Date:** $(date)" >> report.md
+          echo "" >> report.md
+
+          echo "## Summary" >> report.md
+          echo "" >> report.md
+          echo "- **Updates Found:** ${{ needs.check-outdated.outputs.update_count }}" >> report.md
+          echo "- **Security Issues:** ${{ needs.check-outdated.outputs.has_security }}" >> report.md
+          echo "" >> report.md
+
+          echo "## Actions Taken" >> report.md
+          echo "" >> report.md
+          echo "- Patch Updates: ${{ needs.update-patch.result }}" >> report.md
+          echo "- Minor Updates: ${{ needs.update-minor.result }}" >> report.md
+          echo "- Security Updates: ${{ needs.security-update.result }}" >> report.md
+          echo "" >> report.md
+
+      - name: Create summary
+        run: |
+          echo "## 📊 Dependency Update Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Outdated Packages:** ${{ needs.check-outdated.outputs.update_count }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Security Issues:** ${{ needs.check-outdated.outputs.has_security == 'true' && 'Yes' || 'No' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Patch Updates:** ${{ needs.update-patch.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Minor Updates:** ${{ needs.update-minor.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Security Updates:** ${{ needs.security-update.result }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify team
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#dependencies'
+          text: |
+            📦 Dependency Update Complete
+
+            Updates: ${{ needs.check-outdated.outputs.update_count }}
+            Security Issues: ${{ needs.check-outdated.outputs.has_security == 'true' && 'Yes' || 'No' }}
+
+            View: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

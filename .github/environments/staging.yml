@@ -1,0 +1,96 @@
+# Staging Environment Configuration
+
+name: staging
+url: https://staging.mariia-hub.com
+
+# Protection Rules
+protection_rules:
+  required_reviewers: []
+  require_admin: false
+  require_last_push_approval: false
+  restrict_fork_dispatches: true
+  restrict_deployments: false
+
+# Environment Variables (to be set in GitHub Settings > Environments)
+environment_variables:
+  # Supabase
+  SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+  SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_KEY }}
+
+  # Stripe
+  STRIPE_PUBLIC_KEY: ${{ secrets.STAGING_STRIPE_PUBLIC_KEY }}
+  STRIPE_SECRET_KEY: ${{ secrets.STAGING_STRIPE_SECRET_KEY }}
+  STRIPE_WEBHOOK_SECRET: ${{ secrets.STAGING_STRIPE_WEBHOOK_SECRET }}
+
+  # Vercel
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  # Monitoring
+  SENTRY_DSN: ${{ secrets.STAGING_SENTRY_DSN }}
+  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
+  # Analytics
+  GOOGLE_ANALYTICS_ID: ${{ secrets.STAGING_GA_ID }}
+  META_PIXEL_ID: ${{ secrets.STAGING_META_PIXEL_ID }}
+
+  # External APIs
+  BOOKSY_API_KEY: ${{ secrets.STAGING_BOOKSY_API_KEY }}
+  CALENDLY_API_KEY: ${{ secrets.STAGING_CALENDLY_API_KEY }}
+
+# Deployment Configuration
+deployment:
+  branch: develop
+  auto_merge: false
+  auto_deploy: true
+
+# Health Checks
+health_checks:
+  - endpoint: /health
+    method: GET
+    expected_status: 200
+    timeout: 30s
+    interval: 30s
+    retries: 5
+
+  - endpoint: /api/health
+    method: GET
+    expected_status: 200
+    timeout: 30s
+    interval: 30s
+    retries: 5
+
+# Rollback Configuration
+rollback:
+  auto_rollback: true
+  rollback_triggers:
+    - health_check_failure
+    - test_failure
+    - manual_trigger
+
+# Monitoring
+monitoring:
+  alerts:
+    - slack: #deployments
+    - email: team@mariia-hub.com
+    - discord: alerts
+
+# Secrets Required
+secrets_required:
+  - STAGING_SUPABASE_URL
+  - STAGING_SUPABASE_ANON_KEY
+  - STAGING_SUPABASE_SERVICE_KEY
+  - STAGING_STRIPE_PUBLIC_KEY
+  - STAGING_STRIPE_SECRET_KEY
+  - STAGING_STRIPE_WEBHOOK_SECRET
+  - VERCEL_TOKEN
+  - VERCEL_ORG_ID
+  - VERCEL_PROJECT_ID
+  - STAGING_SENTRY_DSN
+  - SENTRY_AUTH_TOKEN
+  - STAGING_GA_ID
+  - STAGING_META_PIXEL_ID
+  - STAGING_BOOKSY_API_KEY
+  - STAGING_CALENDLY_API_KEY

@@ -1,0 +1,243 @@
+---
+- name: Deploy Mariia Hub Application
+  hosts: all
+  become: yes
+  vars:
+    app_name: mariia-hub
+    app_version: "{{ lookup('env','APP_VERSION') | default('latest') }}"
+    app_port: 8080
+    health_check_path: /health
+    deployment_timeout: 600
+    rollback_on_failure: true
+
+  tasks:
+    - name: Ensure Docker is installed and running
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Pull latest application image
+      community.docker.docker_image:
+        name: "mariia/{{ app_name }}:{{ app_version }}"
+        source: pull
+        force_source: yes
+      register: pull_result
+
+    - name: Stop existing container if running
+      community.docker.docker_container:
+        name: "{{ app_name }}"
+        state: absent
+      when: pull_result.changed
+
+    - name: Remove old container network if exists
+      community.docker.docker_network:
+        name: "{{ app_name }}_network"
+        state: absent
+      when: pull_result.changed
+
+    - name: Create application network
+      community.docker.docker_network:
+        name: "{{ app_name }}_network"
+        driver: bridge
+
+    - name: Run application container
+      community.docker.docker_container:
+        name: "{{ app_name }}"
+        image: "mariia/{{ app_name }}:{{ app_version }}"
+        state: started
+        restart_policy: unless-stopped
+        ports:
+          - "{{ app_port }}:80"
+        networks:
+          - name: "{{ app_name }}_network"
+        env:
+          NODE_ENV: production
+          PORT: "80"
+        volumes:
+          - "{{ app_name }}_logs:/var/log/nginx"
+        healthcheck:
+          test: ["CMD", "curl", "-f", "http://localhost:{{ health_check_path }}"]
+          interval: 30
+          timeout: 10
+          retries: 3
+          start_period: 40
+      register: container_start
+
+    - name: Wait for application to be healthy
+      ansible.builtin.uri:
+        url: "http://localhost:{{ app_port }}{{ health_check_path }}"
+        method: GET
+        status_code: 200
+      register: health_check
+      retries: 30
+      delay: 10
+      until: health_check.status == 200
+
+    - name: Verify application is responding
+      ansible.builtin.assert:
+        that:
+          - health_check.status == 200
+        fail_msg: "Application health check failed after deployment"
+        success_msg: "Application deployed successfully and is healthy"
+
+    - name: Clean up old Docker images
+      community.docker.docker_prune:
+        images: yes
+        images_filters:
+          dangling: false
+          until: 7d
+      when: pull_result.changed
+
+    - name: Display deployment status
+      ansible.builtin.debug:
+        msg: |
+          Deployment completed successfully!
+          Application: {{ app_name }}
+          Version: {{ app_version }}
+          Port: {{ app_port }}
+          Health check: http://localhost:{{ app_port }}{{ health_check_path }}
+
+  rescue:
+    - name: Deployment failed - triggering rollback
+      ansible.builtin.debug:
+        msg: "Deployment failed, attempting rollback..."
+
+    - name: Rollback to previous version
+      community.docker.docker_container:
+        name: "{{ app_name }}"
+        state: absent
+      when: rollback_on_failure
+
+    - name: Start previous container version
+      community.docker.docker_container:
+        name: "{{ app_name }}"
+        image: "mariia/{{ app_name }}:previous"
+        state: started
+        restart_policy: unless-stopped
+      when: rollback_on_failure
+
+    - name: Fail the playbook after rollback attempt
+      ansible.builtin.fail:
+        msg: "Deployment failed and rollback attempted. Please investigate the issue."
+
+- name: Deploy Monitoring Stack
+  hosts: all
+  become: yes
+  vars:
+    monitoring_stack: true
+
+  tasks:
+    - name: Create monitoring directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - /opt/monitoring/prometheus
+        - /opt/monitoring/grafana
+        - /opt/monitoring/grafana/dashboards
+        - /opt/monitoring/grafana/datasources
+
+    - name: Deploy Prometheus configuration
+      ansible.builtin.template:
+        src: templates/prometheus.yml.j2
+        dest: /opt/monitoring/prometheus/prometheus.yml
+        mode: '0644'
+
+    - name: Deploy Grafana configuration
+      ansible.builtin.template:
+        src: templates/grafana.ini.j2
+        dest: /opt/monitoring/grafana/grafana.ini
+        mode: '0644'
+
+    - name: Run Prometheus container
+      community.docker.docker_container:
+        name: prometheus
+        image: prom/prometheus:latest
+        state: started
+        restart_policy: unless-stopped
+        ports:
+          - "9090:9090"
+        volumes:
+          - /opt/monitoring/prometheus:/etc/prometheus
+          - prometheus_data:/prometheus
+        command:
+          - '--config.file=/etc/prometheus/prometheus.yml'
+          - '--storage.tsdb.path=/prometheus'
+          - '--web.console.libraries=/etc/prometheus/console_libraries'
+          - '--web.console.templates=/etc/prometheus/consoles'
+          - '--storage.tsdb.retention.time=200h'
+          - '--web.enable-lifecycle'
+
+    - name: Run Grafana container
+      community.docker.docker_container:
+        name: grafana
+        image: grafana/grafana:latest
+        state: started
+        restart_policy: unless-stopped
+        ports:
+          - "3001:3000"
+        environment:
+          GF_SECURITY_ADMIN_PASSWORD: "{{ grafana_admin_password | default('admin123') }}"
+          GF_USERS_ALLOW_SIGN_UP: "false"
+        volumes:
+          - grafana_data:/var/lib/grafana
+          - /opt/monitoring/grafana:/etc/grafana/provisioning
+
+    - name: Wait for monitoring services to be ready
+      ansible.builtin.uri:
+        url: "http://localhost:{{ item.port }}/api/health"
+        method: GET
+        status_code: [200, 302]
+      loop:
+        - { name: "Prometheus", port: 9090 }
+        - { name: "Grafana", port: 3001 }
+      retries: 20
+      delay: 10
+      register: monitoring_health
+
+    - name: Display monitoring deployment status
+      ansible.builtin.debug:
+        msg: |
+          Monitoring stack deployed successfully!
+          Prometheus: http://localhost:9090
+          Grafana: http://localhost:3001 (admin/{{ grafana_admin_password | default('admin123') }})
+
+- name: Setup Log Rotation
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Configure log rotation for application logs
+      ansible.builtin.copy:
+        dest: /etc/logrotate.d/mariia-app
+        content: |
+          {{ app_name }}_logs/*.log {
+              daily
+              missingok
+              rotate 30
+              compress
+              delaycompress
+              notifempty
+              create 644 root root
+              postrotate
+                  docker kill -s USR1 {{ app_name }}
+              endscript
+          }
+        mode: '0644'
+
+    - name: Configure log rotation for Docker containers
+      ansible.builtin.copy:
+        dest: /etc/logrotate.d/docker-containers
+        content: |
+          /var/lib/docker/containers/*/*.log {
+              daily
+              rotate 7
+              compress
+              delaycompress
+              missingok
+              notifempty
+              create 0644 root root
+          }
+        mode: '0644'
