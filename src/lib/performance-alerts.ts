@@ -5,6 +5,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+
 import { logger } from '@/services/logger.service';
 
 // Alert interfaces

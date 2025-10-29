@@ -4,9 +4,10 @@
  * Provides unified observability for security and performance events
  */
 
+import { logger } from '@/services/logger.service';
+
 import { performanceMonitoringService } from './performance-monitoring';
 import { performanceAlertingService } from './performance-alerts';
-import { logger } from '@/services/logger.service';
 
 // Security-Performance correlation interfaces
 export interface SecurityPerformanceEvent {

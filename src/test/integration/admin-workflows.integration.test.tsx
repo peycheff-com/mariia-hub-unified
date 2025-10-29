@@ -1,5 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@/test/utils/workflow-test-utils';
+
+import { render, screen, fireEvent, waitFor ,
+  createMockService,
+  createMockBooking,
+  createMockUser,
+  createLargeServiceDataset,
+  createLargeBookingDataset,
+  expectRenderPerformance,
+} from '@/test/utils/workflow-test-utils';
 
 // Mock admin dependencies
 vi.mock('@/integrations/supabase/client', () => ({
@@ -21,14 +29,6 @@ import { ServiceManager } from '@/components/admin/ServiceManager';
 import { BookingManager } from '@/components/admin/BookingManager';
 import { UserManager } from '@/components/admin/UserManager';
 
-import {
-  createMockService,
-  createMockBooking,
-  createMockUser,
-  createLargeServiceDataset,
-  createLargeBookingDataset,
-  expectRenderPerformance,
-} from '../utils/workflow-test-utils';
 
 describe('Admin Workflow Integration Tests', () => {
   beforeEach(() => {

@@ -13,10 +13,11 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { bookingService, BookingService } from '../booking.service';
-import { bookingDomainService } from '../bookingDomainService';
-import { CreateBookingRequest, TimeSlot, Booking, Hold } from '../booking.service';
+
 import { supabase } from '@/integrations/supabase/client';
+
+import { bookingService, BookingService , CreateBookingRequest, TimeSlot, Booking, Hold } from '../booking.service';
+import { bookingDomainService } from '../bookingDomainService';
 
 // Mock Supabase
 vi.mock('@/integrations/supabase/client', () => ({
@@ -1121,7 +1122,7 @@ describe('BookingService', () => {
           start_time: '2024-01-15T10:00:00Z',
         };
 
-        let callCount = 0;
+        const callCount = 0;
         (supabase.from as any).mockImplementation((table: string) => {
           if (table === 'profiles') {
             return {

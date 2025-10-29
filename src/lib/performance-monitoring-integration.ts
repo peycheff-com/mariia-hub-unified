@@ -4,11 +4,12 @@
  * for the complete performance monitoring ecosystem
  */
 
+import { logger } from '@/services/logger.service';
+
 import { performanceMonitoringService } from './performance-monitoring';
 import { performanceAlertingService } from './performance-alerts';
 import { securityPerformanceIntegration } from './security-performance-integration';
 import { slaManagementService } from './sla-management';
-import { logger } from '@/services/logger.service';
 
 // Testing interfaces
 export interface PerformanceTestSuite {

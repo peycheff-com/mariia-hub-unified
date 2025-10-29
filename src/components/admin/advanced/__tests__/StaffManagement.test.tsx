@@ -2,8 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import StaffManagement from '../StaffManagement'
 import { createSupabaseMock } from '@/test/mocks/services.mock'
+
+import StaffManagement from '../StaffManagement'
 
 // Mock the dependencies
 vi.mock('@/integrations/supabase/client', () => ({

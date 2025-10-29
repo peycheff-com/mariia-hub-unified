@@ -1,8 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
+
 import { cacheService } from './cacheService';
 import { bookingDomainService } from './bookingDomainService';
 import { webSocketService } from './websocketService';
-import { logger } from '@/lib/logger';
 
 // API configuration
 const API_CONFIG = {

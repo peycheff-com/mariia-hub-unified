@@ -15,7 +15,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { AuthService, authService } from '../auth.service';
+
 import {
   createMockUser,
   createMockSession,
@@ -23,6 +23,8 @@ import {
   mockAuthErrors,
   createSupabaseRolesMock,
 } from '@/test/mocks/auth.mock';
+
+import { AuthService, authService } from '../auth.service';
 
 // ==================== MOCK SETUP ====================
 

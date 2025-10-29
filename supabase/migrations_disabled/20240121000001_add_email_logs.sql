@@ -25,23 +25,11 @@ ALTER TABLE email_logs ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Admins can view all email logs"
   ON email_logs FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM user_roles
-      WHERE user_roles.user_id = auth.uid()
-      AND user_roles.role = 'admin'
-    )
-  );
+  USING (has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "Admins can insert email logs"
   ON email_logs FOR INSERT
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM user_roles
-      WHERE user_roles.user_id = auth.uid()
-      AND user_roles.role = 'admin'
-    )
-  );
+  WITH CHECK (has_role(auth.uid(), 'admin'));
 
 -- Add email campaigns table
 CREATE TABLE IF NOT EXISTS email_campaigns (
@@ -68,23 +56,11 @@ ALTER TABLE email_campaigns ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Admins can view all campaigns"
   ON email_campaigns FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM user_roles
-      WHERE user_roles.user_id = auth.uid()
-      AND user_roles.role = 'admin'
-    )
-  );
+  USING (has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "Admins can manage campaigns"
   ON email_campaigns FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM user_roles
-      WHERE user_roles.user_id = auth.uid()
-      AND user_roles.role = 'admin'
-    )
-  );
+  USING (has_role(auth.uid(), 'admin'));
 
 -- Update function to update updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()

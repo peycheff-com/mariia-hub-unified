@@ -11,8 +11,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { enhancedStripeService, EnhancedStripeService } from '../enhanced-stripe-service';
-import { StripePaymentIntent, StripeCustomer } from '../enhanced-stripe-service';
+
+import { enhancedStripeService, EnhancedStripeService , StripePaymentIntent, StripeCustomer } from '../enhanced-stripe-service';
 
 // Mock dependencies
 vi.mock('@/integrations/supabase/client', () => ({

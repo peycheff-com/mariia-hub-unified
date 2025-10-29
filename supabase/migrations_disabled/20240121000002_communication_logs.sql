@@ -114,34 +114,16 @@ ALTER TABLE conversion_events ENABLE ROW LEVEL SECURITY;
 -- RLS policies for communication_logs
 CREATE POLICY "Admins can view all communication logs"
   ON communication_logs FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM user_roles
-      WHERE user_roles.user_id = auth.uid()
-      AND user_roles.role = 'admin'
-    )
-  );
+  USING (has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "Admins can insert communication logs"
   ON communication_logs FOR INSERT
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM user_roles
-      WHERE user_roles.user_id = auth.uid()
-      AND user_roles.role = 'admin'
-    )
-  );
+  WITH CHECK (has_role(auth.uid(), 'admin'));
 
 -- RLS policies for analytics (read-only for most users)
 CREATE POLICY "Admins can view all analytics events"
   ON analytics_events FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM user_roles
-      WHERE user_roles.user_id = auth.uid()
-      AND user_roles.role = 'admin'
-    )
-  );
+  USING (has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "System can insert analytics events"
   ON analytics_events FOR INSERT
@@ -150,13 +132,7 @@ CREATE POLICY "System can insert analytics events"
 -- Similar policies for other tables
 CREATE POLICY "Admins can view all page views"
   ON page_views FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM user_roles
-      WHERE user_roles.user_id = auth.uid()
-      AND user_roles.role = 'admin'
-    )
-  );
+  USING (has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "System can insert page views"
   ON page_views FOR INSERT
@@ -164,13 +140,7 @@ CREATE POLICY "System can insert page views"
 
 CREATE POLICY "Admins can view all conversions"
   ON conversion_events FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM user_roles
-      WHERE user_roles.user_id = auth.uid()
-      AND user_roles.role = 'admin'
-    )
-  );
+  USING (has_role(auth.uid(), 'admin'));
 
 CREATE POLICY "System can insert conversions"
   ON conversion_events FOR INSERT

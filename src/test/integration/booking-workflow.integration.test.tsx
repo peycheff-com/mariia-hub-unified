@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@/test/utils/workflow-test-utils';
+
+import { render, screen, fireEvent, waitFor , createMockService, createMockBooking, expectRenderPerformance } from '@/test/utils/workflow-test-utils';
 
 // Mock external dependencies
 vi.mock('@/integrations/supabase/client', () => ({
@@ -45,7 +46,6 @@ vi.mock('@/lib/stripe', () => ({
 
 // Import components after mocking
 import { BookingWizard } from '@/components/booking/BookingWizard';
-import { createMockService, createMockBooking, expectRenderPerformance } from '../utils/workflow-test-utils';
 
 describe('Complete Booking Workflow Integration Tests', () => {
   const mockService = createMockService({

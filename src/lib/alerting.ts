@@ -5,11 +5,12 @@
 
 import { createClient } from '@supabase/supabase-js';
 
+import { getEnvVar } from '@/lib/runtime-env';
+
 import { monitoringService } from '../services/monitoringService';
 
 import { healthCheckService } from './health-check';
 import { reportError, reportMessage } from './sentry';
-import { getEnvVar } from '@/lib/runtime-env';
 
 export interface AlertRule {
   id: string;

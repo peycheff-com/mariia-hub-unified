@@ -201,7 +201,7 @@ async function analyzeContent(content: string) {
       hasContextualInfo,
       sentiment: analyzeSentiment(content)
     }
-  });
+  }
 }
 
 function analyzeSentiment(text: string): 'positive' | 'negative' | 'neutral' {

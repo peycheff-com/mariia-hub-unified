@@ -1,5 +1,6 @@
 // Date/Time localization comprehensive tests
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+
 import { formatDateLocalized, formatCurrencyLocalized, createLocalizer } from '@/lib/date-localization';
 
 // Mock locale-specific date formatting

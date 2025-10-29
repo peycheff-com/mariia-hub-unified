@@ -2,8 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { QueryClient } from '@tanstack/react-query'
 
-import AnalyticsDashboard from '../AnalyticsDashboard'
 import { createSupabaseMock } from '@/test/mocks/services.mock'
+
+import AnalyticsDashboard from '../AnalyticsDashboard'
 
 // Mock the dependencies
 vi.mock('@/integrations/supabase/client', () => ({

@@ -15,8 +15,10 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { userService } from '../userService';
+
 import { supabase } from '@/integrations/supabase/client';
+
+import { userService } from '../userService';
 
 // Mock Supabase
 vi.mock('@/integrations/supabase/client', () => ({
@@ -79,7 +81,7 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 describe('UserService', () => {
-  let service = userService;
+  const service = userService;
 
   beforeEach(() => {
     vi.clearAllMocks();

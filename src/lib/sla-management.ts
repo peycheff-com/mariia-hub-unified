@@ -5,7 +5,9 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+
 import { logger } from '@/services/logger.service';
+
 import { performanceMonitoringService } from './performance-monitoring';
 import { performanceAlertingService } from './performance-alerts';
 

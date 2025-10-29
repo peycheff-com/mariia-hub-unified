@@ -1,12 +1,13 @@
 import { EventEmitter } from 'events';
 
+import { getEnvVar } from '@/lib/runtime-env';
+
 import { retryManager } from './retry-manager';
 import { CircuitBreaker, circuitBreakerRegistry, CircuitBreakerFactory } from './circuit-breaker';
 import { HealthMonitor, HealthChecks } from './health-monitor';
 import { RequestQueue, QueueFactory, Priority } from './request-queue';
 import { ErrorAnalyzer } from './error-analyzer';
 import { HealthCheck, Alert } from './types';
-import { getEnvVar } from '@/lib/runtime-env';
 
 export interface ReliabilityConfig {
   // Retry configuration

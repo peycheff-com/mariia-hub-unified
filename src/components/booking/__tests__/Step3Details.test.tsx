@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { Step3Details } from '../Step3Details'
+
 import { supabase } from '@/integrations/supabase/client'
 import { logger } from '@/lib/logger'
+
+import { Step3Details } from '../Step3Details'
 
 // Mock dependencies
 vi.mock('@/integrations/supabase/client', () => ({

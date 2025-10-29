@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { Step1Choose } from '../Step1Choose'
 import { axe, toHaveNoViolations } from 'jest-axe'
+
 import { announcer, FocusManager, validateHeadingHierarchy, generateAriaLabels } from '@/utils/accessibility'
+
+import { Step1Choose } from '../Step1Choose'
 
 // Extend Jest matchers
 expect.extend(toHaveNoViolations)
@@ -438,7 +440,7 @@ describe('Step1Choose Accessibility Tests', () => {
       )
 
       // Track active element changes
-      let activeElementBefore = document.activeElement
+      const activeElementBefore = document.activeElement
 
       // Navigate to service list
       const beautyButton = screen.getByRole('button', { name: /beauty/i })

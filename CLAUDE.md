@@ -229,6 +229,445 @@ Full CMS with:
 - Error boundary handling
 - Retry logic with exponential backoff
 
+## Service CLI Commands and Environment Variables
+
+This section documents the CLI commands for all external services used in the project with their required environment variables for local and production environments.
+
+### Supabase CLI
+
+#### Installation
+```bash
+# Using Homebrew (recommended)
+brew install supabase/tap/supabase
+
+# Or using npm
+npm install -g supabase
+```
+
+#### Local Development Commands
+```bash
+# Start local Supabase instance
+supabase start
+
+# Get local connection details
+supabase status -o env
+
+# Stop local instance
+supabase stop
+
+# Reset local database
+supabase db reset
+
+# Apply migrations to local database
+supabase db push
+
+# Generate types from database schema
+supabase gen types typescript --local > src/integrations/supabase/types.ts
+
+# Link to a remote project
+supabase link --project-ref $VITE_SUPABASE_PROJECT_ID
+```
+
+#### Production/Staging Commands
+```bash
+# Apply migrations to remote database
+npx supabase db push --db-url $SUPABASE_DB_URL
+
+# Generate types from remote database
+supabase gen types typescript --project-id $VITE_SUPABASE_PROJECT_ID > src/integrations/supabase/types.ts
+
+# Get project status
+supabase status --project-ref $VITE_SUPABASE_PROJECT_ID
+
+# Manage functions
+supabase functions deploy <function-name> --project-ref $VITE_SUPABASE_PROJECT_ID
+
+# View migration history
+supabase migration list --project-ref $VITE_SUPABASE_PROJECT_ID
+
+# Create new migration
+supabase migration new <migration-name>
+```
+
+#### Environment Variables
+```bash
+# Local Development
+VITE_SUPABASE_URL="http://localhost:54321"
+VITE_SUPABASE_ANON_KEY="your-local-anon-key"
+VITE_SUPABASE_SERVICE_ROLE_KEY="your-local-service-role-key"
+VITE_SUPABASE_PROJECT_ID="local"
+
+# Production/Staging
+VITE_SUPABASE_URL="https://your-project-id.supabase.co"
+VITE_SUPABASE_ANON_KEY="your-production-anon-key"
+VITE_SUPABASE_SERVICE_ROLE_KEY="your-production-service-role-key"
+VITE_SUPABASE_PROJECT_ID="your-project-id"
+SUPABASE_DB_URL="postgresql://postgres:[password]@db.your-project-id.supabase.co:5432/postgres"
+```
+
+### Stripe CLI
+
+#### Installation
+```bash
+# Using Homebrew
+brew install stripe/stripe-cli/stripe
+
+# Or using npm
+npm install -g stripe-cli
+```
+
+#### Local Development Commands
+```bash
+# Login to Stripe
+stripe login
+
+# Start webhook listener for development
+stripe listen \
+  --events payment_intent.succeeded,payment_intent.payment_failed,invoice.payment_succeeded,invoice.created,invoice.finalized \
+  --forward-to http://localhost:8080/api/stripe/webhook \
+  --skip-verify
+
+# Using the provided script (recommended)
+./scripts/start-stripe-webhooks.sh
+
+# For production webhooks
+./scripts/start-stripe-webhooks.sh production
+
+# Trigger test events
+stripe trigger payment_intent.succeeded
+stripe trigger payment_intent.payment_failed
+stripe trigger invoice.payment_succeeded
+
+# List webhook endpoints
+stripe webhook_endpoints list
+
+# Create webhook endpoint
+stripe webhook_endpoints create \
+  --url "https://your-domain.com/api/stripe/webhook" \
+  --enabled-events "payment_intent.succeeded,payment_intent.payment_failed,invoice.payment_succeeded"
+
+# Verify CLI configuration
+stripe config --list
+```
+
+#### Environment Variables
+```bash
+# Local Development (Test Mode)
+VITE_STRIPE_PUBLISHABLE_KEY="pk_test_..."
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+STRIPE_WEBHOOK_ENDPOINT="http://localhost:8080/api/stripe/webhook"
+
+# Production (Live Mode)
+VITE_STRIPE_PUBLISHABLE_KEY="pk_live_..."
+STRIPE_SECRET_KEY="sk_live_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+STRIPE_WEBHOOK_ENDPOINT="https://your-domain.com/api/stripe/webhook"
+
+# Polish VAT Configuration
+VITE_COMPANY_NIP="1234567890"
+VITE_COMPANY_NAME="Mariia Hub Sp. z o.o."
+VITE_COMPANY_ADDRESS="ul. Jana Pawła II 43/15, 00-001 Warszawa, Polska"
+VITE_COMPANY_BANK_ACCOUNT="PL123456789012345678901234567890"
+VITE_TAX_OFFICE_CODE="1411"
+VITE_ENABLE_POLISH_VAT="true"
+VITE_ENABLE_SPLIT_PAYMENT="true"
+VITE_ENABLE_ELECTRONIC_INVOICES="true"
+```
+
+### Vercel CLI
+
+#### Installation
+```bash
+# Using npm
+npm install -g vercel
+
+# Or using yarn
+yarn global add vercel
+```
+
+#### Development Commands
+```bash
+# Login to Vercel
+vercel login
+
+# Link project to Vercel
+vercel link
+
+# Deploy to preview
+vercel
+
+# Deploy to production
+vercel --prod
+
+# Pull environment variables from Vercel
+vercel env pull .env.local
+
+# List environment variables
+vercel env ls
+
+# Add environment variable
+vercel env add VARIABLE_NAME
+
+# Remove environment variable
+vercel env rm VARIABLE_NAME
+
+# View deployment logs
+vercel logs
+
+# View project info
+vercel info
+
+# Inspect build
+vercel inspect
+```
+
+#### Production Deployment Scripts
+```bash
+# Using project scripts (recommended)
+npm run deploy:staging    # Deploy to staging environment
+./scripts/deploy.sh      # General deployment script
+./scripts/deploy-production.sh  # Production deployment with security checks
+
+# Manual deployment
+vercel --scope $VERCEL_ORG --confirm
+```
+
+#### Environment Variables
+```bash
+# Vercel-specific variables (auto-populated)
+VERCEL="1"
+VERCEL_ENV="production" | "preview" | "development"
+VERCEL_URL="your-app-domain.vercel.app"
+VERCEL_GIT_COMMIT_SHA="commit-sha"
+VERCEL_GIT_COMMIT_MESSAGE="commit message"
+VERCEL_GIT_REPO_OWNER="owner"
+VERCEL_GIT_REPO_SLUG="repo"
+
+# Project configuration
+VERCEL_ORG="your-vercel-org"
+VERCEL_PROJECT_ID="your-project-id"
+VERCEL_PROJECT_NAME="mariia-hub-unified"
+
+# Build configuration
+NODE_ENV="production"
+BUILD_COMMAND="npm run build"
+OUTPUT_DIRECTORY="dist"
+```
+
+### Docker Commands
+
+#### Development
+```bash
+# Start development environment
+docker-compose up -d
+
+# Start with specific services
+docker-compose up -d app db redis
+
+# View logs
+docker-compose logs -f app
+
+# Stop services
+docker-compose down
+
+# Rebuild and start
+docker-compose up --build
+
+# Execute commands in container
+docker-compose exec app npm run dev
+docker-compose exec db psql -U postgres -d mariia_hub
+```
+
+#### Production
+```bash
+# Build production image
+docker build -t mariia-hub:latest .
+
+# Run production container
+docker run -d \
+  --name mariia-hub \
+  -p 3000:3000 \
+  --env-file .env.production \
+  mariia-hub:latest
+
+# Using production compose
+docker-compose -f docker-compose.prod.yml up -d
+
+# Cleanup unused images
+docker image prune -f
+```
+
+### Testing CLI Commands
+
+#### Vitest (Unit/Integration Tests)
+```bash
+# Run all tests
+npm run test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with UI
+npm run test:ui
+
+# Generate coverage report
+npm run test:coverage
+
+# Run tests for specific file
+npx vitest run src/services/__tests__/booking.service.test.ts
+
+# Run tests matching pattern
+npx vitest run --grep "booking"
+
+# Run tests with specific reporter
+npx vitest run --reporter=verbose
+```
+
+#### Playwright (E2E Tests)
+```bash
+# Install browsers
+npx playwright install
+
+# Run all E2E tests
+npm run test:e2e
+
+# Run tests with UI
+npm run test:e2e:ui
+
+# Run tests in debug mode
+npm run test:e2e:debug
+
+# Generate test code
+npm run test:e2e:codegen
+
+# Run specific test file
+npx playwright test tests/e2e/booking-flow.spec.ts
+
+# Run tests with specific project (chromium/firefox/webkit)
+npx playwright test --project=chromium
+
+# Run tests headed
+npx playwright test --headed
+```
+
+### Git Workflow Commands
+
+#### Branch Management
+```bash
+# Create new feature branch
+git checkout -b feature/your-feature-name
+
+# Switch to main branch
+git checkout main
+
+# Merge feature branch
+git merge feature/your-feature-name
+
+# Delete branch
+git branch -d feature/your-feature-name
+```
+
+#### Synchronization
+```bash
+# Fetch latest changes
+git fetch origin
+
+# Pull latest changes
+git pull origin main
+
+# Push changes to remote
+git push origin feature/your-feature-name
+
+# Push and set upstream
+git push -u origin feature/your-feature-name
+```
+
+#### Commit Management
+```bash
+# Stage changes
+git add .
+
+# Commit with message
+git commit -m "feat: add new booking feature"
+
+# Amend last commit
+git commit --amend
+
+# View commit history
+git log --oneline --graph
+
+# View detailed commit
+git show <commit-hash>
+```
+
+### Security & Monitoring Commands
+
+#### Security Scanning
+```bash
+# Run security audit
+npm run security-audit
+
+# Run comprehensive security verification
+./scripts/comprehensive-security-verification.sh
+
+# Run security scan
+npm audit
+
+# Fix security vulnerabilities
+npm audit fix
+```
+
+#### Performance Monitoring
+```bash
+# Analyze bundle size
+npm run build:analyze
+
+# Run performance tests
+./scripts/run-comprehensive-tests.sh
+
+# Check dependencies
+npm run check-deps
+
+# Update dependencies
+npm run update-deps
+```
+
+### Environment Setup Scripts
+
+#### Quick Setup
+```bash
+# Setup staging environment
+npm run setup:staging
+
+# Setup domain for staging
+npm run setup:domain
+
+# Health check for staging
+npm run health:staging
+
+# Seed staging data
+npm run db:seed:staging
+
+# Seed preview data
+npm run db:seed:preview
+```
+
+#### Database Management
+```bash
+# Reset staging database
+npm run db:reset:staging
+
+# Update types from database
+npx tsx scripts/update-types-from-db.ts
+
+# Create database backup
+npx supabase db dump --project-ref $VITE_SUPABASE_PROJECT_ID > backup.sql
+
+# Restore database backup
+npx supabase db restore --project-ref $VITE_SUPABASE_PROJECT_ID backup.sql
+```
+
 ## Production Deployment
 
 ### Build Process

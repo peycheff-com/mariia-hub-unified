@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+
 import ScrollProgressBar from '../ScrollProgressBar';
 
 // Mock window object properties that don't exist in test environment

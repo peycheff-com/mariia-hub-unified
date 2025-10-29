@@ -16,6 +16,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
 import { UserService, UserNotification, UserAnalytics, UserPreference } from '../userService';
 
 // Mock dependencies

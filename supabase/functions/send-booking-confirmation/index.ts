@@ -223,8 +223,7 @@ serve(async (req) => {
             </div>
           </body>
         </html>
-      `,
-      }),
+      `
     });
 
     if (error) {

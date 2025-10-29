@@ -5,8 +5,10 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { bookingService, BookingService } from '../booking.service';
+
 import { supabase } from '@/integrations/supabase/client';
+
+import { bookingService, BookingService } from '../booking.service';
 
 // Mock Supabase
 vi.mock('@/integrations/supabase/client', () => ({

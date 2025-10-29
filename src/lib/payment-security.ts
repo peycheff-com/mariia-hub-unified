@@ -11,8 +11,9 @@
 
 import crypto from 'crypto';
 
-import { SecurityMonitor } from './security';
 import { getEnvVar } from '@/lib/runtime-env';
+
+import { SecurityMonitor } from './security';
 
 export interface PaymentSecurityConfig {
   webhookSecret: string;

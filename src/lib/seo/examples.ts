@@ -6,9 +6,9 @@
  */
 
 import { Service, Review } from '@/types/shared';
+import { getEnvVar } from '@/lib/runtime-env';
 
 import { useHreflang, useStructuredData, useServiceStructuredData, useArticleStructuredData, useHomepageStructuredData , MetaOptimizer, HreflangGenerator, SitemapGenerator, SEOValidator, LocalSEOGenerator } from './index';
-import { getEnvVar } from '@/lib/runtime-env';
 
 // ============================================================================
 // 1. Hreflang Implementation Examples

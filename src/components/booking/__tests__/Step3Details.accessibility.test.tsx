@@ -1,10 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { Step3Details } from '../Step3Details'
 import { axe, toHaveNoViolations } from 'jest-axe'
+
 import { announcer, FocusManager, validateHeadingHierarchy, generateAriaLabels, ColorContrast } from '@/utils/accessibility'
 import { supabase } from '@/integrations/supabase/client'
+
+import { Step3Details } from '../Step3Details'
 
 // Extend Jest matchers
 expect.extend(toHaveNoViolations)

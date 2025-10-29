@@ -1,9 +1,9 @@
 // Comprehensive i18n feature tests
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { I18nextProvider } from 'react-i18next';
-import { useTranslation } from 'react-i18next';
+import { I18nextProvider , useTranslation } from 'react-i18next';
 import { BrowserRouter } from 'react-router-dom';
+
 import i18n from '@/i18n/config';
 import { CurrencyProvider, useCurrency } from '@/contexts/CurrencyContext';
 import * as translationUtils from '@/lib/i18n-utils';

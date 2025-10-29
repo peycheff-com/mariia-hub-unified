@@ -8,7 +8,6 @@ import { BookingProvider } from '@/contexts/BookingContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { ModeProvider } from '@/contexts/ModeContext';
 import { Toaster } from '@/components/ui/toaster';
-
 import i18n from '@/i18n/config';
 
 // Create a custom render function that includes providers

@@ -1,5 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@/test/utils/workflow-test-utils';
+
+import { render, screen, fireEvent, waitFor ,
+  createMockService,
+  createMockTimeSlot,
+  simulateNetworkFailure,
+  simulateSlowResponse,
+  simulateApiError,
+  createMockSupabaseClient,
+} from '@/test/utils/workflow-test-utils';
 
 // Mock external services for error testing
 vi.mock('@/integrations/supabase/client', () => ({
@@ -13,18 +21,11 @@ vi.mock('@/lib/stripe', () => ({
 }));
 
 // Import components after mocking
-import { BookingWizard } from '@/components/booking/BookingWizard';
 import { ServiceCard } from '@/components/ServiceCard';
 import { AvailableSlotsList } from '@/components/AvailableSlotsList';
 
-import {
-  createMockService,
-  createMockTimeSlot,
-  simulateNetworkFailure,
-  simulateSlowResponse,
-  simulateApiError,
-  createMockSupabaseClient,
-} from '../utils/workflow-test-utils';
+import { BookingWizard } from '@/components/booking/BookingWizard';
+
 
 describe('Error Scenario and Edge Case Tests', () => {
   const mockService = createMockService();

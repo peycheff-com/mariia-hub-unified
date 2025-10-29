@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { pricingService } from '../pricing.service'
+
 import { PricingRuleInsert, PriceCalculationContext } from '@/types/pricing'
 import { supabase } from '@/integrations/supabase/client'
+
+import { pricingService } from '../pricing.service'
 
 // Mock supabase with simple structure that matches pricingService usage patterns
 vi.mock('@/integrations/supabase/client', () => {

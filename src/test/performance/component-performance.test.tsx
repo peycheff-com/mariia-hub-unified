@@ -1,13 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@/test/utils/workflow-test-utils';
 
-// Import components for performance testing
-import { ServiceCard } from '@/components/ServiceCard';
-import { AvailableSlotsList } from '@/components/AvailableSlotsList';
-import { BookingWizard } from '@/components/booking/BookingWizard';
-import { AdminDashboard } from '@/components/admin/AdminDashboard';
-
-import {
+import { render, screen, fireEvent, waitFor ,
   createMockService,
   createLargeServiceDataset,
   createLargeBookingDataset,
@@ -16,7 +9,15 @@ import {
   expectMemoryUsageWithin,
   measureAsyncOperation,
   getMemoryUsage,
-} from '../utils/workflow-test-utils';
+} from '@/test/utils/workflow-test-utils';
+
+// Import components for performance testing
+import { ServiceCard } from '@/components/ServiceCard';
+import { AvailableSlotsList } from '@/components/AvailableSlotsList';
+
+import { BookingWizard } from '@/components/booking/BookingWizard';
+import { AdminDashboard } from '@/components/admin/AdminDashboard';
+
 
 describe('Component Performance Tests', () => {
   beforeEach(() => {

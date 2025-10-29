@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+
 import { enhancedEmailService, sendEmail, sendTemplateEmail } from '../enhanced-email-service'
 
 // Create mocks with vi.hoisted to properly handle variable hoisting

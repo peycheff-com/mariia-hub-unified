@@ -15,8 +15,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
 
-import { useAuth } from '../useAuth';
 import { createMockUser, createMockSession, mockSupabaseAuth, createSupabaseRolesMock } from '@/test/mocks/auth.mock';
+
+import { useAuth } from '../useAuth';
 
 // ==================== MOCK SETUP ====================
 
