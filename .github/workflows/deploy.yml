@@ -186,7 +186,7 @@ jobs:
     if: needs.pre-deploy.outputs.deploy-env == 'staging'
     environment:
       name: staging
-      url: https://staging.mariia-hub.com
+      url: https://staging.mariaborysevych.com
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -215,8 +215,8 @@ jobs:
           vercel-args: '--scope=${{ secrets.VERCEL_ORG_ID }}'
           working-directory: ./
           alias-domains: |
-            staging.mariia-hub.com
-            pr-${{ github.event.number }}.mariia-hub.com
+            staging.mariaborysevych.com
+            pr-${{ github.event.number }}.mariaborysevych.com
 
       - name: Run smoke tests
         run: |
@@ -224,11 +224,11 @@ jobs:
           sleep 30
 
           # Health checks
-          curl -f https://staging.mariia-hub.com/ || exit 1
-          curl -f https://staging.mariia-hub.com/health || exit 1
+          curl -f https://staging.mariaborysevych.com/ || exit 1
+          curl -f https://staging.mariaborysevych.com/health || exit 1
 
           # API health checks
-          curl -f https://staging.mariia-hub.com/api/health || exit 1
+          curl -f https://staging.mariaborysevych.com/api/health || exit 1
 
       - name: Run integration tests
         run: |
@@ -245,7 +245,7 @@ jobs:
               ref: 'main',
               inputs: {
                 environment: 'staging',
-                url: 'https://staging.mariia-hub.com'
+                url: 'https://staging.mariaborysevych.com'
               }
             });
 
@@ -258,7 +258,7 @@ jobs:
               repo: context.repo.repo,
               deployment_id: context.payload.deployment?.id || 0,
               state: 'success',
-              environment_url: 'https://staging.mariia-hub.com',
+              environment_url: 'https://staging.mariaborysevych.com',
               log_url: `https://github.com/${{github.context.repo.owner}}/${{github.context.repo.repo}}/actions/runs/${{github.run_id}}`
             });
 
@@ -270,7 +270,7 @@ jobs:
     if: needs.pre-deploy.outputs.deploy-env == 'production'
     environment:
       name: production
-      url: https://mariia-hub.com
+      url: https://mariaborysevych.com
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -311,7 +311,7 @@ jobs:
 
           # Retry health checks with backoff
           for i in {1..10}; do
-            if curl -f https://mariia-hub.com/ && curl -f https://mariia-hub.com/health; then
+            if curl -f https://mariaborysevych.com/ && curl -f https://mariaborysevych.com/health; then
               echo "✅ Production deployment verified"
               break
             fi
@@ -322,11 +322,11 @@ jobs:
       - name: Run production smoke tests
         run: |
           # Critical path tests
-          curl -f https://mariia-hub.com/ || exit 1
-          curl -f https://mariia-hub.com/health || exit 1
-          curl -f https://mariia-hub.com/api/health || exit 1
-          curl -f https://mariia-hub.com/beauty || exit 1
-          curl -f https://mariia-hub.com/fitness || exit 1
+          curl -f https://mariaborysevych.com/ || exit 1
+          curl -f https://mariaborysevych.com/health || exit 1
+          curl -f https://mariaborysevych.com/api/health || exit 1
+          curl -f https://mariaborysevych.com/beauty || exit 1
+          curl -f https://mariaborysevych.com/fitness || exit 1
 
       - name: Run E2E tests on production
         run: |
@@ -348,7 +348,7 @@ jobs:
               repo: context.repo.repo,
               deployment_id: context.payload.deployment?.id || 0,
               state: 'success',
-              environment_url: 'https://mariia-hub.com',
+              environment_url: 'https://mariaborysevych.com',
               log_url: `https://github.com/${{github.context.repo.owner}}/${{github.context.repo.repo}}/actions/runs/${{github.run_id}}`,
               environment: 'production'
             });
@@ -370,7 +370,7 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--scope=${{ secrets.VERCEL_ORG_ID }}'
           alias-domains: |
-            rollback-${{ github.run_number }}.mariia-hub.com
+            rollback-${{ github.run_number }}.mariaborysevych.com
           working-directory: ./
 
       - name: Notify rollback
@@ -382,7 +382,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issue_number,
-              body: `🚨 **Deployment Rollback Triggered**\n\nEnvironment: ${{ needs.pre-deploy.outputs.deploy-env }}\nReason: Deployment failed or smoke tests failed\nRollback URL: https://rollback-${{ github.run_number }}.mariia-hub.com\n\n[View deployment logs](https://github.com/${{github.context.repo.owner}}/${{github.context.repo.repo}}/actions/runs/${{github.run_id}})`
+              body: `🚨 **Deployment Rollback Triggered**\n\nEnvironment: ${{ needs.pre-deploy.outputs.deploy-env }}\nReason: Deployment failed or smoke tests failed\nRollback URL: https://rollback-${{ github.run_number }}.mariaborysevych.com\n\n[View deployment logs](https://github.com/${{github.context.repo.owner}}/${{github.context.repo.repo}}/actions/runs/${{github.run_id}})`
             });
 
   # Notification
@@ -398,11 +398,11 @@ jobs:
           if [ "${{ needs.deploy-production.result }}" == "success" ]; then
             echo "title=✅ Production Deployment Successful" >> $GITHUB_OUTPUT
             echo "status=success" >> $GITHUB_OUTPUT
-            echo "url=https://mariia-hub.com" >> $GITHUB_OUTPUT
+            echo "url=https://mariaborysevych.com" >> $GITHUB_OUTPUT
           elif [ "${{ needs.deploy-staging.result }}" == "success" ]; then
             echo "title=🚀 Staging Deployment Successful" >> $GITHUB_OUTPUT
             echo "status=success" >> $GITHUB_OUTPUT
-            echo "url=https://staging.mariia-hub.com" >> $GITHUB_OUTPUT
+            echo "url=https://staging.mariaborysevych.com" >> $GITHUB_OUTPUT
           else
             echo "title=❌ Deployment Failed" >> $GITHUB_OUTPUT
             echo "status=failure" >> $GITHUB_OUTPUT
@@ -447,7 +447,7 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "Production Deployment: ${{ steps.message.outputs.title }}"
           to: ${{ secrets.TEAM_EMAIL }}
-          from: "GitHub Actions <noreply@mariia-hub.com>"
+          from: "GitHub Actions <noreply@mariaborysevych.com>"
           body: |
             ${{ steps.message.outputs.title }}
 

@@ -217,7 +217,7 @@ export function corsMiddleware(config: {
   maxAge?: number;
 } = {}) {
   const {
-    origins = ['http://localhost:8080', 'https://mariia-hub.com'],
+    origins = ['http://localhost:8080', 'https://mariaborysevych.com'],
     methods = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     headers = ['Content-Type', 'Authorization', 'X-Requested-With'],
     credentials = true,

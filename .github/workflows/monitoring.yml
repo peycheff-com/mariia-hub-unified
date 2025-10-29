@@ -28,8 +28,8 @@ on:
         - all
 
 env:
-  PRODUCTION_URL: https://mariia-hub.com
-  STAGING_URL: https://staging.mariia-hub.com
+  PRODUCTION_URL: https://mariaborysevych.com
+  STAGING_URL: https://staging.mariaborysevych.com
   HEALTH_CHECK_TIMEOUT: 30
   PERFORMANCE_THRESHOLD: 90
 
@@ -266,7 +266,7 @@ jobs:
         id: ssl-check
         run: |
           # Check production SSL
-          SSL_EXPIRY=$(echo | openssl s_client -servername mariia-hub.com -connect mariia-hub.com:443 2>/dev/null | openssl x509 -noout -enddate | cut -d= -f2)
+          SSL_EXPIRY=$(echo | openssl s_client -servername mariaborysevych.com -connect mariaborysevych.com:443 2>/dev/null | openssl x509 -noout -enddate | cut -d= -f2)
           SSL_TIMESTAMP=$(date -d "$SSL_EXPIRY" +%s)
           CURRENT_TIMESTAMP=$(date +%s)
           DAYS_LEFT=$(( (SSL_TIMESTAMP - CURRENT_TIMESTAMP) / 86400 ))

@@ -16,7 +16,7 @@ describe('Security Environment Validation', () => {
   beforeEach(() => {
     // Mock production environment for testing
     vi.stubEnv('VITE_APP_ENV', 'production');
-    vi.stubEnv('VITE_APP_URL', 'https://mariia-hub.com');
+    vi.stubEnv('VITE_APP_URL', 'https://mariaborysevych.com');
     vi.stubEnv('VITE_SUPABASE_URL', 'https://test-project.supabase.co');
     vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test');
     vi.stubEnv('VITE_STRIPE_PUBLISHABLE_KEY', 'pk_live_test123456789');

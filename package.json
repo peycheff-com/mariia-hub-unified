@@ -46,7 +46,7 @@
     "db:reset:staging": "npx supabase db reset --db-url $STAGING_SUPABASE_URL",
     "setup:staging": "chmod +x scripts/setup-supabase-staging.sh && ./scripts/setup-supabase-staging.sh",
     "setup:domain": "chmod +x scripts/setup-staging-domain.sh && ./scripts/setup-staging-domain.sh",
-    "health:staging": "./scripts/health-check.sh staging.mariia-hub.com",
+    "health:staging": "./scripts/health-check.sh staging.mariaborysevych.com",
     "deploy:staging": "vercel --scope $VERCEL_ORG --confirm",
     "prepare": "husky install"
   },

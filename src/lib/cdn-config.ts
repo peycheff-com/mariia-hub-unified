@@ -49,7 +49,7 @@ export interface OptimizationConfig {
 
 export const CDN_CONFIG: CDNConfig = {
   provider: 'cloudflare',
-  domain: 'cdn.mariia-hub.com',
+  domain: 'cdn.mariaborysevych.com',
   cacheRules: [
     // Static assets - long cache
     {
@@ -268,7 +268,7 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
 
   // Skip external requests
-  if (!url.origin.includes('mariia-hub.com')) return;
+  if (!url.origin.includes('mariaborysevych.com')) return;
 
   // Find matching cache rule
   const rule = cacheRules.find(r => {

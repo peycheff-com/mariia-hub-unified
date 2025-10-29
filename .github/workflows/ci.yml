@@ -251,7 +251,7 @@ jobs:
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     environment:
       name: staging
-      url: https://staging.mariia-hub.com
+      url: https://staging.mariaborysevych.com
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -279,12 +279,12 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
           working-directory: ./
-          alias-domains: staging.mariia-hub.com
+          alias-domains: staging.mariaborysevych.com
 
       - name: Run smoke tests on staging
         run: |
-          curl -f https://staging.mariia-hub.com || exit 1
-          curl -f https://staging.mariia-hub.com/health || exit 1
+          curl -f https://staging.mariaborysevych.com || exit 1
+          curl -f https://staging.mariaborysevych.com/health || exit 1
 
   # Performance Tests
   performance-tests:
@@ -311,7 +311,7 @@ jobs:
           lhci autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
-          LHCI_SERVER_URL: https://lhci.mariia-hub.com
+          LHCI_SERVER_URL: https://lhci.mariaborysevych.com
           LHCI_BUILD_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Upload Lighthouse results
@@ -329,7 +329,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     environment:
       name: production
-      url: https://mariia-hub.com
+      url: https://mariaborysevych.com
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -360,8 +360,8 @@ jobs:
 
       - name: Run smoke tests on production
         run: |
-          curl -f https://mariia-hub.com || exit 1
-          curl -f https://mariia-hub.com/health || exit 1
+          curl -f https://mariaborysevych.com || exit 1
+          curl -f https://mariaborysevych.com/health || exit 1
 
       - name: Create deployment tag
         run: |

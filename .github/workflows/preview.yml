@@ -84,8 +84,8 @@ jobs:
           vercel-args: '--scope=${{ secrets.VERCEL_ORG_ID }}'
           working-directory: ./
           alias-domains: |
-            preview-pr-${{ steps.pr.outputs.number }}.mariia-hub.com
-            pr-${{ steps.pr.outputs.number }}-preview.mariia-hub.com
+            preview-pr-${{ steps.pr.outputs.number }}.mariaborysevych.com
+            pr-${{ steps.pr.outputs.number }}-preview.mariaborysevych.com
 
       - name: Start preview server for tests
         run: |

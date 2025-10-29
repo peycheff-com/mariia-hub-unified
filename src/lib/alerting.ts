@@ -539,7 +539,7 @@ class AlertingService {
   private async sendEmailNotification(alert: Alert) {
     // This would integrate with your email service (Resend, SendGrid, etc.)
     const emailData = {
-      to: getEnvVar('VITE_ADMIN_EMAIL', ['ADMIN_EMAIL']) || 'admin@mariia-hub.com',
+      to: getEnvVar('VITE_ADMIN_EMAIL', ['ADMIN_EMAIL']) || 'admin@mariaborysevych.com',
       subject: `[${alert.severity.toUpperCase()}] ${alert.title}`,
       html: this.generateEmailTemplate(alert),
     };

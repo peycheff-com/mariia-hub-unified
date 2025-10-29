@@ -217,7 +217,7 @@ export const SEOOptimizer: React.FC<SEOOptimizerProps> = ({
       // Generate SERP preview
       setSerpPreview({
         title: metaTitle || title,
-        url: `mariia-hub.com/${urlSlug || 'blog'}`,
+        url: `mariaborysevych.com/${urlSlug || 'blog'}`,
         description: metaDescription || description.substring(0, 160),
         breadcrumbs: ['Home', 'Blog', content.category || 'Uncategorized'],
         richSnippet: {

@@ -202,7 +202,7 @@ jobs:
             - Environment: Preview
 
             **Test Credentials**:
-            - Admin: admin1@staging.mariia-hub.com / staging123!
+            - Admin: admin1@staging.mariaborysevych.com / staging123!
             - Client: Any email / client123!
 
             **Test Features**:
