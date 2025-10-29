@@ -180,7 +180,7 @@ export class DataImportExportService {
       const dateFormats = ['yyyy-MM-dd', 'dd/MM/yyyy', 'dd.MM.yyyy', 'MM/dd/yyyy'];
       let validDate = false;
 
-      for (const fmt of dateFormats) {
+      for (const _fmt of dateFormats) {
         try {
           const parsed = new Date(row.date);
           validDate = isValid(parsed);
@@ -403,7 +403,7 @@ export class DataImportExportService {
       'yyyy/MM/dd'
     ];
 
-    for (const fmt of formats) {
+    for (const _fmt of formats) {
       try {
         const parsed = parseISO(dateStr);
         if (isValid(parsed)) return parsed;

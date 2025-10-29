@@ -328,7 +328,7 @@ class SecurityAuditor {
               command.includes('chmod 777')
             );
 
-          for (const [script, command] of suspiciousScripts) {
+          for (const [script, _command] of suspiciousScripts) {
             this.warnings.push({
               type: 'SUSPICIOUS_SCRIPT',
               message: `Potentially dangerous script: ${script}`,

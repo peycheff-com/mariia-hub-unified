@@ -1026,7 +1026,7 @@ describe('UserService', () => {
           '1'.repeat(21), // Too long (>20)
         ];
 
-        for (const postalCode of invalidPostalCodes) {
+        for (const _postalCode of invalidPostalCodes) {
           mockSupabase.auth.getUser.mockResolvedValue({ data: { user: mockUser } });
 
           await expect(

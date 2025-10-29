@@ -266,7 +266,7 @@ export class ConversionOptimizationEngine {
 
       // Get A/B test metrics
       const testMetrics: Record<string, any> = {};
-      for (const [testId, test] of this.abTests.entries()) {
+      for (const [testId, _test] of this.abTests.entries()) {
         testMetrics[testId] = await this.getTestMetrics(testId, startDate, endDate);
       }
 

@@ -160,7 +160,7 @@ const BeautyServiceDetail = () => {
   const storageFallback = service?.slug ? `${storageBase}/${service.slug}-hero.png` : undefined;
 
   // Enhanced SEO for service detail page
-  const serviceStructuredData = service ? {
+  const serviceStructuredData = service && service.title ? {
     ...generateServiceSchema(service),
     ...generateBreadcrumbSchema(),
     mainEntity: {
@@ -196,7 +196,7 @@ const BeautyServiceDetail = () => {
       <Navigation mode="beauty" />
 
       {/* SEO Meta Tags */}
-      {service && (
+      {service && service.title && (
         <SEOHead
           title={`${service.title} - Beauty Service | Mariia Hub Warsaw`}
           description={service.description}

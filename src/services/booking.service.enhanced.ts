@@ -604,7 +604,7 @@ class EnhancedBookingService implements EnhancedBookingService {
       if (this.atomicServiceAvailable && bookings) {
         await cacheServiceAtomic.setAtomic(
           cacheKey,
-          bookings || [],
+          (bookings && bookings.length > 0) ? bookings : [],
           900, // 15 minutes
           ['user_bookings', `user:${userId}`]
         );

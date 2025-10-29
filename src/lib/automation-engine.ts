@@ -187,7 +187,7 @@ export class AutomationEngine {
     // Prepare content
     let content = template.content;
     if (variables) {
-      for (const [key, value] of Object.entries(variables)) {
+      for (const [key, _value] of Object.entries(variables)) {
         const actualValue = this.getVariableValue(key, context);
         content = content.replace(new RegExp(`{{${key}}}`, 'g'), String(actualValue));
       }

@@ -499,7 +499,7 @@ export const testComponentRerender = async (component: ReactElement, updates: an
 
   const renderTimes = [];
 
-  for (const update of updates) {
+  for (const _update of updates) {
     const start = performance.now();
     rerender(component);
     const end = performance.now();
