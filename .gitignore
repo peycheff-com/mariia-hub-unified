@@ -105,3 +105,4 @@ backups/
 
 # Local Netlify folder
 .netlify
+.vercel

@@ -1,24 +1,18 @@
 {
   "version": 2,
-  "name": "mariia-hub",
   "regions": ["fra1"],
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "installCommand": "npm ci",
   "devCommand": "npm run dev",
-  "functions": {
-    "src/api/**/*.ts": {
-      "runtime": "nodejs18.x"
-    }
-  },
-  "headers": [
+    "headers": [
     {
       "source": "/api/(.*)",
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "https://mariia-hub.com"
+          "value": "*"
         },
         {
           "key": "Access-Control-Allow-Methods",
@@ -27,14 +21,6 @@
         {
           "key": "Access-Control-Allow-Headers",
           "value": "Content-Type, Authorization"
-        },
-        {
-          "key": "Access-Control-Allow-Credentials",
-          "value": "false"
-        },
-        {
-          "key": "Access-Control-Max-Age",
-          "value": "600"
         },
         {
           "key": "Cache-Control",
@@ -61,27 +47,10 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
-        },
-        {
-          "key": "Cross-Origin-Resource-Policy",
-          "value": "same-origin"
         }
       ]
     },
-    {
-      "source": "/(.*\\.(js|css|png|jpg|jpeg|gif|ico|svg|webp|avif|woff|woff2))",
-      "headers": [
         {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        },
-        {
-          "key": "Cross-Origin-Resource-Policy",
-          "value": "same-origin"
-        }
-      ]
-    },
-    {
       "source": "/(.*)",
       "headers": [
         {
@@ -123,20 +92,7 @@
       ]
     }
   ],
-  "redirects": [
-    {
-      "source": "/api/:path*",
-      "destination": "https://:VITE_SUPABASE_URL/rest/v1/:path*",
-      "permanent": false,
-      "has": [
-        {
-          "type": "header",
-          "key": "authorization"
-        }
-      ]
-    }
-  ],
-  "rewrites": [
+    "rewrites": [
     {
       "source": "/admin/:path*",
       "destination": "/admin/:path*"
@@ -144,86 +100,6 @@
     {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
-    }
-  ],
-  "env": {
-    "VITE_APP_ENV": "preview"
-  },
-  "build": {
-    "env": {
-      "VITE_SUPABASE_URL": "@supabase_url",
-      "VITE_SUPABASE_ANON_KEY": "@supabase_anon_key",
-      "VITE_STRIPE_PUBLIC_KEY": "@stripe_public_key",
-      "VITE_GOOGLE_MAPS_API_KEY": "@google_maps_api_key",
-      "VITE_GA_MEASUREMENT_ID": "@ga_measurement_id",
-      "VITE_APP_ENV": "preview",
-      "VITE_ENABLE_ANALYTICS": "false",
-      "VITE_DEBUG_MODE": "true"
-    }
-  },
-  "preview": {
-    "env": {
-      "VITE_APP_ENV": "preview",
-      "VITE_SUPABASE_URL": "@preview_supabase_url",
-      "VITE_SUPABASE_ANON_KEY": "@preview_supabase_anon_key",
-      "VITE_STRIPE_PUBLIC_KEY": "@preview_stripe_public_key",
-      "VITE_ENABLE_ANALYTICS": "false",
-      "VITE_DEBUG_MODE": "true",
-      "VITE_ENABLE_TEST_MODE": "true"
-    },
-    "targets": [
-      {
-        "preset": "vercel-static-build"
-      }
-    ]
-  },
-  "github": {
-    "silent": true
-  },
-  "git": {
-    "commitErrorMessage": "🚨 Deployment failed",
-    "deployHookEnabled": true
-  },
-  "alias": [
-    {
-      "domain": "mariia-hub.com",
-      "type": "production"
-    },
-    {
-      "domain": "staging.mariia-hub.com",
-      "type": "staging"
-    }
-  ],
-  "domains": [
-    {
-      "domain": "mariia-hub.com",
-      "type": "production"
-    },
-    {
-      "domain": "staging.mariia-hub.com",
-      "type": "staging"
-    }
-  ],
-  "crons": [
-    {
-      "path": "/api/cleanup",
-      "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/backup",
-      "schedule": "0 3 * * 0"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/cleanup",
-      "dest": "/api/cleanup",
-      "methods": ["GET", "POST"]
-    },
-    {
-      "src": "/api/health",
-      "dest": "/api/health",
-      "methods": ["GET"]
     }
   ]
 }
