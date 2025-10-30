@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Mariia Hub</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<true/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>Default Configuration</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>LaunchScreenBackground</string>
+		<key>UIImageName</key>
+		<string>LaunchScreenIcon</string>
+	</dict>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>armv7</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Mariia Hub needs access to your health data to track fitness progress and provide personalized workout recommendations.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Mariia Hub needs permission to save workout data to HealthKit when you complete fitness sessions.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Mariia Hub needs camera access to let you take photos for before/after progress tracking and to communicate with specialists.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Mariia Hub needs photo library access to let you select images for your profile and progress tracking.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Mariia Hub needs contacts access to make it easier to invite friends and share your progress.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Mariia Hub needs location access to provide directions to appointment locations and find nearby services.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Mariia Hub needs microphone access for voice commands and communication features.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Mariia Hub uses Face ID to securely authenticate your identity and protect your personal information.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Your data will be used to deliver personalized ads and improve your experience with Mariia Hub.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>background-fetch</string>
+		<string>background-processing</string>
+		<string>remote-notification</string>
+		<string>background-app-refresh</string>
+	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSExceptionDomains</key>
+	<dict>
+		<key>mariaborysevych.com</key>
+		<dict>
+			<key>NSExceptionAllowsInsecureHTTPLoads</key>
+			<true/>
+			<key>NSExceptionMinimumTLSVersion</key>
+			<string>TLSv1.2</string>
+			<key>NSIncludesSubdomains</key>
+			<true/>
+		</dict>
+		<key>supabase.co</key>
+		<dict>
+			<key>NSExceptionRequiresForwardSecrecy</key>
+			<false/>
+		</dict>
+	</dict>
+	</dict>
+	<key>UIUserInterfaceStyle</key>
+	<string>Dark</string>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Mariia Hub needs calendar access to add your appointments and send you reminders.</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>Mariia Hub needs reminders access to help you stay on track with your beauty and fitness goals.</string>
+	<key>NSSiriUsageDescription</key>
+	<string>Mariia Hub uses Siri to let you book appointments and check your schedule using voice commands.</string>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleLightContent</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>pl</string>
+	</array>
+	<key>NSApplePayUsageDescription</key>
+	<string>Mariia Hub uses Apple Pay to provide secure and convenient payment processing for your appointments.</string>
+</dict>
+</plist>

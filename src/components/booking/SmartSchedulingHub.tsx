@@ -37,7 +37,7 @@ import {
 , schedulingAI } from '@/services/schedulingAI';
 import { predictNoShowRisk, trainNoShowModel } from '@/services/noShowPrediction';
 import { generateSmartReminders, getReminderAnalytics } from '@/services/smartReminderSystem';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 
 interface SmartSchedulingHubProps {
   serviceId?: string;
@@ -68,7 +68,7 @@ export const SmartSchedulingHub: React.FC<SmartSchedulingHubProps> = ({
     new Date().toISOString().split('T')[0]
   );
 
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   useEffect(() => {
     loadAllData();
@@ -99,7 +99,7 @@ export const SmartSchedulingHub: React.FC<SmartSchedulingHubProps> = ({
       await Promise.all(promises);
     } catch (error) {
       console.error('Error loading data:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to load scheduling data',
         variant: 'destructive'
@@ -195,12 +195,12 @@ export const SmartSchedulingHub: React.FC<SmartSchedulingHubProps> = ({
     setLoading(true);
     try {
       await trainNoShowModel();
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Success',
         description: 'No-show prediction model has been retrained',
       });
     } catch (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to train model',
         variant: 'destructive'
@@ -227,7 +227,7 @@ export const SmartSchedulingHub: React.FC<SmartSchedulingHubProps> = ({
           console.log('Unknown recommendation type:', rec.action.type);
       }
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Applied',
         description: `${rec.title} has been applied`,
       });
@@ -235,7 +235,7 @@ export const SmartSchedulingHub: React.FC<SmartSchedulingHubProps> = ({
       // Reload data
       loadAllData();
     } catch (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to apply recommendation',
         variant: 'destructive'

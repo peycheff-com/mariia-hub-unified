@@ -1,0 +1,240 @@
+# Cert-Manager Configuration for Mariia Hub
+# ========================================
+
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  labels:
+    app: cert-manager
+    environment: production
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@mariaborysevych.com
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    solvers:
+    - dns01:
+        cloudflare:
+          apiTokenSecretRef:
+            name: cloudflare-api-token-secret
+            key: api-token
+      selector:
+        dnsNames:
+        - mariaborysevych.com
+        - "*.mariaborysevych.com"
+    - http01:
+        ingress:
+          class: nginx-external
+      selector:
+        dnsZones:
+        - "mariaborysevych.com"
+
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+  labels:
+    app: cert-manager
+    environment: staging
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: admin@mariaborysevych.com
+    privateKeySecretRef:
+      name: letsencrypt-staging-account-key
+    solvers:
+    - http01:
+        ingress:
+          class: nginx-external
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mariia-hub-tls
+  namespace: mariia-hub
+  labels:
+    app: mariia-hub
+    component: certificate
+    environment: production
+  annotations:
+    cert-manager.io/issue-temporary-certificate: "true"
+    cert-manager.io/renew-before: "720h"
+    cert-manager.io/private-key-rotation-policy: "Always"
+spec:
+  secretName: mariia-hub-tls
+  duration: 2160h # 90 days
+  renewBefore: 720h # 30 days before expiration
+  privateKey:
+    rotationPolicy: Always
+    algorithm: ECDSA
+    size: 256
+  dnsNames:
+  - mariaborysevych.com
+  - www.mariaborysevych.com
+  - api.mariaborysevych.com
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mariia-hub-staging-tls
+  namespace: mariia-hub-staging
+  labels:
+    app: mariia-hub
+    component: certificate
+    environment: staging
+spec:
+  secretName: mariia-hub-staging-tls
+  duration: 2160h
+  renewBefore: 720h
+  dnsNames:
+  - staging.mariaborysevych.com
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+
+---
+# Cloudflare API Token Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cloudflare-api-token-secret
+  namespace: cert-manager
+  labels:
+    app: cert-manager
+    component: cloudflare-credentials
+type: Opaque
+data:
+  api-token: eW91ci1jbG91ZGZsYXJlLWFwaS10b2tlbg==
+
+---
+# Certificate Policies
+apiVersion: cert-manager.io/v1
+kind: CertificatePolicy
+metadata:
+  name: mariia-hub-policy
+  labels:
+    app: cert-manager
+    component: policy
+spec:
+  selector:
+    matchLabels:
+      app: mariia-hub
+  privateKeys:
+    rotationPolicy: Always
+    algorithm: ECDSA
+    size: 256
+  duration: 2160h
+  renewBefore: 720h
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+
+---
+# Self-signed Issuer for Internal Services
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: mariia-hub-selfsigned
+  labels:
+    app: cert-manager
+    environment: internal
+spec:
+  selfSigned: {}
+
+---
+# Internal Certificate for Services
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mariia-hub-internal-tls
+  namespace: mariia-hub
+  labels:
+    app: mariia-hub
+    component: internal-certificate
+    environment: production
+spec:
+  secretName: mariia-hub-internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  dnsNames:
+  - mariia-hub-app-service.mariia-hub.svc.cluster.local
+  - mariia-hub-app-service
+  issuerRef:
+    name: mariia-hub-selfsigned
+    kind: ClusterIssuer
+
+---
+# Certificate Request Monitoring
+apiVersion: cert-manager.io/v1
+kind: CertificateRequest
+metadata:
+  name: mariia-hub-monitoring
+  namespace: mariia-hub-monitoring
+  labels:
+    app: cert-manager
+    component: monitoring
+spec:
+  request:
+    csr: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t...
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+
+---
+# Certificate Status and Health Checks
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cert-monitoring-config
+  namespace: cert-manager
+  labels:
+    app: cert-manager
+    component: monitoring
+data:
+  monitoring.yml: |
+    groups:
+    - name: certificate.alerts
+      rules:
+      - alert: CertificateExpiringSoon
+        expr: cert_manager_certificate_expiration_timestamp_seconds - time() < 2592000
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Certificate {{ $labels.name }} is expiring soon"
+          description: "Certificate {{ $labels.name }} expires in {{ $value | humanizeDuration }}"
+
+      - alert: CertificateExpired
+        expr: cert_manager_certificate_expiration_timestamp_seconds - time() < 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Certificate {{ $labels.name }} has expired"
+          description: "Certificate {{ $labels.name }} expired {{ $value | humanizeDuration }} ago"
+
+      - alert: CertificateRenewalFailed
+        expr: cert_manager_certificate_ready_status != 1
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Certificate renewal failed for {{ $labels.name }}"
+          description: "Certificate {{ $labels.name }} renewal has failed for more than 15 minutes"
+
+      - alert: ACMEAccountRegistrationFailed
+        expr: cert_manager_acme_client_registration_failed == 1
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "ACME account registration failed"
+          description: "ACME account registration failed for issuer {{ $labels.issuer_name }}"

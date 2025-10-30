@@ -44,7 +44,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useToast } from '@/hooks/use-toast'
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"'
 import { cn } from '@/lib/utils'
 
 
@@ -109,7 +109,7 @@ const mockComplianceRecords: ComplianceRecord[] = [
 
 export const MarketingComplianceManager: React.FC<MarketingComplianceManagerProps> = ({ className }) => {
   const { t } = useTranslation()
-  const { toast } = useToast()
+  const { toast aria-live="polite" aria-atomic="true" } = useToast()
 
   const [records, setRecords] = useState<ComplianceRecord[]>(mockComplianceRecords)
   const [selectedRecord, setSelectedRecord] = useState<ComplianceRecord | null>(null)
@@ -186,7 +186,7 @@ export const MarketingComplianceManager: React.FC<MarketingComplianceManagerProp
     linkElement.setAttribute('download', exportFileDefaultName)
     linkElement.click()
 
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: t('report_generated', 'Report Generated'),
       description: t('compliance_report_exported', 'Compliance report has been exported')
     })
@@ -513,7 +513,7 @@ export const MarketingComplianceManager: React.FC<MarketingComplianceManagerProp
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Activity className="h-4 w-4" />
-                        <span>{t('push_notifications', 'Push Notifications')}</span>
+                        <span>{t('push_notification aria-live="polite" aria-atomic="true"s', 'Push Notifications')}</span>
                       </div>
                       <Switch
                         checked={complianceConfig.default_consent_preferences?.push_consent || false}
@@ -560,7 +560,7 @@ export const MarketingComplianceManager: React.FC<MarketingComplianceManagerProp
 
               <div className="flex justify-end">
                 <Button onClick={() => {
-                  toast({
+                  toast aria-live="polite" aria-atomic="true"({
                     title: t('preferences_saved', 'Preferences Saved'),
                     description: t('default_preferences_updated', 'Default consent preferences have been updated')
                   })
@@ -677,7 +677,7 @@ export const MarketingComplianceManager: React.FC<MarketingComplianceManagerProp
 
               <div className="flex justify-end">
                 <Button onClick={() => {
-                  toast({
+                  toast aria-live="polite" aria-atomic="true"({
                     title: t('settings_saved', 'Settings Saved'),
                     description: t('compliance_settings_updated', 'Compliance settings have been updated successfully')
                   })

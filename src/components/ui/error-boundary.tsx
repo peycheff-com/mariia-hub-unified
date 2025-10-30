@@ -152,8 +152,8 @@ export const useErrorHandler = () => {
   return React.useCallback((error: Error) => {
     log.error('Error caught by error handler:', error);
 
-    // You can show a toast notification here
-    // toast.error('An error occurred', {
+    // You can show a toast aria-live="polite" aria-atomic="true" notification aria-live="polite" aria-atomic="true" here
+    // toast aria-live="polite" aria-atomic="true".error('An error occurred', {
     //   description: error.message,
     // });
   }, []);

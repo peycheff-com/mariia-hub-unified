@@ -1,0 +1,481 @@
+name: Enhanced Accessibility Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run comprehensive accessibility audit daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of accessibility test to run'
+        required: true
+        default: 'comprehensive'
+        type: choice
+        options:
+        - comprehensive
+        - critical-only
+        - keyboard-navigation
+        - screen-reader
+        - color-contrast
+      environment:
+        description: 'Environment to test'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+
+env:
+  NODE_VERSION: '20'
+  ACCESSIBILITY_SCORE_THRESHOLD: 85
+  CRITICAL_VIOLATIONS_THRESHOLD: 0
+
+jobs:
+  accessibility-audit:
+    runs-on: ubuntu-latest
+    name: Accessibility Audit
+    strategy:
+      matrix:
+        viewport: ['mobile', 'tablet', 'desktop']
+        include:
+          - viewport: mobile
+            width: 375
+            height: 667
+          - viewport: tablet
+            width: 768
+            height: 1024
+          - viewport: desktop
+            width: 1280
+            height: 720
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm install --save-dev pa11y-ci lighthouse-ci
+
+      - name: Build application
+        run: |
+          npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          NODE_ENV: production
+
+      - name: Start application
+        run: |
+          npm run preview &
+          sleep 10
+
+      - name: Run axe-core accessibility audit
+        id: axe-audit
+        run: |
+          npx axe http://localhost:4173 \
+            --viewport ${{ matrix.width }}x${{ matrix.height }} \
+            --tags wcag2a,wcag2aa \
+            --exclude "**/*.map" \
+            --format json \
+            --output axe-results-${{ matrix.viewport }}.json
+
+          echo "axe-results-${{ matrix.viewport }}.json" >> $GITHUB_OUTPUT
+
+      - name: Run Pa11y CI accessibility tests
+        id: pa11y-test
+        run: |
+          npx pa11y-ci \
+            --sitemap http://localhost:4173/sitemap.xml \
+            --viewport ${{ matrix.width }}x${{ matrix.height }} \
+            --reporter json \
+            --reporter csv \
+            --threshold ${{ env.CRITICAL_VIOLATIONS_THRESHOLD }}
+
+      - name: Run Playwright accessibility tests
+        run: |
+          npx playwright test \
+            --config playwright.a11y.config.ts \
+            --grep "accessibility" \
+            --reporter=json \
+            --outputFile=test-results/accessibility-${{ matrix.viewport }}.json \
+            --project=${{ matrix.viewport }}
+
+      - name: Run Lighthouse accessibility audit
+        run: |
+          npx lhci autorun \
+            --config=.lighthouserc.js \
+            --collect.settings.viewport.mobile=${{ matrix.viewport == 'mobile' }} \
+            --collect.settings.viewport.height=${{ matrix.height }} \
+            --collect.settings.viewport.width=${{ matrix.width }}
+
+      - name: Analyze color contrast
+        run: |
+          node scripts/analyze-color-contrast.js \
+            --url http://localhost:4173 \
+            --viewport ${{ matrix.width }}x${{ matrix.height }} \
+            --output contrast-analysis-${{ matrix.viewport }}.json
+
+      - name: Calculate accessibility score
+        id: score-calculation
+        run: |
+          node scripts/calculate-accessibility-score.js \
+            --axe-results axe-results-${{ matrix.viewport }}.json \
+            --pa11y-results .pa11yci/report.json \
+            --threshold ${{ env.ACCESSIBILITY_SCORE_THRESHOLD }} \
+            --output score-${{ matrix.viewport }}.json
+
+      - name: Generate accessibility report
+        if: always()
+        run: |
+          node scripts/generate-accessibility-report.js \
+            --viewport ${{ matrix.viewport }} \
+            --axe-results axe-results-${{ matrix.viewport }}.json \
+            --playwright-results test-results/accessibility-${{ matrix.viewport }}.json \
+            --lighthouse-results .lighthouseci/results.json \
+            --contrast-results contrast-analysis-${{ matrix.viewport }}.json \
+            --output accessibility-report-${{ matrix.viewport }}.html
+
+      - name: Upload accessibility artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-results-${{ matrix.viewport }}
+          path: |
+            axe-results-${{ matrix.viewport }}.json
+            .pa11yci/
+            test-results/
+            .lighthouseci/
+            contrast-analysis-${{ matrix.viewport }}.json
+            score-${{ matrix.viewport }}.json
+            accessibility-report-${{ matrix.viewport }}.html
+          retention-days: 30
+
+      - name: Check accessibility thresholds
+        run: |
+          score=$(cat score-${{ matrix.viewport }}.json | jq '.score')
+          critical_violations=$(cat axe-results-${{ matrix.viewport }}.json | jq '.violations | map(select(.impact == "critical")) | length')
+
+          echo "Accessibility Score: $score"
+          echo "Critical Violations: $critical_violations"
+
+          if (( $(echo "$score < $ACCESSIBILITY_SCORE_THRESHOLD" | bc -l) )); then
+            echo "❌ Accessibility score ($score) below threshold ($ACCESSIBILITY_SCORE_THRESHOLD)"
+            exit 1
+          fi
+
+          if [ "$critical_violations" -gt "$CRITICAL_VIOLATIONS_THRESHOLD" ]; then
+            echo "❌ Critical violations ($critical_violations) exceed threshold ($CRITICAL_VIOLATIONS_THRESHOLD)"
+            exit 1
+          fi
+
+          echo "✅ Accessibility tests passed for ${{ matrix.viewport }} viewport"
+
+  keyboard-navigation-tests:
+    runs-on: ubuntu-latest
+    name: Keyboard Navigation Tests
+    needs: accessibility-audit
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: Run keyboard navigation tests
+        run: |
+          npx playwright test \
+            --grep "keyboard navigation" \
+            --reporter=json \
+            --outputFile=test-results/keyboard-navigation.json
+
+      - name: Validate tab order
+        run: |
+          node scripts/validate-tab-order.js \
+            --url http://localhost:4173 \
+            --output tab-order-validation.json
+
+      - name: Check focus management
+        run: |
+          node scripts/check-focus-management.js \
+            --url http://localhost:4173 \
+            --output focus-management.json
+
+      - name: Upload keyboard navigation results
+        uses: actions/upload-artifact@v4
+        with:
+          name: keyboard-navigation-results
+          path: |
+            test-results/keyboard-navigation.json
+            tab-order-validation.json
+            focus-management.json
+          retention-days: 30
+
+  screen-reader-tests:
+    runs-on: ubuntu-latest
+    name: Screen Reader Compatibility Tests
+    needs: accessibility-audit
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: Run screen reader tests
+        run: |
+          npx playwright test \
+            --grep "screen reader" \
+            --reporter=json \
+            --outputFile=test-results/screen-reader.json
+
+      - name: Validate ARIA implementation
+        run: |
+          node scripts/validate-aria.js \
+            --url http://localhost:4173 \
+            --output aria-validation.json
+
+      - name: Test semantic HTML
+        run: |
+          node scripts/test-semantic-html.js \
+            --url http://localhost:4173 \
+            --output semantic-html.json
+
+      - name: Upload screen reader test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: screen-reader-results
+          path: |
+            test-results/screen-reader.json
+            aria-validation.json
+            semantic-html.json
+          retention-days: 30
+
+  comprehensive-report:
+    runs-on: ubuntu-latest
+    name: Generate Comprehensive Report
+    needs: [accessibility-audit, keyboard-navigation-tests, screen-reader-tests]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Generate comprehensive accessibility report
+        run: |
+          node scripts/generate-comprehensive-accessibility-report.js \
+            --artifacts-dir . \
+            --output comprehensive-accessibility-report.html \
+            --json-output comprehensive-accessibility-report.json
+
+      - name: Generate accessibility trend analysis
+        run: |
+          node scripts/generate-accessibility-trend.js \
+            --output accessibility-trend.json
+
+      - name: Calculate compliance metrics
+        run: |
+          node scripts/calculate-compliance-metrics.js \
+            --output compliance-metrics.json
+
+      - name: Upload comprehensive report
+        uses: actions/upload-artifact@v4
+        with:
+          name: comprehensive-accessibility-report
+          path: |
+            comprehensive-accessibility-report.html
+            comprehensive-accessibility-report.json
+            accessibility-trend.json
+            compliance-metrics.json
+          retention-days: 90
+
+      - name: Comment PR with accessibility results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let comment = '## 🔍 Accessibility Test Results\n\n';
+
+            try {
+              const report = JSON.parse(fs.readFileSync('comprehensive-accessibility-report.json', 'utf8'));
+
+              comment += `### Overall Score: ${report.overallScore}/100\n\n`;
+
+              if (report.overallScore >= 90) {
+                comment += '✅ **Excellent accessibility compliance**\n\n';
+              } else if (report.overallScore >= 80) {
+                comment += '⚠️ **Good accessibility compliance with room for improvement**\n\n';
+              } else {
+                comment += '❌ **Accessibility needs significant improvement**\n\n';
+              }
+
+              comment += '### 📊 Summary by Viewport:\n';
+              Object.entries(report.scoresByViewport).forEach(([viewport, data]) => {
+                comment += `- **${viewport}**: ${data.score}/100 (${data.violations.critical} critical, ${data.violations.total} total)\n`;
+              });
+
+              comment += '\n### 🎯 Key Issues:\n';
+              report.topIssues.slice(0, 5).forEach(issue => {
+                comment += `- **${issue.category}**: ${issue.description}\n`;
+              });
+
+              if (report.topIssues.length > 5) {
+                comment += `- ... and ${report.topIssues.length - 5} more issues\n`;
+              }
+
+              comment += '\n### 📋 Next Steps:\n';
+              if (report.criticalViolations > 0) {
+                comment += '- Fix all critical violations immediately\n';
+              }
+              if (report.overallScore < 90) {
+                comment += '- Address medium-priority issues to improve score\n';
+              }
+              comment += '- Review detailed report for specific recommendations\n';
+
+              comment += '\n📄 [View Full Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifact-916238876)\n';
+
+            } catch (error) {
+              comment = '## 🔍 Accessibility Test Results\n\n';
+              comment += '❌ Accessibility tests failed or report could not be generated.\n\n';
+              comment += `Error: ${error.message}\n`;
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  accessibility-regression-detection:
+    runs-on: ubuntu-latest
+    name: Accessibility Regression Detection
+    needs: accessibility-audit
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download accessibility results
+        uses: actions/download-artifact@v4
+        with:
+          name: accessibility-results-desktop
+          path: ./current-results/
+
+      - name: Checkout main branch for baseline
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: ./baseline/
+
+      - name: Compare with baseline
+        run: |
+          node scripts/detect-accessibility-regressions.js \
+            --current ./current-results/ \
+            --baseline ./baseline/ \
+            --output regression-report.json
+
+      - name: Report regressions
+        if: failure()
+        run: |
+          echo "Accessibility regressions detected!"
+          cat regression-report.json | jq '.regressions | length'
+
+      - name: Fail on regressions
+        if: failure()
+        run: exit 1
+
+  accessibility-performance-monitoring:
+    runs-on: ubuntu-latest
+    name: Accessibility Performance Monitoring
+    needs: accessibility-audit
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: accessibility-results-*
+          path: ./results/
+
+      - name: Analyze accessibility performance
+        run: |
+          node scripts/analyze-accessibility-performance.js \
+            --results-dir ./results/ \
+            --output accessibility-performance.json
+
+      - name: Update accessibility metrics dashboard
+        if: github.ref == 'refs/heads/main'
+        run: |
+          node scripts/update-accessibility-dashboard.js \
+            --metrics accessibility-performance.json
+
+      - name: Send notifications for critical issues
+        if: failure()
+        run: |
+          node scripts/send-accessibility-alerts.js \
+            --metrics accessibility-performance.json

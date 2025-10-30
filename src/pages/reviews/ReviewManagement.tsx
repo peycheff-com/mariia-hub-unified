@@ -26,7 +26,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 import { Review, ReviewVerification } from '@/types/review';
 import ReviewAnalytics from '@/components/reviews/ReviewAnalytics';
 import ReviewVerificationSystem from '@/components/reviews/ReviewVerificationSystem';
@@ -39,7 +39,7 @@ import { EnhancedReviewAggregator, scheduleReviewAggregation } from '@/integrati
 const ReviewManagement: React.FC = () => {
   const { tab = 'overview' } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -89,7 +89,7 @@ const ReviewManagement: React.FC = () => {
       }
     } catch (error) {
       console.error('Error loading data:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to load review data',
         variant: 'destructive',
@@ -141,14 +141,14 @@ const ReviewManagement: React.FC = () => {
           break;
       }
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Success',
         description: `Review ${action}d successfully`,
       });
 
       loadData();
     } catch (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: `Failed to ${action} review`,
         variant: 'destructive',
@@ -160,13 +160,13 @@ const ReviewManagement: React.FC = () => {
     setIsAggregating(true);
     try {
       const aggregatedReviews = await scheduleReviewAggregation();
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Success',
         description: `Aggregated ${aggregatedReviews.length} reviews from social platforms`,
       });
       loadData();
     } catch (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to aggregate reviews',
         variant: 'destructive',
@@ -208,7 +208,7 @@ const ReviewManagement: React.FC = () => {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to export reviews',
         variant: 'destructive',
@@ -515,19 +515,19 @@ const ReviewManagement: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Auto-approve reviews</label>
+                <label className="text-sm font-medium" htmlFor="auto-approve-reviews">Auto-approve reviews</label>
                 <p className="text-xs text-muted-foreground">
                   Automatically publish reviews that pass verification
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium">Require photo verification</label>
+                <label className="text-sm font-medium" htmlFor="require-photo-verification">Require photo verification</label>
                 <p className="text-xs text-muted-foreground">
                   Require photos to have valid EXIF metadata for verification
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium">Enable AI responses</label>
+                <label className="text-sm font-medium" htmlFor="enable-ai-responses">Enable AI responses</label>
                 <p className="text-xs text-muted-foreground">
                   Generate AI-powered responses to reviews
                 </p>

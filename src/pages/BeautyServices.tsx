@@ -11,12 +11,12 @@ import ServiceCardSkeleton from "@/components/ServiceCardSkeleton";
 import EmptyState from "@/components/EmptyState";
 import AvailableSlotsList from "@/components/AvailableSlotsList";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 
 
 const BeautyServices = () => {
   const { i18n } = useTranslation();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const [activeCategory, setActiveCategory] = useState("all");
   const [sortBy, setSortBy] = useState<"popular" | "price-low" | "price-high" | "duration">("popular");
   const [services, setServices] = useState<any[]>([]);
@@ -35,7 +35,7 @@ const BeautyServices = () => {
         if (error) throw error;
         setServices(data || []);
       } catch (error) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Error",
           description: "Could not load services",
           variant: "destructive",
@@ -46,7 +46,7 @@ const BeautyServices = () => {
     };
 
     fetchServices();
-  }, [toast]);
+  }, [toast aria-live="polite" aria-atomic="true"]);
 
   const getCategoryFromSlug = (slug: string): string => {
     if (slug.includes('makijaz-permanentny')) return 'permanent-makeup';

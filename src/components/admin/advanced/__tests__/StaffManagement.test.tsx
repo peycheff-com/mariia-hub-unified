@@ -11,9 +11,9 @@ vi.mock('@/integrations/supabase/client', () => ({
   supabase: createSupabaseMock(),
 }))
 
-vi.mock('@/hooks/use-toast', () => ({
+vi.mock('@/hooks/use-toast aria-live="polite" aria-atomic="true"', () => ({
   useToast: () => ({
-    toast: vi.fn(),
+    toast aria-live="polite" aria-atomic="true": vi.fn(),
   }),
 }))
 
@@ -61,7 +61,7 @@ vi.mock('@/components/ui/input', () => ({
 
 vi.mock('@/components/ui/label', () => ({
   Label: ({ children, className, ...props }: any) => (
-    <label className={className} data-testid="label" {...props}>{children}</label>
+    <label className={className} data-testid="label" {...props} htmlFor="children">{children}</label>
   ),
 }))
 
@@ -134,7 +134,7 @@ vi.mock('@/components/ui/avatar', () => ({
     <div className={className} data-testid="avatar-fallback" {...props}>{children}</div>
   ),
   AvatarImage: ({ src, className, ...props }: any) => (
-    <img src={src} className={className} data-testid="avatar-image" {...props} />
+    <img src={src} className={className} data-testid="avatar-image" {...props} alt="User profile picture" />
   ),
 }))
 
@@ -272,9 +272,9 @@ describe('StaffManagement', () => {
       return mockSupabase.from(table)
     })
 
-    vi.mock('@/hooks/use-toast', () => ({
+    vi.mock('@/hooks/use-toast aria-live="polite" aria-atomic="true"', () => ({
       useToast: () => ({
-        toast: mockToast,
+        toast aria-live="polite" aria-atomic="true": mockToast,
       }),
     }))
   })

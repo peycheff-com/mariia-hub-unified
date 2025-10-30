@@ -1,0 +1,368 @@
+# Staging Environment Configuration
+# Generated: {{timestamp}}
+# Environment: {{environment}}
+# Type: {{type}}
+# Name: {{name}}
+# Branch: {{gitBranch}}
+# Commit: {{gitCommit}}
+
+# Basic Information
+name: {{name}}
+type: staging
+description: "Staging environment for {{name}} - Branch: {{gitBranch}}"
+namespace: {{namespace}}
+
+# Domain Configuration
+domain: {{domain}}
+domains:
+  - {{domain}}
+  - api.{{domain}}
+  - admin.{{domain}}
+  - api-admin.{{domain}}
+
+# Resource Configuration
+resources:
+  cpu: "1000m"
+  memory: "1Gi"
+  storage: "10Gi"
+  replicas: 1
+  maxReplicas: 3
+  priority: 75
+
+# Service Configuration
+services:
+  app:
+    image: "mariaborysevych/app:{{gitBranch}}"
+    port: 3000
+    env:
+      NODE_ENV: staging
+      APP_NAME: "Mariia Hub - {{name}} (Staging)"
+      APP_URL: "https://{{domain}}"
+      APP_ENV: staging
+      ENVIRONMENT_NAME: {{name}}
+      GIT_BRANCH: {{gitBranch}}
+      GIT_COMMIT: {{gitCommit}}
+
+      # Database Configuration
+      DATABASE_URL: "{{secrets.DATABASE_URL}}"
+      DATABASE_SSL: true
+      DATABASE_POOL_MIN: 2
+      DATABASE_POOL_MAX: 10
+
+      # Redis Configuration
+      REDIS_URL: "redis://{{namespace}}-redis:6379"
+      REDIS_PASSWORD: "{{secrets.REDIS_PASSWORD}}"
+      CACHE_TTL: 300
+
+      # Authentication & Security
+      SESSION_SECRET: "{{secrets.SESSION_SECRET}}"
+      JWT_SECRET: "{{secrets.JWT_SECRET}}"
+      JWT_EXPIRES_IN: "7d"
+
+      # External Services
+      SUPABASE_URL: "{{secrets.SUPABASE_URL}}"
+      SUPABASE_ANON_KEY: "{{secrets.SUPABASE_ANON_KEY}}"
+      SUPABASE_SERVICE_ROLE_KEY: "{{secrets.SUPABASE_SERVICE_ROLE_KEY}}"
+
+      STRIPE_PUBLISHABLE_KEY: "{{secrets.STRIPE_PUBLISHABLE_KEY}}"
+      STRIPE_WEBHOOK_SECRET: "{{secrets.STRIPE_WEBHOOK_SECRET}}"
+
+      # Email Service
+      RESEND_API_KEY: "{{secrets.RESEND_API_KEY}}"
+      RESEND_FROM_EMAIL: "staging@mariaborysevych.com"
+
+      # Analytics and Monitoring
+      SENTRY_DSN: "{{secrets.SENTRY_DSN}}"
+      GA4_MEASUREMENT_ID: "{{secrets.GA4_MEASUREMENT_ID}}"
+
+      # Feature Flags
+      FEATURE_ANALYTICS: true
+      FEATURE_MONITORING: true
+      FEATURE_DEBUG: false
+      FEATURE_VERBOSE_LOGS: true
+      FEATURE_ERROR_TRACKING: true
+      FEATURE_PERFORMANCE_MONITORING: true
+
+      # Logging
+      LOG_LEVEL: info
+      LOG_FORMAT: json
+
+      # Rate Limiting
+      RATE_LIMIT_WINDOW_MS: 60000
+      RATE_LIMIT_MAX_REQUESTS: 500
+
+      # CORS
+      CORS_ORIGINS: "https://{{domain}},https://staging.mariaborysevych.com,https://admin.{{domain}}"
+
+      # File Upload
+      MAX_FILE_SIZE: 10485760
+      ALLOWED_FILE_TYPES: "jpg,jpeg,png,webp,pdf"
+
+      # Email Configuration
+      SMTP_HOST: "{{secrets.SMTP_HOST}}"
+      SMTP_PORT: 587
+      SMTP_SECURE: false
+      SMTP_USER: "{{secrets.SMTP_USER}}"
+      SMTP_PASS: "{{secrets.SMTP_PASS}}"
+
+      # API Configuration
+      API_TIMEOUT: 30000
+      API_RETRY_ATTEMPTS: 3
+      API_RETRY_DELAY: 1000
+
+    healthCheck:
+      path: /api/health
+      interval: 30
+      timeout: 10
+      retries: 3
+      startPeriod: 60
+      successThreshold: 1
+      failureThreshold: 3
+
+    resources:
+      limits:
+        cpu: "2000m"
+        memory: "2Gi"
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+
+    volumes:
+      - name: uploads
+        path: /app/uploads
+        type: volume
+      - name: logs
+        path: /app/logs
+        type: volume
+      - name: temp
+        path: /app/tmp
+        type: tmpfs
+
+    ports:
+      - containerPort: 3000
+        name: http
+        protocol: TCP
+
+  database:
+    type: postgresql
+    version: "15"
+    size: medium
+    backup: true
+    backupSchedule: "0 2 * * *"
+    retention: 14
+    replicas: 1
+    encryption: true
+    performanceInsights: true
+
+  redis:
+    enabled: true
+    size: medium
+    version: "7"
+    persistence: true
+    backup: false
+    clustering: false
+    evictionPolicy: "allkeys-lru"
+
+  cdn:
+    enabled: true
+    provider: vercel
+    cacheTTL: 1800
+    compression: true
+    minification: true
+
+# Security Configuration
+security:
+  ssl: true
+  sslCertificate:
+    type: letsencrypt
+
+  firewall: true
+  firewallRules:
+    - protocol: TCP
+      port: 80
+      action: allow
+      description: "HTTP redirect to HTTPS"
+    - protocol: TCP
+      port: 443
+      action: allow
+      description: "HTTPS traffic"
+    - protocol: TCP
+      port: 3000
+      source: "10.0.0.0/8"
+      action: allow
+      description: "Internal traffic"
+    - protocol: TCP
+      port: 22
+      source: "10.0.0.0/8"
+      action: allow
+      description: "SSH access (internal only)"
+
+  rateLimit:
+    enabled: true
+    requests: 500
+    windowMs: 60000
+    skipSuccessfulRequests: false
+    skipFailedRequests: false
+    standardHeaders: true
+    legacyHeaders: false
+
+  cors:
+    enabled: true
+    origins:
+      - "https://{{domain}}"
+      - "https://admin.{{domain}}"
+      - "https://staging.mariaborysevych.com"
+      - "https://api.{{domain}}"
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"]
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
+    exposedHeaders: []
+    credentials: true
+    maxAge: 86400
+    preflightContinue: false
+    optionsSuccessStatus: 204
+
+  authentication:
+    enabled: true
+    type: jwt
+    sessionTimeout: 3600
+
+# Monitoring Configuration
+monitoring:
+  enabled: true
+
+  metrics:
+    enabled: true
+    port: 9090
+    path: /metrics
+    interval: 15
+
+  logging:
+    enabled: true
+    level: info
+    format: json
+    destination: console
+    retention: 14
+
+  tracing:
+    enabled: true
+    jaeger:
+      endpoint: "{{secrets.JAEGER_ENDPOINT}}"
+      service: "mariaborysevych-{{name}}"
+      samplingRate: 0.1
+
+  alerts:
+    enabled: true
+    channels: ["email", "slack"]
+    rules:
+      - name: "High Error Rate"
+        condition: "error_rate"
+        threshold: 5
+        duration: 300
+        severity: "warning"
+      - name: "High Response Time"
+        condition: "response_time_p95"
+        threshold: 2000
+        duration: 300
+        severity: "warning"
+      - name: "Service Down"
+        condition: "service_availability"
+        threshold: 99
+        duration: 60
+        severity: "critical"
+
+# Backup Configuration
+backup:
+  enabled: true
+  schedule: "0 2 * * *"
+  retention: 14
+  destination:
+    type: s3
+    bucket: "mariaborysevych-backups-staging"
+    path: "{{environment}}/{{name}}"
+    encryption: true
+    compression: true
+  exclude:
+    - "node_modules"
+    - "*.log"
+    - "tmp/*"
+    - ".git"
+
+# Auto-scaling Configuration
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilization: 70
+  targetMemoryUtilization: 80
+  scaleUpPeriod: 60
+  scaleDownPeriod: 300
+  metrics: ["cpu", "memory"]
+
+# Environment Variables
+environmentVariables:
+  DEPLOYMENT_TIMESTAMP: "{{timestamp}}"
+  DEPLOYED_BY: "{{gitBranch}}"
+  CONFIG_VERSION: "v2.0.0"
+
+# Labels and Annotations
+labels:
+  app: "mariaborysevych"
+  environment: "{{environment}}"
+  type: "{{type}}"
+  managed-by: "environment-manager"
+  version: "{{gitCommit}}"
+
+annotations:
+  "mariaborysevych.com/deployment-timestamp": "{{timestamp}}"
+  "mariaborysevych.com/git-branch": "{{gitBranch}}"
+  "mariaborysevych.com/git-commit": "{{gitCommit}}"
+  "mariaborysevych.com/config-version": "v2.0.0"
+
+# Lifecycle Configuration
+lifecycle:
+  sleepSchedule:
+    enabled: true
+    timezone: "Europe/Warsaw"
+    sleepTime: "23:00"
+    wakeTime: "07:00"
+    weekends: true
+
+# Integration Settings
+integrations:
+  git:
+    branch: "{{gitBranch}}"
+    commit: "{{gitCommit}}"
+    deployOnPush: true
+
+  ci_cd:
+    enabled: true
+    provider: "github-actions"
+    pipeline: "staging-deploy"
+    artifacts: true
+
+  monitoring:
+    provider: "prometheus"
+    endpoint: "{{secrets.PROMETHEUS_ENDPOINT}}"
+
+# Feature Flags
+features:
+  debug: false
+  hotReload: false
+  verboseLogs: true
+  profiling: false
+  maintenanceMode: false
+  canaryDeployments: false
+  blueGreenDeployments: false
+  a_b_testing: false
+
+# Metadata
+metadata:
+  owner: "engineering-team"
+  team: "backend"
+  project: "mariaborysevych-platform"
+  costCenter: "engineering"
+  environment: "staging"
+  purpose: "testing-and-validation"
+  sla: "99.5%"
+  compliance: ["GDPR", "SOC2"]
+  tags: ["staging", "testing", "beauty-platform", "booking-system"]

@@ -30,7 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 
 interface VerificationRequest {
   id: string;
@@ -73,7 +73,7 @@ export const ReviewVerificationSystem = () => {
   const [selectedFraud, setSelectedFraud] = useState<FraudDetection | null>(null);
   const [activeTab, setActiveTab] = useState("pending");
   const [filterType, setFilterType] = useState("all");
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   useEffect(() => {
     loadVerificationRequests();
@@ -117,7 +117,7 @@ export const ReviewVerificationSystem = () => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -155,7 +155,7 @@ export const ReviewVerificationSystem = () => {
       .eq("id", requestId);
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -173,7 +173,7 @@ export const ReviewVerificationSystem = () => {
           .eq("id", request.review_id);
       }
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Verification Approved",
         description: "Review has been verified successfully",
       });
@@ -195,13 +195,13 @@ export const ReviewVerificationSystem = () => {
       .eq("id", requestId);
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Verification Rejected",
         description: "Verification request has been rejected",
       });
@@ -227,19 +227,19 @@ export const ReviewVerificationSystem = () => {
 
       if (data.verified) {
         await approveVerification(requestId, `ai_${data.method}`);
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "AI Verification Complete",
           description: `Review verified using AI: ${data.method}`,
         });
       } else {
         await rejectVerification(requestId, data.reason);
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "AI Verification Failed",
           description: `Reason: ${data.reason}`,
         });
       }
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -253,7 +253,7 @@ export const ReviewVerificationSystem = () => {
 
       if (error) throw error;
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Fraud Detection Complete",
         description: `Analyzed ${data.analyzed} reviews, flagged ${data.flagged}`,
       });
@@ -261,7 +261,7 @@ export const ReviewVerificationSystem = () => {
       loadFraudDetections();
       loadVerificationRequests();
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -280,13 +280,13 @@ export const ReviewVerificationSystem = () => {
       .eq("id", flagId);
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Flag Resolved",
         description: `Fraud flag resolved with action: ${action}`,
       });

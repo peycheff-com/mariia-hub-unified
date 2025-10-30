@@ -1,0 +1,505 @@
+# Default values for Mariia Hub Helm Chart
+# =======================================
+
+# Global Configuration
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: "mariia-hub-ssd-premium"
+  commonLabels: {}
+  commonAnnotations: {}
+
+# Image Configuration
+image:
+  registry: docker.io
+  repository: mariia-hub
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+# Build Information
+build:
+  sha: "latest"
+  date: "2024-01-01"
+  time: "00:00:00"
+
+# Replicas and Scaling
+replicaCount: 3
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+
+# Resource Management
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+    ephemeralStorage: 1Gi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+    ephemeralStorage: 512Mi
+
+# Security Context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+  fsGroup: 1001
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+    - ALL
+
+# Container Security
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+    - ALL
+  runAsNonRoot: true
+  runAsUser: 1001
+
+# Service Configuration
+service:
+  type: ClusterIP
+  ports:
+    http: 80
+    https: 443
+    metrics: 9090
+  annotations: {}
+
+# Ingress Configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: SAMEORIGIN";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+  hosts:
+    - host: mariaborysevych.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: mariia-hub-tls
+      hosts:
+        - mariaborysevych.com
+
+# Persistence Configuration
+persistence:
+  enabled: true
+  storageClass: "mariia-hub-ssd-premium"
+  accessModes:
+    - ReadWriteOnce
+  size: 10Gi
+  annotations: {}
+
+# Volumes
+volumes:
+  nginxCache:
+    enabled: true
+    storageClass: "mariia-hub-ssd-standard"
+    accessModes: ["ReadWriteMany"]
+    size: 30Gi
+    mountPath: /var/cache/nginx
+  appLogs:
+    enabled: true
+    storageClass: "mariia-hub-ssd-standard"
+    accessModes: ["ReadWriteMany"]
+    size: 50Gi
+    mountPath: /var/log/nginx
+
+# Liveness and Readiness Probes
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  successThreshold: 1
+  failureThreshold: 3
+
+startupProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 30
+
+# Node Selection and Affinity
+nodeSelector:
+  kubernetes.io/os: linux
+  kubernetes.io/arch: amd64
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - mariia-hub
+          - key: component
+            operator: In
+            values:
+            - app
+        topologyKey: kubernetes.io/hostname
+    - weight: 50
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - mariia-hub
+          - key: component
+            operator: In
+            values:
+            - app
+        topologyKey: topology.kubernetes.io/zone
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# Network Policy
+networkPolicy:
+  enabled: true
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: ingress-nginx
+      - namespaceSelector:
+          matchLabels:
+            name: kube-system
+      - podSelector:
+          matchLabels:
+            app: mariia-hub
+  egress:
+    - to:
+      - podSelector:
+          matchLabels:
+            app: mariia-hub
+            component: postgres
+      - podSelector:
+          matchLabels:
+            app: mariia-hub
+            component: redis
+    - to: []
+      ports:
+      - protocol: TCP
+        port: 443
+      - protocol: TCP
+        port: 80
+
+# Environment Variables
+env:
+  - name: NODE_ENV
+    value: "production"
+  - name: APP_NAME
+    value: "Mariia Hub"
+  - name: APP_VERSION
+    value: "1.0.0"
+  - name: APP_URL
+    value: "https://mariaborysevych.com"
+  - name: DEFAULT_CURRENCY
+    value: "PLN"
+  - name: DEFAULT_LOCALE
+    value: "en"
+  - name: ENABLE_ANALYTICS
+    value: "true"
+  - name: ENABLE_PWA
+    value: "true"
+  - name: LOG_LEVEL
+    value: "info"
+
+# Secrets
+secrets:
+  enabled: true
+  existingSecret: ""
+  annotations: {}
+
+# ConfigMaps
+configMaps:
+  enabled: true
+  existingConfigMap: ""
+  annotations: {}
+
+# PostgreSQL Configuration (using Bitnami chart)
+postgresql:
+  enabled: true
+  auth:
+    existingSecret: mariia-hub-postgres-secrets
+    secretKeys:
+      adminPasswordKey: postgres-password
+      userPasswordKey: postgres-password
+      replicationPasswordKey: postgres-replication-password
+  primary:
+    persistence:
+      enabled: true
+      storageClass: "mariia-hub-ssd-premium"
+      size: 100Gi
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 2Gi
+      requests:
+        cpu: 1000m
+        memory: 1Gi
+    configuration: |
+      max_connections = 200
+      shared_buffers = 256MB
+      effective_cache_size = 1GB
+      work_mem = 4MB
+      maintenance_work_mem = 64MB
+      checkpoint_completion_target = 0.9
+      wal_buffers = 16MB
+      default_statistics_target = 100
+      random_page_cost = 1.1
+      effective_io_concurrency = 200
+  readReplicas:
+    replicaCount: 1
+    persistence:
+      enabled: true
+      storageClass: "mariia-hub-ssd-standard"
+      size: 100Gi
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+
+# Redis Configuration (using Bitnami chart)
+redis:
+  enabled: true
+  auth:
+    existingSecret: mariia-hub-redis-secrets
+    existingSecretPasswordKey: redis-password
+  master:
+    persistence:
+      enabled: true
+      storageClass: "mariia-hub-redis-io-optimized"
+      size: 20Gi
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+  replica:
+    replicaCount: 1
+    persistence:
+      enabled: true
+      storageClass: "mariia-hub-ssd-standard"
+      size: 20Gi
+    resources:
+      limits:
+        cpu: 250m
+        memory: 256Mi
+      requests:
+        cpu: 125m
+        memory: 128Mi
+
+# Monitoring Configuration
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    namespace: "mariia-hub-monitoring"
+    labels:
+      release: prometheus-operator
+    interval: 30s
+    scrapeTimeout: 10s
+  prometheusRule:
+    enabled: true
+    namespace: "mariia-hub-monitoring"
+    labels:
+      release: prometheus-operator
+    rules:
+      - alert: MariiaHubDown
+        expr: up{job="mariia-hub-app"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Mariia Hub is down"
+          description: "Mariia Hub has been down for more than 5 minutes"
+      - alert: MariiaHubHighCPU
+        expr: rate(container_cpu_usage_seconds_total{pod=~"mariia-hub-app-.*"}[5m]) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Mariia Hub high CPU usage"
+          description: "Mariia Hub CPU usage is above 80% for more than 10 minutes"
+      - alert: MariiaHubHighMemory
+        expr: container_memory_usage_bytes{pod=~"mariia-hub-app-.*"} / container_spec_memory_limit_bytes{pod=~"mariia-hub-app-.*"} > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Mariia Hub high memory usage"
+          description: "Mariia Hub memory usage is above 90% for more than 10 minutes"
+
+# Service Mesh Configuration (Istio)
+istio:
+  enabled: false
+  mTLS:
+    mode: STRICT
+  trafficPolicy:
+    loadBalancer:
+      simple: LEAST_CONN
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        http1MaxPendingRequests: 50
+        maxRequestsPerConnection: 10
+    circuitBreaker:
+      consecutiveErrors: 3
+      interval: 30s
+      baseEjectionTime: 30s
+
+# Backup Configuration
+backup:
+  enabled: true
+  schedule: "0 2 * * *"
+  retention: "30d"
+  destination: "s3://mariia-hub-backups"
+  annotations: {}
+
+# Pod Annotations
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+  prometheus.io/path: "/metrics"
+  checksum/config: ""
+
+# Pod Labels
+podLabels:
+  app.kubernetes.io/name: mariia-hub
+  app.kubernetes.io/component: app
+  app.kubernetes.io/managed-by: Helm
+
+# Init Containers
+initContainers: []
+
+# Sidecars
+sidecars: []
+
+# Extra Containers
+extraContainers: []
+
+# Volumes to add to the pod
+extraVolumes: []
+
+# Volume mounts to add to the container
+extraVolumeMounts: []
+
+# Additional environment variables from configMaps or secrets
+extraEnv: []
+extraEnvFrom: []
+
+# Lifecycle hooks
+lifecycle: {}
+
+# Additional manifests to deploy
+extraManifests: []
+
+# Tests configuration
+tests:
+  enabled: true
+  image:
+    repository: curlimages/curl
+    tag: latest
+    pullPolicy: IfNotPresent
+
+# RBAC configuration
+rbac:
+  create: false
+  rules: []
+
+# ServiceAccount configuration
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# Priority class
+priorityClass: ""
+
+# Pod management policy
+podManagementPolicy: Parallel
+
+# Update strategy
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 1
+    maxSurge: 1
+
+# DNS configuration
+dnsConfig: {}
+
+# Host aliases
+hostAliases: []
+
+# Additional labels for all resources
+commonLabels: {}
+
+# Additional annotations for all resources
+commonAnnotations: {}

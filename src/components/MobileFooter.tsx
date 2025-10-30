@@ -46,7 +46,7 @@ const MobileFooter = ({ mode: propMode }: MobileFooterProps) => {
   const items = getItems();
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 glass-card backdrop-blur-xl border-t z-50 safe-area-inset-bottom">
+    <nav aria-label="Main navigation" className="md:hidden fixed bottom-0 left-0 right-0 glass-card backdrop-blur-xl border-t z-50 safe-area-inset-bottom">
       <div className="grid grid-cols-5 gap-0.5 py-1.5 px-1">
         {items.map((item) => {
           const isActive = location.pathname === item.href;

@@ -339,7 +339,7 @@ export const TranslationEditor: React.FC<TranslationEditorProps> = ({
           {showSettings && (
             <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
               <div>
-                <label className="text-sm font-medium mb-2 block">
+                <label className="text-sm font-medium mb-2 block" htmlFor="min-score-tmsettings-minscore">
                   Min Score: {tmSettings.minScore}
                 </label>
                 <input
@@ -354,7 +354,7 @@ export const TranslationEditor: React.FC<TranslationEditorProps> = ({
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-2 block">
+                <label className="text-sm font-medium mb-2 block" htmlFor="max-results-tmsettings-maxresults">
                   Max Results: {tmSettings.maxResults}
                 </label>
                 <input
@@ -606,7 +606,7 @@ export const TranslationEditor: React.FC<TranslationEditorProps> = ({
             {/* Custom Translation */}
             <TabsContent value="custom" className="space-y-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">
+                <label className="text-sm font-medium mb-2 block" htmlFor="your-translation">
                   Your Translation
                 </label>
                 <Textarea
@@ -673,7 +673,7 @@ export const TranslationEditor: React.FC<TranslationEditorProps> = ({
             {/* Concordance Search */}
             <TabsContent value="concordance" className="space-y-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">
+                <label className="text-sm font-medium mb-2 block" htmlFor="search-for-term-context">
                   Search for term context
                 </label>
                 <div className="flex gap-2">

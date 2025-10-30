@@ -11,6 +11,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { faker } from '@faker-js/faker';
 import { config } from 'dotenv';
+import { getTestCredentials } from '../src/test/test-credentials';
 
 // Load environment variables
 config({ path: '.env.staging' });
@@ -366,9 +367,10 @@ class StagingDatabaseSeeder {
       };
 
       // Create auth user first
+      const credentials = getTestCredentials();
       const { data: authData, error: authError } = await this.supabase.auth.admin.createUser({
         email: profile.email,
-        password: 'staging123!',
+        password: credentials.stagingUser.password,
         email_confirm: true,
         user_metadata: { role: 'admin' }
       });
@@ -417,9 +419,10 @@ class StagingDatabaseSeeder {
       };
 
       // Create auth user first
+      const credentials = getTestCredentials();
       const { data: authData, error: authError } = await this.supabase.auth.admin.createUser({
         email: profile.email,
-        password: 'client123!',
+        password: credentials.clientUser.password,
         email_confirm: true,
         user_metadata: { role: 'client' }
       });

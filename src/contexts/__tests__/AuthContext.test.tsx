@@ -4,7 +4,7 @@
  * Tests cover critical authentication context functionality including:
  * - Authentication state management and initialization
  * - Session management and persistence
- * - Auth state change notifications
+ * - Auth state change notification aria-live="polite" aria-atomic="true"s
  * - Sign out functionality
  * - Loading states and error handling
  * - Context provider and consumer interactions

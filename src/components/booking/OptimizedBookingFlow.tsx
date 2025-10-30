@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
 import { useMetaTracking } from '@/hooks/useMetaTracking';
 import { useBookingStore } from '@/stores/bookingStore';
 import { Service, Location } from '@/types/booking';
@@ -30,7 +30,7 @@ export const OptimizedBookingFlow = ({
   onComplete,
   onClose
 }: OptimizedBookingFlowProps) => {
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const { t } = useTranslation();
   const { trackBookingFunnel, trackCustomConversion } = useMetaTracking();
 
@@ -219,7 +219,7 @@ export const OptimizedBookingFlow = ({
 
   const handleSubmit = async () => {
     if (!bookingData.selectedService || !bookingData.selectedDate || !bookingData.selectedTime) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Missing Information',
         description: 'Please complete all required fields.',
         variant: 'destructive',
@@ -228,7 +228,7 @@ export const OptimizedBookingFlow = ({
     }
 
     if (!bookingData.clientName || !bookingData.clientEmail || !bookingData.acceptTerms) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Missing Information',
         description: 'Please fill in your details and accept the terms.',
         variant: 'destructive',
@@ -279,14 +279,14 @@ export const OptimizedBookingFlow = ({
       });
 
       onComplete(bookingResult);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Booking Confirmed!',
         description: 'You will receive a confirmation email shortly.',
       });
 
     } catch (error) {
       console.error('Booking error:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Booking Failed',
         description: 'Please try again or contact support.',
         variant: 'destructive',

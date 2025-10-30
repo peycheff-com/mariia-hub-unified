@@ -12,17 +12,30 @@ import { SEOWrapper } from "@/components/seo/SEOWrapper";
 import { OfflineBanner } from "@/components/pwa/OfflineBanner";
 import { OfflineIndicator } from "@/components/offline/OfflineIndicator";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
-import { CookieConsent } from "@/components/CookieConsent";
+import { OfflineBookingManager } from "@/components/pwa/OfflineBookingManager";
+import { PushNotificationManager } from "@/components/pwa/PushNotificationManager";
+import { HomeScreenExperience } from "@/components/pwa/HomeScreenExperience";
+import { DeviceIntegration } from "@/components/pwa/DeviceIntegration";
+import { GeolocationServices } from "@/components/pwa/GeolocationServices";
+import { MobilePerformance } from "@/components/pwa/MobilePerformance";
+import { CookieBanner } from "@/components/gdpr/CookieBanner";
+import { AccessibilityDashboard } from "@/components/accessibility/AccessibilityDashboard";
+import { AccessibilityToolbar } from "@/components/accessibility/AccessibilityToolbar";
 
 import ErrorBoundary from "./components/ErrorBoundary";
 import IntentRouter from "./components/IntentRouter";
 import { useAnalytics } from "./hooks/useAnalytics";
 import { LocationProvider } from "./contexts/LocationContext";
 import { LocalizationProvider } from "./contexts/LocalizationContext";
+import { LanguageProvider } from "./contexts/LanguageContext";
 import { CurrencyProvider } from "./contexts/CurrencyContext";
 import { ModeProvider } from "./contexts/ModeContext";
 import { BookingProvider } from "./contexts/BookingContext";
 import { PricingProvider } from "./contexts/PricingContext";
+import { GDPRProvider } from "./contexts/GDPRContext";
+import { AccessibilityProvider } from "./contexts/AccessibilityContext";
+import { initializeMobileOptimizations } from "./lib/mobile-optimizations";
+import { advancedCache } from "./lib/cache/advanced-cache";
 
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -101,6 +114,15 @@ const queryClient = new QueryClient({
 const AppContent = () => {
   useAnalytics(); // Track page views
 
+  // Initialize performance optimizations
+  useEffect(() => {
+    // Initialize mobile optimizations
+    initializeMobileOptimizations();
+
+    // Warm up caches with essential data
+    advancedCache.warmupEssentialData();
+  }, []);
+
   useEffect(() => {
     const handleConsent = async () => {
       try {
@@ -130,16 +152,42 @@ const AppContent = () => {
       }
     };
 
-    const stored = localStorage.getItem('cookieConsent');
-    if (stored === 'granted') {
-      handleConsent();
+    // Check GDPR consent for analytics
+    const storedConsent = localStorage.getItem('cookie-consent');
+    if (storedConsent) {
+      try {
+        const consent = JSON.parse(storedConsent);
+        if (consent.analytics) {
+          handleConsent();
+        }
+      } catch {
+        // Fall back to legacy format
+        if (storedConsent === 'granted') {
+          handleConsent();
+        }
+      }
     }
   }, []);
 
   return (
-    <SEOWrapper>
+    <>
+      {/* Skip Links for Accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded-md z-50"
+      >
+        Skip to main content
+      </a>
+      <a
+        href="#navigation"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-64 bg-blue-600 text-white px-4 py-2 rounded-md z-50"
+      >
+        Skip to navigation
+      </a>
+
+      <SEOWrapper>
       <Suspense fallback={<PageLoader />}>
-        <CookieConsent />
+        <CookieBanner />
         <IntentRouter />
         <Routes>
         <Route path="/" element={<Index />} />
@@ -215,8 +263,9 @@ const AppContent = () => {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </Suspense>
-    </SEOWrapper>
+      </Suspense>
+      </SEOWrapper>
+    </>
   );
 };
 
@@ -227,20 +276,30 @@ const App = () => (
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <LocationProvider defaultCitySlug="warsaw">
             <LocalizationProvider>
-              <CurrencyProvider>
+              <LanguageProvider>
+                <CurrencyProvider>
                 <ModeProvider>
                   <BookingProvider>
                     <PricingProvider>
-                      <Toaster />
-                      <Sonner />
-                      <OfflineBanner />
-                      <OfflineIndicator />
-                      <InstallPrompt />
-                      <AppContent />
+                      <GDPRProvider>
+                        <AccessibilityProvider>
+                          <Toaster />
+                          <Sonner />
+                          <OfflineBanner />
+                          <OfflineIndicator />
+                          <InstallPrompt />
+                          <HomeScreenExperience />
+                          <AppContent />
+                          {/* Accessibility Components */}
+                          <AccessibilityToolbar />
+                          <AccessibilityDashboard />
+                        </AccessibilityProvider>
+                      </GDPRProvider>
                     </PricingProvider>
                   </BookingProvider>
                 </ModeProvider>
               </CurrencyProvider>
+              </LanguageProvider>
             </LocalizationProvider>
           </LocationProvider>
         </BrowserRouter>

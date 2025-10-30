@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Share2, Copy, Check, Users, Gift, MessageCircle, Mail, Facebook, Twitter } from 'lucide-react';
-import { toast } from 'sonner';
+import { Share2, Copy, Check, Users, Gift, MessageCircle, Mail, Facebook, Twitter, Plus, UserPlus } from 'lucide-react';
+import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useLoyalty } from '@/hooks/useLoyalty';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,6 +28,12 @@ export function ReferralShare({ className }: ReferralShareProps) {
 
   const [copied, setCopied] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [referralForm, setReferralForm] = useState({
+    email: '',
+    name: '',
+    phone: ''
+  });
 
   const referralUrl = referralCode ? `${window.location.origin}?ref=${referralCode}` : '';
   const referralMessage = referralCode
@@ -37,10 +44,10 @@ export function ReferralShare({ className }: ReferralShareProps) {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      toast.success(`${type === 'code' ? 'Referral code' : 'Referral link'} copied!`);
+      toast aria-live="polite" aria-atomic="true".success(`${type === 'code' ? 'Referral code' : 'Referral link'} copied!`);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      toast.error('Failed to copy');
+      toast aria-live="polite" aria-atomic="true".error('Failed to copy');
     }
   };
 
@@ -62,11 +69,24 @@ export function ReferralShare({ className }: ReferralShareProps) {
     }
   };
 
-  const getReferralReward = () => {
-    if (currentTier?.benefits?.referral_bonus) {
-      return currentTier.benefits.referral_bonus;
+  const handleCreateReferral = async () => {
+    if (!referralForm.email) {
+      toast aria-live="polite" aria-atomic="true".error('Email is required');
+      return;
     }
-    return 100; // Default
+
+    try {
+      await generateReferralCode(referralForm);
+      setIsCreateDialogOpen(false);
+      setReferralForm({ email: '', name: '', phone: '' });
+    } catch (error) {
+      console.error('Error creating referral:', error);
+    }
+  };
+
+  const getReferralReward = () => {
+    // Get from loyalty settings or use default
+    return 100; // Default - can be enhanced to get from settings
   };
 
   const successfulReferrals = referrals?.filter(r => r.status === 'completed').length || 0;
@@ -139,21 +159,85 @@ export function ReferralShare({ className }: ReferralShareProps) {
               Invite Friends & Earn Rewards
             </h3>
             <p className="text-sm text-green-700 mb-4">
-              Generate your unique referral code and earn {getReferralReward()} points for each friend who makes their first booking!
+              Create referrals and earn {getReferralReward()} points for each friend who makes their first booking!
             </p>
-            <Button
-              onClick={() => generateReferralCode()}
-              disabled={isGeneratingReferral}
-              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-            >
-              {isGeneratingReferral ? 'Generating...' : 'Generate Referral Code'}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center">
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Create Referral
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Referral</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="email">Email *</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="friend@example.com"
+                        value={referralForm.email}
+                        onChange={(e) => setReferralForm(prev => ({ ...prev, email: e.target.value }))}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="name">Name</Label>
+                      <Input
+                        id="name"
+                        type="text"
+                        placeholder="Friend's name"
+                        value={referralForm.name}
+                        onChange={(e) => setReferralForm(prev => ({ ...prev, name: e.target.value }))}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="phone">Phone</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="+48 123 456 789"
+                        value={referralForm.phone}
+                        onChange={(e) => setReferralForm(prev => ({ ...prev, phone: e.target.value }))}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div className="flex gap-2 pt-4">
+                      <Button
+                        onClick={handleCreateReferral}
+                        disabled={isGeneratingReferral}
+                        className="flex-1"
+                      >
+                        {isGeneratingReferral ? 'Creating...' : 'Create Referral'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsCreateDialogOpen(false)}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+            <p className="text-xs text-green-600 mt-4">
+              You can create multiple referrals for different friends
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
             {/* Referral Code Display */}
             <div className="bg-white/50 rounded-lg p-4">
-              <label className="text-sm font-medium text-green-900 mb-2 block">
+              <label className="text-sm font-medium text-green-900 mb-2 block" htmlFor="your-referral-code">
                 Your Referral Code
               </label>
               <div className="flex gap-2">
@@ -214,7 +298,7 @@ export function ReferralShare({ className }: ReferralShareProps) {
 
             {/* Share Link */}
             <div className="bg-white/50 rounded-lg p-4">
-              <label className="text-sm font-medium text-green-900 mb-2 block">
+              <label className="text-sm font-medium text-green-900 mb-2 block" htmlFor="share-link">
                 Share Link
               </label>
               <div className="flex gap-2">
@@ -232,6 +316,74 @@ export function ReferralShare({ className }: ReferralShareProps) {
                   {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
                 </Button>
               </div>
+            </div>
+
+            {/* Create Another Referral */}
+            <div className="flex justify-center">
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="gap-2 border-green-300 hover:bg-green-50">
+                    <Plus className="h-4 w-4" />
+                    Create Another Referral
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Referral</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="email-new">Email *</Label>
+                      <Input
+                        id="email-new"
+                        type="email"
+                        placeholder="friend@example.com"
+                        value={referralForm.email}
+                        onChange={(e) => setReferralForm(prev => ({ ...prev, email: e.target.value }))}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="name-new">Name</Label>
+                      <Input
+                        id="name-new"
+                        type="text"
+                        placeholder="Friend's name"
+                        value={referralForm.name}
+                        onChange={(e) => setReferralForm(prev => ({ ...prev, name: e.target.value }))}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="phone-new">Phone</Label>
+                      <Input
+                        id="phone-new"
+                        type="tel"
+                        placeholder="+48 123 456 789"
+                        value={referralForm.phone}
+                        onChange={(e) => setReferralForm(prev => ({ ...prev, phone: e.target.value }))}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div className="flex gap-2 pt-4">
+                      <Button
+                        onClick={handleCreateReferral}
+                        disabled={isGeneratingReferral}
+                        className="flex-1"
+                      >
+                        {isGeneratingReferral ? 'Creating...' : 'Create Referral'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsCreateDialogOpen(false)}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
 
             {/* How It Works */}

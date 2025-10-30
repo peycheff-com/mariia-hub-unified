@@ -7,12 +7,12 @@ import { SEO } from "@/components/SEO";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import MobileFooter from "@/components/MobileFooter";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 
 
 const BusinessServices = () => {
   const { i18n } = useTranslation();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const [formData, setFormData] = useState({
     company: "",
     name: "",
@@ -25,7 +25,7 @@ const BusinessServices = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: "Form Submitted",
       description: "We'll contact you within 24 hours",
     });

@@ -10,7 +10,7 @@ import BookingSheet from "@/components/booking/BookingSheet";
 import { Button } from "@/components/ui/button";
 import { ResponsiveCard } from "@/components/ui/responsive-image";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import EmptyState from "@/components/EmptyState";
 import AvailableSlotsList from "@/components/AvailableSlotsList";
@@ -26,7 +26,7 @@ import { useStructuredData } from "@/components/seo/StructuredDataHook";
 
 const BeautyServiceDetail = () => {
   const { slug } = useParams();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const { trackPageView } = useAnalytics();
   const [loading, setLoading] = useState(true);
   const [service, setService] = useState<ServiceDetail | null>(null);
@@ -56,7 +56,7 @@ const BeautyServiceDetail = () => {
       if (error) throw error;
       setServices(data || []);
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Could not load services",
         variant: "destructive",
@@ -114,7 +114,7 @@ const BeautyServiceDetail = () => {
           setReviews(reviewsData || []);
         }
       } catch (error: any) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Error",
           description: "Could not load service details",
           variant: "destructive",
@@ -207,7 +207,7 @@ const BeautyServiceDetail = () => {
         />
       )}
 
-      <main className="pt-20">
+      <main role="main" className="pt-20">
         {/* Hero Section */}
         <section className="relative py-16 bg-gradient-to-br from-lip-rose/10 to-champagne/10">
           <div className="container mx-auto px-6 md:px-8 max-w-6xl">

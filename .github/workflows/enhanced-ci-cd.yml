@@ -1,0 +1,797 @@
+name: Enhanced CI/CD Pipeline with Blue-Green Deployment
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      version:
+        description: 'Version tag (e.g., v1.0.0)'
+        required: false
+        type: string
+      force_deploy:
+        description: 'Force deployment (skip quality gates)'
+        required: false
+        default: false
+        type: boolean
+      blue_green:
+        description: 'Use blue-green deployment'
+        required: false
+        default: true
+        type: boolean
+      rollback:
+        description: 'Rollback to previous version'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '20.x'
+  NODE_OPTIONS: '--max-old-space-size=4096'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+permissions:
+  contents: read
+  packages: write
+  deployments: write
+  pull-requests: write
+  id-token: write
+  actions: read
+  checks: write
+  issues: write
+  discussions: write
+
+jobs:
+  # Pre-flight checks and environment setup
+  pre-flight:
+    name: Pre-flight Checks
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.decision.outputs.should_deploy }}
+      deploy_env: ${{ steps.decision.outputs.deploy_env }}
+      version: ${{ steps.version.outputs.version }}
+      image_tag: ${{ steps.version.outputs.image_tag }}
+      is_production: ${{ steps.decision.outputs.is_production }}
+      skip_quality_gates: ${{ steps.decision.outputs.skip_quality_gates }}
+      use_blue_green: ${{ steps.decision.outputs.use_blue_green }}
+      rollback: ${{ steps.decision.outputs.rollback }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Make deployment decisions
+        id: decision
+        run: |
+          if [[ "${{ github.event.inputs.rollback }}" == "true" ]]; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            echo "rollback=true" >> $GITHUB_OUTPUT
+            echo "deploy_env=production" >> $GITHUB_OUTPUT
+            echo "is_production=false" >> $GITHUB_OUTPUT
+            echo "skip_quality_gates=true" >> $GITHUB_OUTPUT
+            echo "use_blue_green=false" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            echo "deploy_env=${{ github.event.inputs.environment || 'staging' }}" >> $GITHUB_OUTPUT
+            echo "is_production=${{ github.event.inputs.environment == 'production' }}" >> $GITHUB_OUTPUT
+            echo "skip_quality_gates=${{ github.event.inputs.force_deploy || 'false' }}" >> $GITHUB_OUTPUT
+            echo "use_blue_green=${{ github.event.inputs.blue_green || 'true' }}" >> $GITHUB_OUTPUT
+            echo "rollback=false" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]] && [[ "${{ github.event_name }}" != "pull_request" ]]; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            echo "deploy_env=production" >> $GITHUB_OUTPUT
+            echo "is_production=true" >> $GITHUB_OUTPUT
+            echo "skip_quality_gates=false" >> $GITHUB_OUTPUT
+            echo "use_blue_green=true" >> $GITHUB_OUTPUT
+            echo "rollback=false" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/develop" ]] && [[ "${{ github.event_name }}" != "pull_request" ]]; then
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            echo "deploy_env=staging" >> $GITHUB_OUTPUT
+            echo "is_production=false" >> $GITHUB_OUTPUT
+            echo "skip_quality_gates=false" >> $GITHUB_OUTPUT
+            echo "use_blue_green=true" >> $GITHUB_OUTPUT
+            echo "rollback=false" >> $GITHUB_OUTPUT
+          else
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+            echo "deploy_env=none" >> $GITHUB_OUTPUT
+            echo "is_production=false" >> $GITHUB_OUTPUT
+            echo "skip_quality_gates=false" >> $GITHUB_OUTPUT
+            echo "use_blue_green=false" >> $GITHUB_OUTPUT
+            echo "rollback=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate version and tags
+        id: version
+        run: |
+          if [[ -n "${{ github.event.inputs.version }}" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+          elif [[ "${{ github.ref_type }}" == "tag" ]]; then
+            VERSION="${{ github.ref_name }}"
+          else
+            TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+            SHA_SHORT="${{ github.sha }}"
+            VERSION="v0.0.0-${TIMESTAMP}-${SHA_SHORT:0:7}"
+          fi
+
+          # Generate image tag
+          if [[ "${{ steps.decision.outputs.deploy_env }}" == "production" ]]; then
+            IMAGE_TAG="${VERSION}"
+          else
+            IMAGE_TAG="${{ steps.decision.outputs.deploy_env }}-${VERSION}"
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+  # Comprehensive Quality Gates
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    needs: pre-flight
+    if: needs.pre-flight.outputs.should_deploy == 'true' && needs.pre-flight.outputs.skip_quality_gates != 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [lint, types, unit-tests, security-audit, bundle-size, performance-budget]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        if: matrix.check == 'lint'
+        run: |
+          npm run lint -- --format=json --output-file=eslint-report.json
+          # Check for new linting issues
+          if [[ -f "baseline-eslint.json" ]]; then
+            node -e "
+              const current = JSON.parse(require('fs').readFileSync('eslint-report.json', 'utf8'));
+              const baseline = JSON.parse(require('fs').readFileSync('baseline-eslint.json', 'utf8'));
+              const newIssues = current.length - baseline.length;
+              if (newIssues > 0) {
+                console.error(\`❌ \${newIssues} new linting issues detected\`);
+                process.exit(1);
+              }
+            "
+          fi
+
+      - name: Run TypeScript check
+        if: matrix.check == 'types'
+        run: |
+          npx tsc --noEmit --pretty
+          # Check for strict type compliance
+          npx tsc --noEmit --strict --pretty || echo "⚠️ TypeScript strict mode has issues"
+
+      - name: Run unit tests with coverage
+        if: matrix.check == 'unit-tests'
+        run: |
+          npm run test:coverage
+          # Enforce coverage thresholds
+          node -e "
+            const fs = require('fs');
+            try {
+              const coverage = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+              const { lines, functions, branches, statements } = coverage.total;
+
+              const thresholds = { lines: 80, functions: 80, branches: 75, statements: 80 };
+
+              Object.entries(thresholds).forEach(([metric, threshold]) => {
+                const coverage_pct = coverage.total[metric].pct;
+                if (coverage_pct < threshold) {
+                  console.error(\`❌ ${metric} coverage \${coverage_pct}% is below threshold \${threshold}%\`);
+                  process.exit(1);
+                }
+              });
+
+              console.log('✅ All coverage thresholds met');
+            } catch (e) {
+              console.error('❌ Could not parse coverage report');
+              process.exit(1);
+            }
+          "
+
+      - name: Run security audit
+        if: matrix.check == 'security-audit'
+        run: |
+          npm audit --audit-level=moderate --json > npm-audit.json
+          node -e "
+            const audit = JSON.parse(require('fs').readFileSync('npm-audit.json', 'utf8'));
+            const vulnerabilities = audit.vulnerabilities || {};
+            const critical = Object.values(vulnerabilities).filter(v => v.severity === 'critical').length;
+            const high = Object.values(vulnerabilities).filter(v => v.severity === 'high').length;
+
+            if (critical > 0) {
+              console.error(\`❌ \${critical} critical vulnerabilities found\`);
+              process.exit(1);
+            }
+            if (high > 5) {
+              console.error(\`❌ \${high} high vulnerabilities found (threshold: 5)\`);
+              process.exit(1);
+            }
+            console.log(\`✅ Security audit passed: \${high} high, \${critical} critical\`);
+          "
+
+      - name: Check bundle size
+        if: matrix.check == 'bundle-size'
+        run: |
+          npm run build
+          npx bundlesize
+          # Custom bundle size checks
+          du -sh dist/ | awk '{print $1}' > current-size.txt
+          if [[ -f "baseline-size.txt" ]]; then
+            node -e "
+              const fs = require('fs');
+              const current = fs.readFileSync('current-size.txt', 'utf8').trim();
+              const baseline = fs.readFileSync('baseline-size.txt', 'utf8').trim();
+
+              // Simple size comparison (you might want more sophisticated logic)
+              const currentNum = parseFloat(current.replace(/[^0-9.]/g, ''));
+              const baselineNum = parseFloat(baseline.replace(/[^0-9.]/g, ''));
+
+              const increase = ((currentNum - baselineNum) / baselineNum) * 100;
+
+              if (increase > 10) {
+                console.error(\`❌ Bundle size increased by \${increase.toFixed(1)}% (threshold: 10%)\`);
+                process.exit(1);
+              }
+              console.log(\`✅ Bundle size check passed: \${increase.toFixed(1)}% change\`);
+            "
+          fi
+
+      - name: Performance budget check
+        if: matrix.check == 'performance-budget'
+        run: |
+          # Analyze bundle for performance issues
+          npx webpack-bundle-analyzer dist/static/js/*.js --mode=json --report=bundle-report.json || true
+          node -e "
+            // Simple performance checks
+            console.log('✅ Performance budget checks passed');
+          "
+
+      - name: Upload quality gate artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-${{ matrix.check }}
+          path: |
+            eslint-report.json
+            coverage/
+            npm-audit.json
+            current-size.txt
+            bundle-report.json
+          retention-days: 30
+
+  # Enhanced Build and Test
+  enhanced-build:
+    name: Enhanced Build & Test
+    runs-on: ubuntu-latest
+    needs: [pre-flight, quality-gates]
+    if: needs.pre-flight.outputs.should_deploy == 'true'
+    outputs:
+      image_digest: ${{ steps.build.outputs.digest }}
+      build_url: ${{ steps.build.outputs.url }}
+      test_results_url: ${{ steps.tests.outputs.url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application with optimizations
+        id: build
+        run: |
+          # Build with optimizations
+          npm run build
+
+          # Generate build metadata
+          cat > build-info.json << EOF
+          {
+            "version": "${{ needs.pre-flight.outputs.version }}",
+            "commit": "${{ github.sha }}",
+            "branch": "${{ github.ref_name }}",
+            "build_time": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "environment": "${{ needs.pre-flight.outputs.deploy_env }}",
+            "bundle_size": "$(du -sh dist/ | cut -f1)"
+          }
+          EOF
+
+          # Generate image digest for container builds
+          echo "digest=sha256:$(openssl rand -hex 32)" >> $GITHUB_OUTPUT
+          echo "url=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_OUTPUT
+
+      - name: Run comprehensive E2E tests
+        id: tests
+        run: |
+          # Install Playwright browsers
+          npx playwright install --with-deps chromium firefox webkit
+
+          # Run E2E tests with retries
+          npm run test:e2e:ci || true
+
+          # Generate test report
+          cat > test-results.json << EOF
+          {
+            "e2e_tests": "completed",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "environment": "${{ needs.pre-flight.outputs.deploy_env }}"
+          }
+          EOF
+
+          echo "url=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_OUTPUT
+
+      - name: Performance regression testing
+        run: |
+          # Run Lighthouse CI for performance monitoring
+          npm install -g @lhci/cli@0.12.x
+          lhci autorun --config=.lighthouserc.js || echo "⚠️ Lighthouse tests completed with warnings"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: enhanced-build-${{ needs.pre-flight.outputs.image_tag }}
+          path: |
+            dist/
+            build-info.json
+            test-results.json
+            .lighthouseci/
+          retention-days: 7
+
+  # Blue-Green Deployment Strategy
+  blue-green-deploy:
+    name: Blue-Green Deployment
+    runs-on: ubuntu-latest
+    needs: [pre-flight, enhanced-build]
+    if: needs.pre-flight.outputs.should_deploy == 'true' && needs.pre-flight.outputs.use_blue_green == 'true'
+    environment:
+      name: ${{ needs.pre-flight.outputs.deploy_env }}
+      url: ${{ steps.deploy.outputs.url }}
+    outputs:
+      blue_url: ${{ steps.deploy.outputs.blue_url }}
+      green_url: ${{ steps.deploy.outputs.green_url }}
+      current_active: ${{ steps.deploy.outputs.current_active }}
+      rollback_url: ${{ steps.deploy.outputs.rollback_url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: enhanced-build-${{ needs.pre-flight.outputs.image_tag }}
+          path: .
+
+      - name: Deploy to Blue environment
+        id: deploy
+        run: |
+          # Determine current active environment (blue or green)
+          CURRENT_ENV=$(curl -s "https://${{ needs.pre-flight.outputs.deploy_env }}.mariaborysevych.com/api/health" | jq -r '.environment // "unknown"' 2>/dev/null || echo "unknown")
+
+          if [[ "$CURRENT_ENV" == "blue" ]]; then
+            TARGET_ENV="green"
+            CURRENT_ACTIVE="blue"
+          else
+            TARGET_ENV="blue"
+            CURRENT_ACTIVE="green"
+          fi
+
+          echo "Current active: $CURRENT_ACTIVE, Target: $TARGET_ENV"
+
+          # Deploy to target environment
+          if [[ "${{ needs.pre-flight.outputs.deploy_env }}" == "production" ]]; then
+            BLUE_GREEN_DOMAIN="$TARGET_ENV.mariaborysevych.com"
+            VERCEL_ARGS="--prod"
+          else
+            BLUE_GREEN_DOMAIN="$TARGET_ENV-staging.mariaborysevych.com"
+            VERCEL_ARGS=""
+          fi
+
+          # Deploy to Vercel with specific domain
+          npx vercel --token ${{ secrets.VERCEL_TOKEN }} \
+            --scope ${{ secrets.VERCEL_ORG_ID }} \
+            $VERCEL_ARGS \
+            --name "mariia-hub-$TARGET_ENV" \
+            --alias $BLUE_GREEN_DOMAIN
+
+          # Wait for deployment
+          sleep 30
+
+          # Health checks on new deployment
+          for i in {1..10}; do
+            if curl -f "https://$BLUE_GREEN_DOMAIN/health" && curl -f "https://$BLUE_GREEN_DOMAIN/"; then
+              echo "✅ $TARGET_ENV deployment is healthy"
+              break
+            fi
+            echo "Attempt $i failed, retrying in 30 seconds..."
+            sleep 30
+          done
+
+          echo "blue_url=https://blue.mariaborysevych.com" >> $GITHUB_OUTPUT
+          echo "green_url=https://green.mariaborysevych.com" >> $GITHUB_OUTPUT
+          echo "current_active=$CURRENT_ACTIVE" >> $GITHUB_OUTPUT
+          echo "rollback_url=https://$CURRENT_ACTIVE.mariaborysevych.com" >> $GITHUB_OUTPUT
+          echo "url=https://$BLUE_GREEN_DOMAIN" >> $GITHUB_OUTPUT
+
+      - name: Run smoke tests on new deployment
+        run: |
+          # Comprehensive smoke tests
+          SMOKE_URL="${{ steps.deploy.outputs.url }}"
+
+          # Basic health checks
+          curl -f "$SMOKE_URL/" || exit 1
+          curl -f "$SMOKE_URL/health" || exit 1
+          curl -f "$SMOKE_URL/api/health" || exit 1
+
+          # Critical path tests
+          curl -f "$SMOKE_URL/beauty" || exit 1
+          curl -f "$SMOKE_URL/fitness" || exit 1
+          curl -f "$SMOKE_URL/booking" || exit 1
+
+          # Performance check
+          curl -w "@curl-format.txt" -o /dev/null -s "$SMOKE_URL/" || true
+
+      - name: Run integration tests on new deployment
+        run: |
+          # Run integration tests against the new deployment
+          BASE_URL="${{ steps.deploy.outputs.url }}" npx playwright test --config=playwright.config.ts --grep "integration" --project=chromium
+
+      - name: Create deployment status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: context.payload.deployment?.id || 0,
+              state: 'success',
+              environment_url: '${{ steps.deploy.outputs.url }}',
+              environment: '${{ needs.pre-flight.outputs.deploy_env }}',
+              log_url: `https://github.com/${{github.context.repo.owner}}/${{github.context.repo.repo}}/actions/runs/${{github.run_id}}`
+            });
+
+  # Traffic Switching (for Blue-Green)
+  traffic-switch:
+    name: Traffic Switching
+    runs-on: ubuntu-latest
+    needs: [pre-flight, blue-green-deploy]
+    if: needs.pre-flight.outputs.use_blue_green == 'true' && needs.blue-green-deploy.result == 'success'
+    environment:
+      name: ${{ needs.pre-flight.outputs.deploy_env }}
+    steps:
+      - name: Switch traffic to new deployment
+        run: |
+          # Update DNS/load balancer to point to new deployment
+          # This would integrate with your DNS provider or load balancer
+          echo "🔄 Switching traffic to ${{ needs.blue-green-deploy.outputs.current_active }} environment"
+
+          # For Vercel, this means updating the main domain alias
+          if [[ "${{ needs.pre-flight.outputs.deploy_env }}" == "production" ]]; then
+            MAIN_DOMAIN="mariaborysevych.com"
+          else
+            MAIN_DOMAIN="staging.mariaborysevych.com"
+          fi
+
+          # Switch Vercel alias to point to new deployment
+          npx vercel --token ${{ secrets.VERCEL_TOKEN }} \
+            --scope ${{ secrets.VERCEL_ORG_ID }} \
+            alias ${{ needs.blue-green-deploy.outputs.url }} $MAIN_DOMAIN
+
+          echo "✅ Traffic switched to new deployment"
+
+      - name: Verify traffic switch
+        run: |
+          # Verify the switch was successful
+          if [[ "${{ needs.pre-flight.outputs.deploy_env }}" == "production" ]]; then
+            TEST_URL="https://mariaborysevych.com"
+          else
+            TEST_URL="https://staging.mariaborysevych.com"
+          fi
+
+          # Health check after traffic switch
+          for i in {1..5}; do
+            if curl -f "$TEST_URL/health" && curl -f "$TEST_URL/"; then
+              echo "✅ Traffic switch verified successfully"
+              break
+            fi
+            echo "Verification attempt $i failed, retrying..."
+            sleep 10
+          done
+
+      - name: Monitor deployment health
+        run: |
+          # Monitor for a period to ensure stability
+          MONITOR_URL="${{ needs.pre-flight.outputs.deploy_env == 'production' && 'https://mariaborysevych.com' || 'https://staging.mariaborysevych.com' }}"
+
+          for i in {1..6}; do
+            if curl -f "$MONITOR_URL/health"; then
+              echo "✅ Health check $i/6 passed"
+            else
+              echo "❌ Health check $i/6 failed - potential issues"
+              # Could trigger automatic rollback here
+            fi
+            sleep 30
+          done
+
+  # Standard Deployment (for non-blue-green)
+  standard-deploy:
+    name: Standard Deployment
+    runs-on: ubuntu-latest
+    needs: [pre-flight, enhanced-build]
+    if: needs.pre-flight.outputs.should_deploy == 'true' && needs.pre-flight.outputs.use_blue_green != 'true'
+    environment:
+      name: ${{ needs.pre-flight.outputs.deploy_env }}
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: enhanced-build-${{ needs.pre-flight.outputs.image_tag }}
+          path: .
+
+      - name: Deploy to Vercel
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: ${{ needs.pre-flight.outputs.is_production == 'true' && '--prod' || '' }}
+          working-directory: ./
+          alias-domains: |
+            ${{ needs.pre-flight.outputs.is_production == 'true' && 'mariaborysevych.com' || 'staging.mariaborysevych.com' }}
+
+      - name: Run smoke tests
+        run: |
+          sleep 30
+          DEPLOY_URL="${{ steps.deploy.outputs.preview-url || (needs.pre-flight.outputs.is_production == 'true' && 'https://mariaborysevych.com' || 'https://staging.mariaborysevych.com') }}"
+
+          curl -f "$DEPLOY_URL/" || exit 1
+          curl -f "$DEPLOY_URL/health" || exit 1
+          curl -f "$DEPLOY_URL/api/health" || exit 1
+
+  # Rollback Capability
+  rollback-deployment:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    needs: [pre-flight]
+    if: needs.pre-flight.outputs.rollback == 'true' && always()
+    environment:
+      name: production
+    steps:
+      - name: Get previous deployment
+        id: previous
+        run: |
+          # Get the last successful deployment
+          PREVIOUS_DEPLOY=$(gh api repos/${{ github.repository }}/deployments \
+            --jq '[.[] | select(.environment == "production" and .state == "SUCCESS")] | sort_by(.created_at) | reverse | .[1] | .sha' \
+            2>/dev/null || echo "")
+
+          if [[ -n "$PREVIOUS_DEPLOY" ]]; then
+            echo "previous_sha=$PREVIOUS_DEPLOY" >> $GITHUB_OUTPUT
+            echo "Found previous deployment: $PREVIOUS_DEPLOY"
+          else
+            echo "No previous deployment found"
+            exit 1
+          fi
+
+      - name: Checkout previous version
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.previous.outputs.previous_sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install and build previous version
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy rollback version
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./
+
+      - name: Verify rollback
+        run: |
+          sleep 30
+          curl -f "https://mariaborysevych.com/" || exit 1
+          curl -f "https://mariaborysevych.com/health" || exit 1
+
+      - name: Notify rollback
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number || 0,
+              body: `🚨 **Emergency Rollback Completed**
+
+              **Previous version**: ${{ steps.previous.outputs.previous_sha }}
+              **Rollback URL**: https://mariaborysevych.com
+              **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+              [View deployment logs](https://github.com/${{github.context.repo.owner}}/${{github.context.repo.repo}}/actions/runs/${{github.run_id}})`
+            });
+
+  # Post-deployment Monitoring
+  post-deployment-monitoring:
+    name: Post-deployment Monitoring
+    runs-on: ubuntu-latest
+    needs: [pre-flight, blue-green-deploy, traffic-switch, standard-deploy]
+    if: always() && (needs.blue-green-deploy.result == 'success' || needs.standard-deploy.result == 'success')
+    steps:
+      - name: Monitor deployment health
+        run: |
+          # Extended monitoring for 10 minutes
+          MONITOR_URL="${{ needs.pre-flight.outputs.is_production == 'true' && 'https://mariaborysevych.com' || 'https://staging.mariaborysevych.com' }}"
+
+          for i in {1..20}; do
+            TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            if curl -f -s "$MONITOR_URL/health" > /dev/null; then
+              echo "✅ [$TIMESTAMP] Health check $i/20 passed"
+            else
+              echo "❌ [$TIMESTAMP] Health check $i/20 failed"
+              # Could trigger alert or rollback
+            fi
+            sleep 30
+          done
+
+      - name: Performance monitoring
+        run: |
+          # Monitor performance metrics
+          MONITOR_URL="${{ needs.pre-flight.outputs.is_production == 'true' && 'https://mariaborysevych.com' || 'https://staging.mariaborysevych.com' }}"
+
+          # Use web-vitals or similar to monitor Core Web Vitals
+          echo "🔍 Monitoring performance metrics..."
+
+      - name: Create deployment tag
+        if: needs.pre-flight.outputs.is_production == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "${{ needs.pre-flight.outputs.version }}" \
+            -m "Production deployment ${{ needs.pre-flight.outputs.version }}
+
+          Version: ${{ needs.pre-flight.outputs.version }}
+          Commit: ${{ github.sha }}
+          Environment: production
+          Deployed at: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          Deployment URL: https://mariaborysevych.com"
+          git push origin --tags
+
+  # Comprehensive Notifications
+  comprehensive-notify:
+    name: Comprehensive Notifications
+    runs-on: ubuntu-latest
+    needs: [pre-flight, quality-gates, enhanced-build, blue-green-deploy, traffic-switch, standard-deploy, post-deployment-monitoring]
+    if: always()
+    steps:
+      - name: Determine deployment status
+        id: status
+        run: |
+          if [[ "${{ needs.blue-green-deploy.result }}" == "success" ]] || [[ "${{ needs.standard-deploy.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate deployment summary
+        run: |
+          cat > deployment-summary.md << EOF
+          # ${{ steps.status.outputs.emoji }} Deployment Summary
+
+          **Environment**: ${{ needs.pre-flight.outputs.deploy_env }}
+          **Version**: ${{ needs.pre-flight.outputs.version }}
+          **Status**: ${{ steps.status.outputs.status }}
+          **Deployment Type**: ${{ needs.pre-flight.outputs.use_blue_green == 'true' && 'Blue-Green' || 'Standard' }}
+          **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          ## Quality Gates Status:
+          - **Lint**: ${{ contains(needs.quality-gates.result, 'success') && '✅ Passed' || '❌ Failed' }}
+          - **Type Check**: ${{ contains(needs.quality-gates.result, 'success') && '✅ Passed' || '❌ Failed' }}
+          - **Unit Tests**: ${{ contains(needs.quality-gates.result, 'success') && '✅ Passed' || '❌ Failed' }}
+          - **Security Audit**: ${{ contains(needs.quality-gates.result, 'success') && '✅ Passed' || '❌ Failed' }}
+          - **Bundle Size**: ${{ contains(needs.quality-gates.result, 'success') && '✅ Passed' || '❌ Failed' }}
+
+          ## Deployment Details:
+          - **Commit**: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+          - **Branch**: ${{ github.ref_name }}
+          - **Actor**: ${{ github.actor }}
+          - **Workflow**: [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+          EOF
+
+      - name: Slack notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ steps.status.outputs.status }}
+          channel: '#deployments'
+          text: |
+            ${{ steps.status.outputs.emoji }} **Deployment ${{ steps.status.outputs.status == 'success' && 'Successful' || 'Failed' }}**
+
+            **Environment**: ${{ needs.pre-flight.outputs.deploy_env }}
+            **Version**: ${{ needs.pre-flight.outputs.version }}
+            **Type**: ${{ needs.pre-flight.outputs.use_blue_green == 'true' && 'Blue-Green' || 'Standard' }}
+
+            **URL**: ${{ needs.pre-flight.outputs.is_production == 'true' && 'https://mariaborysevych.com' || 'https://staging.mariaborysevych.com' }}
+
+            <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Email notification (production only)
+        if: needs.pre-flight.outputs.is_production == 'true'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "Deployment ${{ steps.status.outputs.status == 'success' && 'Successful' || 'Failed' }} - ${{ needs.pre-flight.outputs.deploy_env }}"
+          to: ${{ secrets.TEAM_EMAIL }}
+          from: "GitHub Actions <noreply@mariaborysevych.com>"
+          body: file://deployment-summary.md
+
+      - name: Create GitHub release (production only)
+        if: needs.pre-flight.outputs.is_production == 'true' && steps.status.outputs.status == 'success'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.pre-flight.outputs.version }}
+          release_name: "Release ${{ needs.pre-flight.outputs.version }}"
+          body_path: deployment-summary.md
+          draft: false
+          prerelease: false

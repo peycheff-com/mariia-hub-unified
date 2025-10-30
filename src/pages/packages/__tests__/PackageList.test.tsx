@@ -23,10 +23,10 @@ vi.mock('@/contexts/CurrencyContext', () => ({
   }),
 }));
 
-// Mock toast
-vi.mock('@/components/ui/use-toast', () => ({
+// Mock toast aria-live="polite" aria-atomic="true"
+vi.mock('@/components/ui/use-toast aria-live="polite" aria-atomic="true"', () => ({
   useToast: () => ({
-    toast: vi.fn(),
+    toast aria-live="polite" aria-atomic="true": vi.fn(),
   }),
 }));
 

@@ -105,7 +105,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 import { cn } from '@/lib/utils';
 
 
@@ -262,7 +262,7 @@ export const DepartmentAnalytics: React.FC<DepartmentAnalyticsProps> = ({
   className
 }) => {
   const { employees, analytics, loadAnalytics } = useCorporate();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   // State
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
@@ -361,13 +361,13 @@ export const DepartmentAnalytics: React.FC<DepartmentAnalyticsProps> = ({
 
   // Export data
   const handleExport = (format: 'csv' | 'pdf' | 'xlsx') => {
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: 'Exporting Data',
       description: `Generating ${format.toUpperCase()} report...`
     });
 
     setTimeout(() => {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Export Complete',
         description: `Department analytics exported as ${format.toUpperCase()}`
       });

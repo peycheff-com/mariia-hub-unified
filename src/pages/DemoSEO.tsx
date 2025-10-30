@@ -251,7 +251,7 @@ const DemoSEO: React.FC = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Input Text</label>
+                    <label className="text-sm font-medium mb-2 block" htmlFor="input-text">Input Text</label>
                     <input
                       type="text"
                       value={demoText}
@@ -263,7 +263,7 @@ const DemoSEO: React.FC = () => {
                   <Button onClick={handleGenerateSlug}>Generate Slug</Button>
                   {generatedSlug && (
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Generated Slug</label>
+                      <label className="text-sm font-medium mb-2 block" htmlFor="generated-slug">Generated Slug</label>
                       <code className="block p-2 bg-muted rounded">
                         {generatedSlug}
                       </code>
@@ -286,13 +286,13 @@ const DemoSEO: React.FC = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Service URL Generator</label>
+                    <label className="text-sm font-medium mb-2 block" htmlFor="service-url-generator">Service URL Generator</label>
                     <p className="text-sm text-muted-foreground">
                       Example: {generateServiceUrl('svc-123', 'Premium Lip Enhancement', 'beauty')}
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Localized URLs</label>
+                    <label className="text-sm font-medium mb-2 block" htmlFor="localized-urls">Localized URLs</label>
                     <div className="space-y-1">
                       <code className="block text-sm p-2 bg-muted rounded">
                         EN: {getLocalizedUrl('/beauty/lips-enhancement', 'en')}

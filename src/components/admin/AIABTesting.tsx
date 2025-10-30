@@ -31,7 +31,7 @@ import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import {
   getABTestingService,
   ABTestSuggestion,
@@ -54,7 +54,7 @@ const AIABTesting = () => {
   const [selectedVariations, setSelectedVariations] = useState<string[]>([]);
   const [testGoal, setTestGoal] = useState<'booking' | 'purchase' | 'newsletter' | 'consultation'>('booking');
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   // Load campaigns on mount
   useEffect(() => {
@@ -98,7 +98,7 @@ const AIABTesting = () => {
 
   const generateVariations = async () => {
     if (!originalText.trim()) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Please enter original text to test",
         variant: "destructive"
@@ -117,13 +117,13 @@ const AIABTesting = () => {
       }
 
       setGeneratedVariations(variations);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Success",
         description: `Generated ${variations.length} variations`
       });
     } catch (error) {
       logger.error('Error generating variations:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Failed to generate variations",
         variant: "destructive"
@@ -135,7 +135,7 @@ const AIABTesting = () => {
 
   const createTest = async () => {
     if (!testTitle.trim() || selectedVariations.length < 2) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Please provide test title and select at least 2 variations",
         variant: "destructive"
@@ -156,7 +156,7 @@ const AIABTesting = () => {
       );
 
       setCampaigns(prev => [campaign, ...prev]);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Success",
         description: "A/B test created successfully"
       });
@@ -168,7 +168,7 @@ const AIABTesting = () => {
       setGeneratedVariations([]);
     } catch (error) {
       logger.error('Error creating test:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Failed to create test",
         variant: "destructive"
@@ -193,7 +193,7 @@ const AIABTesting = () => {
         )
       );
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Success",
         description: `Campaign ${action}ed`
       });

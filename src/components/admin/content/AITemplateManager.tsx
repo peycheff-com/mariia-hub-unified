@@ -27,7 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAITemplateSystem } from '@/integrations/ai/template-system.ts';
+import { useAITemplateSystem } from '@/integrations/ai/template-system.hook';
 
 export function AITemplateManager() {
   const [activeTab, setActiveTab] = useState('library');

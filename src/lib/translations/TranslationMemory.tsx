@@ -469,7 +469,7 @@ export class TranslationMemory {
     const now = new Date().toISOString();
     return `<?xml version="1.0" encoding="UTF-8"?>
 <tmx version="1.4">
-  <header
+  <header role="banner"
     creationtool="Mariia Hub Translation Memory"
     creationtoolversion="1.0"
     datatype="plaintext"

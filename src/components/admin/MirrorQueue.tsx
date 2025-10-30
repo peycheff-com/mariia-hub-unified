@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 
 interface MirrorBooking {
   id: string;
@@ -38,7 +38,7 @@ const MirrorQueue = () => {
   const [bookings, setBookings] = useState<MirrorBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingNotes, setEditingNotes] = useState<{ [key: string]: string }>({});
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   const loadBookings = async () => {
     try {
@@ -60,7 +60,7 @@ const MirrorQueue = () => {
       if (error) throw error;
       setBookings(data || []);
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error loading bookings",
         description: error.message,
         variant: "destructive",
@@ -200,14 +200,14 @@ const MirrorQueue = () => {
         }
       }
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Status updated",
         description: `Booking marked as ${status}${status === "mirrored" ? " and confirmed" : ""}`,
       });
 
       loadBookings();
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error updating status",
         description: error.message,
         variant: "destructive",
@@ -227,7 +227,7 @@ const MirrorQueue = () => {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: "Copied to clipboard",
       description: "Information copied successfully",
     });

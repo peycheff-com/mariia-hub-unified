@@ -116,7 +116,7 @@ interface TriggerCondition {
 
 interface WorkflowAction {
   id: string;
-  type: 'send_email' | 'send_sms' | 'create_booking' | 'update_customer' | 'generate_report' | 'call_api' | 'schedule_task' | 'send_notification' | 'ai_analysis' | 'data_processing';
+  type: 'send_email' | 'send_sms' | 'create_booking' | 'update_customer' | 'generate_report' | 'call_api' | 'schedule_task' | 'send_notification aria-live="polite" aria-atomic="true"' | 'ai_analysis' | 'data_processing';
   parameters: Record<string, any>;
   delay?: number; // seconds
   order: number;
@@ -311,7 +311,7 @@ const BusinessProcessAutomation: React.FC = () => {
             },
             {
               id: 'action-4',
-              type: 'send_notification',
+              type: 'send_notification aria-live="polite" aria-atomic="true"',
               parameters: {
                 channels: ['email', 'sms'],
                 message_type: 'reminder',
@@ -328,7 +328,7 @@ const BusinessProcessAutomation: React.FC = () => {
             costSavings: 25000,
             timeSavings: 180
           },
-          integrations: ['ai_engine', 'notifications', 'booking_system'],
+          integrations: ['ai_engine', 'notification aria-live="polite" aria-atomic="true"s', 'booking_system'],
           aiEnhanced: true,
           complexity: 'complex',
           tags: ['ai', 'noshow', 'prediction', 'automation']
@@ -349,7 +349,7 @@ const BusinessProcessAutomation: React.FC = () => {
           actions: [
             {
               id: 'action-5',
-              type: 'send_notification',
+              type: 'send_notification aria-live="polite" aria-atomic="true"',
               parameters: {
                 channels: ['email', 'whatsapp'],
                 message_type: 'review_request',
@@ -509,7 +509,7 @@ const BusinessProcessAutomation: React.FC = () => {
             actions: [
               {
                 id: 'action-1',
-                type: 'send_notification',
+                type: 'send_notification aria-live="polite" aria-atomic="true"',
                 parameters: {
                   recipients: ['manager', 'procurement'],
                   message: 'Low inventory alert',
@@ -528,7 +528,7 @@ const BusinessProcessAutomation: React.FC = () => {
                 order: 2
               }
             ],
-            integrations: ['inventory_system', 'supplier_api', 'notifications']
+            integrations: ['inventory_system', 'supplier_api', 'notification aria-live="polite" aria-atomic="true"s']
           },
           useCase: 'Prevent stockouts and optimize inventory management',
           benefits: [
@@ -1308,7 +1308,7 @@ const BusinessProcessAutomation: React.FC = () => {
                           actions: [
                             {
                               id: 'action-1',
-                              type: 'send_notification',
+                              type: 'send_notification aria-live="polite" aria-atomic="true"',
                               parameters: { template: 'booking_confirmation' },
                               order: 1
                             }

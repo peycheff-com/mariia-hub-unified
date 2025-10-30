@@ -36,7 +36,7 @@ const Aftercare = () => {
     <div className="min-h-screen bg-background">
       <SEO title={t('aftercarePage.title')} description={t('aftercarePage.subtitle')} />
       <Navigation />
-      <main className="pt-24 pb-24">
+      <main role="main" className="pt-24 pb-24">
         <div className="container mx-auto px-6 md:px-8 max-w-5xl">
           <h1 className="text-4xl font-bold mb-6">{t('aftercarePage.title')}</h1>
           <p className="text-muted-foreground mb-10">{t('aftercarePage.subtitle')}</p>

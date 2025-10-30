@@ -41,7 +41,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Switch } from "@/components/ui/switch";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { logger } from "@/lib/logger";
 import {
   getAIContentService,
@@ -167,7 +167,7 @@ const AIContentGenerator = () => {
   const [abTesting, setAbTesting] = useState(false);
   const [autoOptimize, setAutoOptimize] = useState(true);
   const [multiLanguage, setMultiLanguage] = useState(false);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   const languages = [
     { value: "en", label: "English", flag: "🇬🇧" },
@@ -274,7 +274,7 @@ const AIContentGenerator = () => {
   // Enhanced AI Content Generation with Context Awareness
   const generateSmartContent = async () => {
     if (!prompt.trim()) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Please enter a topic or prompt",
         variant: "destructive",
@@ -407,7 +407,7 @@ const AIContentGenerator = () => {
         // Log generation for learning
         await logContentGeneration(contentRequest, enhancedContent);
 
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Content Generated Successfully",
           description: `AI-generated ${contentType} with ${enhancedContent.qualityScore}% quality score`,
         });
@@ -416,7 +416,7 @@ const AIContentGenerator = () => {
       }
     } catch (error: any) {
       logger.error("Error generating smart content:", error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Content Generation Failed",
         description: error.message || "Failed to generate content",
         variant: "destructive",
@@ -437,7 +437,7 @@ const AIContentGenerator = () => {
         setContentIdeas(ideas);
       }
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Failed to Generate Ideas",
         description: error.message,
         variant: "destructive",
@@ -481,13 +481,13 @@ const AIContentGenerator = () => {
           }
         }));
 
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Content Improved",
           description: "AI has enhanced your content with improvements",
         });
       }
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Analysis Failed",
         description: error.message,
         variant: "destructive",
@@ -525,7 +525,7 @@ const AIContentGenerator = () => {
   // Publish content with enhanced metadata
   const publishContent = async () => {
     if (!generatedContent) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "No content to publish",
         variant: "destructive",
@@ -584,7 +584,7 @@ const AIContentGenerator = () => {
         created_at: new Date().toISOString()
       });
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Content Published Successfully",
         description: `${contentType.charAt(0).toUpperCase() + contentType.slice(1)} has been saved as draft`,
       });
@@ -595,7 +595,7 @@ const AIContentGenerator = () => {
       setKeywords([]);
     } catch (error: any) {
       logger.error("Error publishing content:", error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Publishing Failed",
         description: error.message || "Failed to publish content",
         variant: "destructive",
@@ -639,12 +639,12 @@ const AIContentGenerator = () => {
 
       setContentWorkflows([...contentWorkflows, newWorkflow]);
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Workflow Created",
         description: "Automated content workflow has been created",
       });
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Failed to Create Workflow",
         description: error.message,
         variant: "destructive",

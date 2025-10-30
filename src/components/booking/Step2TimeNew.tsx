@@ -6,7 +6,7 @@ import { pl } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 import { useBookingStore, useBookingService, useBookingTimeSlot, useBookingError, useBookingStep } from '@/stores/bookingStore';
 import { apiGateway } from '@/services/apiGateway';
 import { cqrsService, Commands } from '@/services/cqrsService';
@@ -19,7 +19,7 @@ interface Step2TimeProps {
 }
 
 export const Step2TimeNew: React.FC<Step2TimeProps> = ({ onNext, onBack }) => {
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const selectedService = useBookingService();
   const selectedTimeSlot = useBookingTimeSlot();
   const error = useBookingError();
@@ -58,7 +58,7 @@ export const Step2TimeNew: React.FC<Step2TimeProps> = ({ onNext, onBack }) => {
   useEffect(() => {
     const unsubscribeReserved = onSlotReserved((data) => {
       setReservedSlots(prev => new Set(prev).add(data.slotId));
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Slot temporarily reserved",
         description: "This slot is being held by another customer",
       });
@@ -76,7 +76,7 @@ export const Step2TimeNew: React.FC<Step2TimeProps> = ({ onNext, onBack }) => {
       unsubscribeReserved();
       unsubscribeReleased();
     };
-  }, [onSlotReserved, onSlotReleased, toast]);
+  }, [onSlotReserved, onSlotReleased, toast aria-live="polite" aria-atomic="true"]);
 
   const loadAvailableSlots = async () => {
     if (!selectedService) return;
@@ -99,7 +99,7 @@ export const Step2TimeNew: React.FC<Step2TimeProps> = ({ onNext, onBack }) => {
     } catch (err) {
       logger.error('Error loading slots:', err);
       setError(err instanceof Error ? err.message : 'Failed to load availability');
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Could not load available time slots",
         variant: "destructive",
@@ -122,7 +122,7 @@ export const Step2TimeNew: React.FC<Step2TimeProps> = ({ onNext, onBack }) => {
 
     // Check if slot is already reserved
     if (reservedSlots.has(slot.id)) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Slot unavailable",
         description: "This slot is temporarily reserved by another customer",
         variant: "destructive",
@@ -160,7 +160,7 @@ export const Step2TimeNew: React.FC<Step2TimeProps> = ({ onNext, onBack }) => {
           else nextStep();
         }, 500);
 
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Time slot selected",
           description: `Slot reserved for 10 minutes`,
         });
@@ -169,7 +169,7 @@ export const Step2TimeNew: React.FC<Step2TimeProps> = ({ onNext, onBack }) => {
       }
     } catch (err) {
       logger.error('Error reserving slot:', err);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: err instanceof Error ? err.message : "Failed to reserve time slot",
         variant: "destructive",
@@ -215,7 +215,7 @@ export const Step2TimeNew: React.FC<Step2TimeProps> = ({ onNext, onBack }) => {
     if (targetSlot) {
       await handleSlotSelect(targetSlot);
     } else {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "No available slots",
         description: `No ${type} slots available for this date`,
         variant: "destructive",

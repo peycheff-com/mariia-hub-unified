@@ -41,7 +41,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { schedulingAI , SchedulingAnalytics } from '@/services/schedulingAI';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 
 interface SchedulingAnalyticsDashboardProps {
   className?: string;
@@ -59,7 +59,7 @@ export const SchedulingAnalyticsDashboard: React.FC<SchedulingAnalyticsDashboard
   const [compareMode, setCompareMode] = useState(false);
   const [previousPeriod, setPreviousPeriod] = useState<SchedulingAnalytics | null>(null);
 
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   useEffect(() => {
     loadAnalytics();
@@ -78,7 +78,7 @@ export const SchedulingAnalyticsDashboard: React.FC<SchedulingAnalyticsDashboard
       }
     } catch (error) {
       console.error('Error loading analytics:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to load analytics data',
         variant: 'destructive'
@@ -100,7 +100,7 @@ export const SchedulingAnalyticsDashboard: React.FC<SchedulingAnalyticsDashboard
     a.click();
     window.URL.revokeObjectURL(url);
 
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: 'Exported',
       description: 'Analytics data has been exported to CSV'
     });

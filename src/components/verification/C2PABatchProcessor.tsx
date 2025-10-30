@@ -42,7 +42,7 @@ import {
 } from '@/components/ui/dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
-import { useToast } from '@/hooks/use-toast'
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"'
 import { supabase } from '@/integrations/supabase/client'
 import { c2paService, C2PAProcessingOptions, C2PAManifestData } from '@/services/c2paService'
 import { logger } from '@/lib/logger'
@@ -81,7 +81,7 @@ interface ProcessingState {
 }
 
 export const C2PABatchProcessor: React.FC = () => {
-  const { toast } = useToast()
+  const { toast aria-live="polite" aria-atomic="true" } = useToast()
 
   // State
   const [assets, setAssets] = useState<MediaAsset[]>([])
@@ -152,7 +152,7 @@ export const C2PABatchProcessor: React.FC = () => {
       setAssets(processedAssets)
     } catch (error) {
       logger.error('Failed to load assets:', error)
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to load media assets',
         variant: 'destructive'
@@ -180,7 +180,7 @@ export const C2PABatchProcessor: React.FC = () => {
 
   const startBatchProcessing = async () => {
     if (selectedAssets.length === 0) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'No assets selected',
         description: 'Please select at least one asset to process',
         variant: 'destructive'
@@ -298,7 +298,7 @@ export const C2PABatchProcessor: React.FC = () => {
         completed_at: new Date().toISOString()
       } : null)
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Batch processing completed',
         description: `Successfully processed ${successful} assets, ${failed} failed`,
         variant: failed === 0 ? 'default' : 'destructive'
@@ -314,7 +314,7 @@ export const C2PABatchProcessor: React.FC = () => {
         error: error instanceof Error ? error.message : 'Unknown error'
       } : null)
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Batch processing failed',
         description: error instanceof Error ? error.message : 'Unknown error',
         variant: 'destructive'

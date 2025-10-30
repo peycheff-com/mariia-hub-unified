@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Sparkles, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
@@ -17,11 +17,11 @@ interface AIInputHelperProps {
 
 export const AIInputHelper = ({ value, fieldType, onFormatted, className, size = 'icon' }: AIInputHelperProps) => {
   const [formatting, setFormatting] = useState(false);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   const handleFormat = async () => {
     if (!value || value.trim().length === 0) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'No content',
         description: 'Please enter some text first',
         variant: 'destructive',
@@ -37,13 +37,13 @@ export const AIInputHelper = ({ value, fieldType, onFormatted, className, size =
 
       if (error) {
         if (error.message?.includes('429')) {
-          toast({
+          toast aria-live="polite" aria-atomic="true"({
             title: 'Rate limit',
             description: 'Too many requests. Please wait a moment.',
             variant: 'destructive',
           });
         } else if (error.message?.includes('402')) {
-          toast({
+          toast aria-live="polite" aria-atomic="true"({
             title: 'Usage limit',
             description: 'AI usage limit reached. Please add credits.',
             variant: 'destructive',
@@ -56,14 +56,14 @@ export const AIInputHelper = ({ value, fieldType, onFormatted, className, size =
 
       if (data?.formatted) {
         onFormatted(data.formatted);
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: 'Formatted',
           description: 'Content has been auto-formatted with AI',
         });
       }
     } catch (error: any) {
       logger.error('Format error:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Format failed',
         description: error.message || 'Failed to format content',
         variant: 'destructive',

@@ -10,7 +10,7 @@ import MobileFooter from "@/components/MobileFooter";
 import AvailableSlotsList from "@/components/AvailableSlotsList";
 import ServiceCardSkeleton from "@/components/ServiceCardSkeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
 interface Program {
@@ -27,7 +27,7 @@ interface Program {
 
 const FitnessPrograms = () => {
   const { t, i18n } = useTranslation();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const { formatPrice } = useCurrency();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +45,7 @@ const FitnessPrograms = () => {
         if (error) throw error;
         setPrograms(data || []);
       } catch (error) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Error",
           description: "Could not load programs",
           variant: "destructive",
@@ -56,7 +56,7 @@ const FitnessPrograms = () => {
     };
 
     fetchPrograms();
-  }, [toast]);
+  }, [toast aria-live="polite" aria-atomic="true"]);
 
   const getIcon = (slug: string) => {
     const iconMap: Record<string, any> = {
@@ -106,7 +106,7 @@ const FitnessPrograms = () => {
       />
       <Navigation mode="fitness" />
       
-      <main className="section-spacious">
+      <main role="main" className="section-spacious">
         <div className="container-standard">
           {/* Hero Header - Standardized */}
           <div className="text-center mb-16">

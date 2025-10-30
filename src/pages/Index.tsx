@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import { Link } from "react-router-dom";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -116,7 +116,11 @@ const Index = () => {
       />
       <Navigation />
       {/* City Selector Bar */}
-      <div className="border-b border-graphite-200 bg-pearl/50 backdrop-blur-sm sticky top-16 z-40">
+      <div
+        role="banner"
+        className="border-b border-graphite-200 bg-pearl/50 backdrop-blur-sm sticky top-16 z-40"
+        aria-label="Location and language selector"
+      >
         <div className="container-standard py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -136,7 +140,7 @@ const Index = () => {
           </div>
         </div>
       </div>
-      <main id="main-content">
+      <main id="main-content" role="main" aria-label="Main content">
         <Hero />
         
         {/* Quick Actions Bar - Sticky on mobile */}
@@ -294,4 +298,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default memo(Index);

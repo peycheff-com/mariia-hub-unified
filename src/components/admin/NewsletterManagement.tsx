@@ -3,7 +3,7 @@ import { Mail, Download, Search } from "lucide-react";
 import { format } from "date-fns";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,7 @@ const NewsletterManagement = () => {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   useEffect(() => {
     loadSubscribers();
@@ -33,7 +33,7 @@ const NewsletterManagement = () => {
       .order("subscribed_at", { ascending: false });
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error loading subscribers",
         description: error.message,
         variant: "destructive",
@@ -60,7 +60,7 @@ const NewsletterManagement = () => {
     a.download = `newsletter-subscribers-${format(new Date(), "yyyy-MM-dd")}.csv`;
     a.click();
     
-    toast({ title: "Subscribers exported successfully" });
+    toast aria-live="polite" aria-atomic="true"({ title: "Subscribers exported successfully" });
   };
 
   const filteredSubscribers = subscribers.filter(s =>

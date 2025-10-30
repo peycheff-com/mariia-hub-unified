@@ -8,7 +8,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { getStripe, createPaymentIntent } from '@/lib/stripe';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
 import { logger } from '@/lib/logger';
 
 import { StripePaymentForm } from './StripePaymentForm';
@@ -50,7 +50,7 @@ export const Step4PaymentUpdated = ({
   const [processing, setProcessing] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [loadingIntent, setLoadingIntent] = useState(false);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   const basePrice = service.price_from || 0;
   const convertedPrice = convertPrice(basePrice);
@@ -79,7 +79,7 @@ export const Step4PaymentUpdated = ({
       setClientSecret(clientSecret);
     } catch (error) {
       logger.error('Error creating payment intent:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Payment setup failed',
         description: 'Unable to initialize payment. Please try again.',
         variant: 'destructive',

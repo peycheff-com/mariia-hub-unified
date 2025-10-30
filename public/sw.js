@@ -1,30 +1,48 @@
-const CACHE_VERSION = '5.0'; // Updated for performance optimizations
+const CACHE_VERSION = '7.0'; // Enhanced PWA with offline booking & device integration
 const CACHE_NAME = `mariia-beauty-v${CACHE_VERSION}`;
 const STATIC_CACHE = `static-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `dynamic-v${CACHE_VERSION}`;
 const IMAGE_CACHE = `images-v${CACHE_VERSION}`;
 const API_CACHE = `api-v${CACHE_VERSION}`;
 const BACKGROUND_SYNC_CACHE = `bg-sync-v${CACHE_VERSION}`;
+const EDGE_CACHE = `edge-v${CACHE_VERSION}`;
+const BOOKING_CACHE = `booking-v${CACHE_VERSION}`;
+const CALENDAR_CACHE = `calendar-v${CACHE_VERSION}`;
+const LOCATION_CACHE = `location-v${CACHE_VERSION}`;
+const NOTIFICATION_CACHE = `notification-v${CACHE_VERSION}`;
+const OFFLINE_BOOKING_CACHE = `offline-booking-v${CACHE_VERSION}`;
 
-// Cache TTLs (in milliseconds) - Optimized for performance
+// Cache TTLs (in milliseconds) - Enhanced for luxury mobile experience
 const CACHE_TTL = {
   STATIC: 7 * 24 * 60 * 60 * 1000, // 7 days
   IMAGES: 30 * 24 * 60 * 60 * 1000, // 30 days
   API: 5 * 60 * 1000, // 5 minutes
   DYNAMIC: 24 * 60 * 60 * 1000, // 24 hours
   CRITICAL_API: 2 * 60 * 1000, // 2 minutes for critical APIs
+  EDGE_API: 30 * 1000, // 30 seconds for edge-optimized APIs
+  BOOKING_API: 10 * 1000, // 10 seconds for booking APIs
+  CALENDAR_API: 15 * 60 * 1000, // 15 minutes for calendar data
+  LOCATION_API: 60 * 60 * 1000, // 1 hour for location data
+  NOTIFICATION_API: 30 * 60 * 1000, // 30 minutes for notification data
+  OFFLINE_BOOKING: 30 * 24 * 60 * 60 * 1000, // 30 days for offline booking data
 };
 
-// Cache size limits - Increased for better performance
+// Cache size limits - Enhanced for luxury mobile experience
 const CACHE_LIMITS = {
-  STATIC: 100, // entries (increased)
-  IMAGES: 200, // entries (increased)
-  API: 100, // entries (increased)
-  DYNAMIC: 200, // entries (increased)
-  BACKGROUND_SYNC: 50, // entries for offline actions
+  STATIC: 200, // entries (increased for luxury experience)
+  IMAGES: 400, // entries (high-quality images for portfolio)
+  API: 200, // entries (more API data for richer offline experience)
+  DYNAMIC: 300, // entries (enhanced dynamic content)
+  BACKGROUND_SYNC: 100, // entries for more offline actions
+  EDGE_CACHE: 150, // entries for edge-cached content
+  BOOKING_CACHE: 100, // entries for comprehensive booking data
+  CALENDAR_CACHE: 50, // entries for calendar integration
+  LOCATION_CACHE: 30, // entries for location-based services
+  NOTIFICATION_CACHE: 75, // entries for rich notifications
+  OFFLINE_BOOKING_CACHE: 150, // entries for comprehensive offline booking
 };
 
-// Background sync tags
+// Enhanced background sync tags
 const SYNC_TAGS = {
   BOOKING_CREATE: 'booking-create',
   BOOKING_UPDATE: 'booking-update',
@@ -32,15 +50,27 @@ const SYNC_TAGS = {
   AVAILABILITY_CHECK: 'availability-check',
   ANALYTICS_EVENT: 'analytics-event',
   FEEDBACK_SUBMIT: 'feedback-submit',
+  CALENDAR_SYNC: 'calendar-sync',
+  NOTIFICATION_SCHEDULE: 'notification-schedule',
+  LOCATION_UPDATE: 'location-update',
+  OFFLINE_BOOKING_QUEUE: 'offline-booking-queue',
+  APPOINTMENT_REMINDER: 'appointment-reminder',
 };
 
-// Push notification types
+// Enhanced push notification types
 const NOTIFICATION_TYPES = {
   BOOKING_REMINDER: 'booking-reminder',
   BOOKING_CONFIRMATION: 'booking-confirmation',
   AVAILABILITY_ALERT: 'availability-alert',
   PROMOTION: 'promotion',
   SYSTEM_UPDATE: 'system-update',
+  APPOINTMENT_RESCHEDULE: 'appointment-reschedule',
+  LAST_MINUTE_CANCELLATION: 'last-minute-cancellation',
+  NEW_SERVICE_AVAILABLE: 'new-service-available',
+  SEASONAL_PROMOTION: 'seasonal-promotion',
+  PERSONALIZED_OFFER: 'personalized-offer',
+  LOCATION_BASED_OFFER: 'location-based-offer',
+  LOYALTY_REWARD: 'loyalty-reward',
 };
 
 // Critical assets to cache immediately
@@ -58,7 +88,7 @@ const CRITICAL_ASSETS = [
   '/assets',
 ];
 
-// Patterns for different content types
+// Enhanced patterns for different content types
 const URL_PATTERNS = {
   API: /^\/api\//,
   SUPABASE: /supabase\.co/,
@@ -66,6 +96,13 @@ const URL_PATTERNS = {
   IMAGE: /\.(jpg|jpeg|png|gif|webp|avif|svg)$/i,
   FONT: /\.(woff|woff2|ttf|eot)$/i,
   STATIC: /\.(js|css|ico)$/i,
+  EDGE_API: /^\/api\/edge\//,
+  BOOKING_API: /^\/api\/(booking|availability)/,
+  CRITICAL_API: /^\/api\/(auth|user|payment)/,
+  CALENDAR_API: /^\/api\/(calendar|appointments)/,
+  LOCATION_API: /^\/api\/(location|nearby|geolocation)/,
+  NOTIFICATION_API: /^\/api\/(notifications|push)/,
+  OFFLINE_BOOKING_API: /^\/api\/(offline-booking|draft-booking)/,
 };
 
 // Cache management utilities
@@ -163,6 +200,12 @@ self.addEventListener('activate', (event) => {
         CacheManager.cleanup(IMAGE_CACHE, CACHE_LIMITS.IMAGES),
         CacheManager.cleanup(API_CACHE, CACHE_LIMITS.API),
         CacheManager.cleanup(DYNAMIC_CACHE, CACHE_LIMITS.DYNAMIC),
+        CacheManager.cleanup(EDGE_CACHE, CACHE_LIMITS.EDGE_CACHE),
+        CacheManager.cleanup(BOOKING_CACHE, CACHE_LIMITS.BOOKING_CACHE),
+        CacheManager.cleanup(CALENDAR_CACHE, CACHE_LIMITS.CALENDAR_CACHE),
+        CacheManager.cleanup(LOCATION_CACHE, CACHE_LIMITS.LOCATION_CACHE),
+        CacheManager.cleanup(NOTIFICATION_CACHE, CACHE_LIMITS.NOTIFICATION_CACHE),
+        CacheManager.cleanup(OFFLINE_BOOKING_CACHE, CACHE_LIMITS.OFFLINE_BOOKING_CACHE),
       ]);
 
       // Take control of all open pages
@@ -307,12 +350,40 @@ async function processSyncQueue() {
   }
 }
 
-// Determine cache name based on request
+// Enhanced cache name determination
 function getCacheNameForRequest(request) {
   const url = new URL(request.url);
 
   if (request.destination === 'image' || URL_PATTERNS.IMAGE.test(url.pathname)) {
     return IMAGE_CACHE;
+  }
+
+  if (URL_PATTERNS.EDGE_API.test(url.pathname)) {
+    return EDGE_CACHE;
+  }
+
+  if (URL_PATTERNS.BOOKING_API.test(url.pathname)) {
+    return BOOKING_CACHE;
+  }
+
+  if (URL_PATTERNS.CALENDAR_API.test(url.pathname)) {
+    return CALENDAR_CACHE;
+  }
+
+  if (URL_PATTERNS.LOCATION_API.test(url.pathname)) {
+    return LOCATION_CACHE;
+  }
+
+  if (URL_PATTERNS.NOTIFICATION_API.test(url.pathname)) {
+    return NOTIFICATION_CACHE;
+  }
+
+  if (URL_PATTERNS.OFFLINE_BOOKING_API.test(url.pathname)) {
+    return OFFLINE_BOOKING_CACHE;
+  }
+
+  if (URL_PATTERNS.CRITICAL_API.test(url.pathname)) {
+    return API_CACHE;
   }
 
   if (URL_PATTERNS.API.test(url.pathname) || URL_PATTERNS.SUPABASE.test(url.href)) {
@@ -331,12 +402,36 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Handle POST requests for booking actions when offline
+  // Enhanced offline POST handling for booking and device integration
   if (request.method === 'POST' && !navigator.onLine) {
     if (URL_PATTERNS.API.test(url.pathname) || URL_PATTERNS.BOOKING.test(url.pathname)) {
       event.respondWith(handleOfflinePost(request));
       return;
     }
+  }
+
+  // Handle calendar integration requests
+  if (URL_PATTERNS.CALENDAR_API.test(url.pathname)) {
+    event.respondWith(NetworkStrategies.networkFirst(request, CALENDAR_CACHE, CACHE_TTL.CALENDAR_API));
+    return;
+  }
+
+  // Handle location-based service requests
+  if (URL_PATTERNS.LOCATION_API.test(url.pathname)) {
+    event.respondWith(NetworkStrategies.cacheFirst(request, LOCATION_CACHE, CACHE_TTL.LOCATION_API));
+    return;
+  }
+
+  // Handle notification requests
+  if (URL_PATTERNS.NOTIFICATION_API.test(url.pathname)) {
+    event.respondWith(NetworkStrategies.networkFirst(request, NOTIFICATION_CACHE, CACHE_TTL.NOTIFICATION_API));
+    return;
+  }
+
+  // Handle offline booking requests
+  if (URL_PATTERNS.OFFLINE_BOOKING_API.test(url.pathname)) {
+    event.respondWith(NetworkStrategies.cacheFirst(request, OFFLINE_BOOKING_CACHE, CACHE_TTL.OFFLINE_BOOKING));
+    return;
   }
 
   // Skip non-GET requests and cross-origin requests (except for our APIs)
@@ -353,6 +448,24 @@ self.addEventListener('fetch', (event) => {
   if (request.mode === 'navigate') {
     // Navigation requests - network first with HTML cache fallback
     event.respondWith(NetworkStrategies.networkFirst(request, STATIC_CACHE, CACHE_TTL.STATIC));
+    return;
+  }
+
+  // Edge API requests - very short cache for global optimization
+  if (URL_PATTERNS.EDGE_API.test(url.pathname)) {
+    event.respondWith(NetworkStrategies.networkFirst(request, EDGE_CACHE, CACHE_TTL.EDGE_API));
+    return;
+  }
+
+  // Booking API requests - short cache for real-time data
+  if (URL_PATTERNS.BOOKING_API.test(url.pathname)) {
+    event.respondWith(NetworkStrategies.networkFirst(request, BOOKING_CACHE, CACHE_TTL.BOOKING_API));
+    return;
+  }
+
+  // Critical API requests - short cache for security
+  if (URL_PATTERNS.CRITICAL_API.test(url.pathname)) {
+    event.respondWith(NetworkStrategies.networkFirst(request, API_CACHE, CACHE_TTL.CRITICAL_API));
     return;
   }
 
@@ -472,6 +585,8 @@ self.addEventListener('periodicsync', (event) => {
         CacheManager.cleanup(API_CACHE, CACHE_LIMITS.API),
         CacheManager.cleanup(DYNAMIC_CACHE, CACHE_LIMITS.DYNAMIC),
         CacheManager.cleanup(STATIC_CACHE, CACHE_LIMITS.STATIC),
+        CacheManager.cleanup(EDGE_CACHE, CACHE_LIMITS.EDGE_CACHE),
+        CacheManager.cleanup(BOOKING_CACHE, CACHE_LIMITS.BOOKING_CACHE),
       ])
     );
   }
@@ -493,6 +608,8 @@ self.addEventListener('message', (event) => {
           caches.delete(DYNAMIC_CACHE),
           caches.delete(IMAGE_CACHE),
           caches.delete(API_CACHE),
+          caches.delete(EDGE_CACHE),
+          caches.delete(BOOKING_CACHE),
         ])
       );
       break;

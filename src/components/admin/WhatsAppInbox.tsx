@@ -50,7 +50,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
-import { useToast } from '@/hooks/use-toast'
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"'
 import { cn } from '@/lib/utils'
 import { getWhatsAppService } from '@/services/whatsappService'
 
@@ -84,7 +84,7 @@ interface WhatsAppAnalytics {
 export const WhatsAppInbox: React.FC<WhatsAppInboxProps> = ({ className }) => {
   const { t, i18n } = useTranslation()
   const locale = i18n.language === 'pl' ? pl : enUS
-  const { toast } = useToast()
+  const { toast aria-live="polite" aria-atomic="true" } = useToast()
   const whatsappService = getWhatsAppService()
 
   // State
@@ -307,12 +307,12 @@ export const WhatsAppInbox: React.FC<WhatsAppInboxProps> = ({ className }) => {
         setMessages(prev => [...prev, newMessage])
         setMessageInput('')
 
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: t('success', 'Success'),
           description: t('message_sent', 'Message sent successfully')
         })
       } else {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: t('error', 'Error'),
           description: result.error || t('failed_to_send', 'Failed to send message'),
           variant: 'destructive'
@@ -336,7 +336,7 @@ export const WhatsAppInbox: React.FC<WhatsAppInboxProps> = ({ className }) => {
       if (result.success) {
         setShowNewMessageDialog(false)
         setNewMessageData({ to: '', message: '' })
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: t('success', 'Success'),
           description: t('message_sent', 'Message sent successfully')
         })
@@ -820,7 +820,7 @@ export const WhatsAppInbox: React.FC<WhatsAppInboxProps> = ({ className }) => {
                   </Card>
                   <Card>
                     <CardContent className="p-4 text-center">
-                      <Image className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+                      <Image className="h-8 w-8 mx-auto mb-2 text-purple-600" alt="" />
                       <div className="text-lg font-bold">{analytics.byType.image}</div>
                       <p className="text-sm text-muted-foreground">{t('images', 'Images')}</p>
                     </CardContent>

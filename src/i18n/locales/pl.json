@@ -7,7 +7,9 @@
     "contact": "Kontakt",
     "signIn": "Zaloguj się",
     "bookNow": "Zarezerwuj",
-    "dashboard": "Panel"
+    "dashboard": "Panel",
+    "home": "Strona główna",
+    "booking": "Zarezerwuj"
   },
   "hero": {
     "eyebrow": "🕊️ Warszawa · Od 2023",
@@ -37,37 +39,98 @@
       "location": "Warszawa"
     }
   },
+  "loyalty": {
+    "title": "Program Lojalnościowy",
+    "welcomeMember": "Witaj ponownie, członku {{tier}}!",
+    "memberSince": "Członek od {{date}}",
+    "notMember": "Nie jesteś jeszcze członkiem programu",
+    "joinDescription": "Dołącz do naszego programu lojalnościowego i zacznij zbierać punkty za rezerwacje!",
+    "startJourney": "Rozpocznij swoją podróż",
+    "overview": "Przegląd",
+    "rewards": "Nagrody",
+    "achievements": "Osiągnięcia",
+    "referrals": "Polecenia",
+    "activity": "Aktywność",
+    "availablePoints": "dostępnych punktów",
+    "lifetimePoints": "punktów całkowicie",
+    "totalVisits": "całkowitych wizyt",
+    "totalSpend": "całkowite wydatki",
+    "expiringSoon": "wygasa wkrótce",
+    "pointsToGo": "punktów do następnego poziomu",
+    "progressToNextTier": "Postęp do następnego poziomu",
+    "nextBenefit": "Następna korzyść: {{benefit}}",
+    "featuredRewards": "Polecane nagrody",
+    "viewAllRewards": "Zobacz wszystkie nagrody",
+    "redeem": "Zrealizuj",
+    "notEnoughPoints": "Niewystarczająca liczba punktów",
+    "noRecentActivity": "Brak ostatniej aktywności",
+    "rewardsDescription": "Zrealizuj swoje punkty za ekskluzywne nagrody i usługi",
+    "inviteFriends": "Zaproś znajomych",
+    "referralBenefits": "Zarabiaj punkty za każde skuteczne polecenie",
+    "createReferral": "Utwórz polecenie",
+    "yourReferrals": "Twoje polecenia",
+    "noReferralsYet": "Brak poleceń jeszcze",
+    "referralStatus": {
+      "pending": "Oczekuje",
+      "registered": "Zarejestrowany",
+      "first_booking": "Pierwsza rezerwacja",
+      "completed": "Ukończony",
+      "expired": "Wygasły",
+      "cancelled": "Anulowane"
+    },
+    "achievementsDescription": "Odblokuj osiągnięcia i zarabiaj dodatkowe punkty",
+    "noAchievementsYet": "Brak osiągnięć jeszcze",
+    "startEarning": "Zacznij zarabiać punkty",
+    "tiers": {
+      "bronze": "Brąz",
+      "silver": "Srebro",
+      "gold": "Złoto",
+      "platinum": "Platyna",
+      "diamond": "Diament"
+    },
+    "benefits": {
+      "welcomePoints": "Punkty powitalne",
+      "birthdayGift": "Prezent urodzinowy",
+      "prioritySupport": "Priorytetowe wsparcie",
+      "exclusiveEvents": "Ekskluzywne wydarzenia",
+      "personalConcierge": "Osobisty concierge",
+      "customRewards": "Niestandardowe nagrody"
+    }
+  },
   "beautySection": {
     "badge": "Podejście healed-first",
     "title": "Studio\nUrody",
-    "description": "Nagradzany makijaż permanentny w Warszawie. Miękkie, naturalne, długotrwałe efekty, które podkreślają Twoje unikalne piękno.",
+    "description": "Luksusowy makijaż permanentny w sercu Warszawy. Delikatne, naturalne efekty podkreślające Twoje unikalne piękno.",
     "bookBooksy": "Zarezerwuj przez Booksy",
     "viewPortfolio": "Zobacz Portfolio",
-    "location": "Smolna 8, Warszawa",
-    "reviews": "44 opinie",
+    "location": "Smolna 8, Śródmieście, Warszawa",
+    "reviews": "44+ opinie",
     "services": {
       "lips": {
         "title": "Usta",
         "subtitle": "Makijaż Permanentny",
-        "description": "Idealnie zdefiniowane, naturalnie wyglądające usta. Podejście healed-first zapewnia miękkie, trwałe efekty."
+        "description": "Precyzyjnie zdefiniowane, naturalnie wyglądające usta. Technika healed-first gwarantuje miękkie, trwałe rezultaty."
       },
       "brows": {
         "title": "Brwi",
         "subtitle": "Makijaż Permanentny",
-        "description": "Budź się z perfekcyjnymi brwiami każdego dnia. Kształt i kolor dopasowane do Ciebie."
+        "description": "Idealnie wymodelowane brwi dostosowane do Twojej rysunku twarzy. Budź się z perfekcyjnym wyglądem każdego dnia."
       },
       "eyeliner": {
         "title": "Eyeliner",
         "subtitle": "Makijaż Permanentny",
-        "description": "Precyzyjna, nierozmazująca się kreska. Subtelne podkreślenie lub odważne oświadczenie."
+        "description": "Precyzyjna kreska, która nie rozmazuje się. Subtelne podkreślenie lub wyrazisty look."
       },
       "styling": {
         "title": "Stylizacja",
         "subtitle": "Brwi i Rzęsy",
-        "description": "Profesjonalne kształtowanie, barwienie i laminacja dla codziennej pewności siebie."
+        "description": "Profesjonalna regulacja, henna, laminacja i lifting rzęs dla codziennej elegancji."
       }
     },
-    "from": "Od"
+    "from": "Od",
+    "warsawPrestige": "Warszawski standard luksusu",
+    "premiumQuality": "Tylko najwyższej jakości pigmenty",
+    "safetyFirst": "Bezpieczeństwo i sterylność na pierwszym miejscu"
   },
   "fitnessSection": {
     "badge": "Łagodny postęp",

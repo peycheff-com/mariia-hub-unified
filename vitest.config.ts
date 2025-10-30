@@ -13,8 +13,7 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: [
-      "./src/test/setup-vitest.ts",
-      "./src/test/setup-global.ts",
+      "./src/test/setup-enhanced.ts",
     ],
     globals: true,
     include: ['src/**/*.{test,spec}.{js,ts,tsx}'],
@@ -27,9 +26,9 @@ export default defineConfig({
       'src/test/setup*.ts',
       'src/mocks/**',
     ],
-    // Faster test execution
-    testTimeout: 5000, // Reduced from 10s
-    hookTimeout: 5000, // Reduced from 10s
+    // Enhanced test execution
+    testTimeout: 30000, // Increased to handle complex integration tests
+    hookTimeout: 30000, // Increased to handle complex setup
     maxWorkers: isCI ? Math.min(4, shardCount) : 4,
     watch: false,
     // Add retry configuration for flaky tests
@@ -64,10 +63,10 @@ export default defineConfig({
       ],
       thresholds: {
         global: {
-          branches: 60,
-          functions: 60,
-          lines: 60,
-          statements: 60,
+          branches: 95,
+          functions: 95,
+          lines: 95,
+          statements: 95,
         },
       },
       clean: true,

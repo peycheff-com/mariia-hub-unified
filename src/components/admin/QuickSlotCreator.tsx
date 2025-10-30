@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 import { useAvailability } from '@/hooks/useAvailability';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -20,7 +20,7 @@ interface QuickSlotCreatorProps {
 
 const QuickSlotCreator = ({ serviceType, onComplete }: QuickSlotCreatorProps) => {
   const { createSlot } = useAvailability(serviceType);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
 
@@ -44,7 +44,7 @@ const QuickSlotCreator = ({ serviceType, onComplete }: QuickSlotCreatorProps) =>
     e.preventDefault();
     
     if (formData.selectedDays.length === 0) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'No days selected',
         description: 'Please select at least one day',
         variant: 'destructive',
@@ -77,7 +77,7 @@ const QuickSlotCreator = ({ serviceType, onComplete }: QuickSlotCreatorProps) =>
       }
 
       if (successCount > 0) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: 'Slots Created',
           description: `Successfully created ${successCount} availability slot${successCount !== 1 ? 's' : ''}${errorCount > 0 ? ` (${errorCount} failed)` : ''}`,
         });
@@ -85,7 +85,7 @@ const QuickSlotCreator = ({ serviceType, onComplete }: QuickSlotCreatorProps) =>
         onComplete();
       }
     } catch (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to create slots',
         variant: 'destructive',

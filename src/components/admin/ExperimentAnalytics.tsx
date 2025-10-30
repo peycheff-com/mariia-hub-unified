@@ -45,7 +45,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { experimentService } from "@/services/experimentService";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 
 import type {
   ExperimentStats,
@@ -63,7 +63,7 @@ const ExperimentAnalytics: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState("7d");
   const [activeTab, setActiveTab] = useState("overview");
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   // Mock data for experiments list - in production, fetch from database
   const [experiments] = useState([
@@ -94,7 +94,7 @@ const ExperimentAnalytics: React.FC = () => {
       setCohortAnalysis(cohorts);
     } catch (error) {
       console.error("Error loading experiment data:", error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Failed to load experiment data",
         variant: "destructive"
@@ -622,7 +622,7 @@ const ExperimentAnalytics: React.FC = () => {
                       onClick={() => {
                         const action = experimentMetrics.status === 'running' ? 'pause' : 'start';
                         // Implement pause/start logic
-                        toast({
+                        toast aria-live="polite" aria-atomic="true"({
                           title: `Experiment ${action}ed`,
                           description: `Experiment has been ${action}ed successfully`
                         });
@@ -646,7 +646,7 @@ const ExperimentAnalytics: React.FC = () => {
                         variant="outline"
                         onClick={() => {
                           // Implement rollout logic
-                          toast({
+                          toast aria-live="polite" aria-atomic="true"({
                             title: "Winner Rolled Out",
                             description: `${experimentStats.winner_variant} has been rolled out to 100%`
                           });

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
+import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
 import {
   DndContext,
   DragEndEvent,
@@ -354,11 +354,11 @@ export function ReportBuilder({ className }: ReportBuilderProps) {
       return data;
     },
     onSuccess: () => {
-      toast.success(t('admin.reports.templateSaved'));
+      toast aria-live="polite" aria-atomic="true".success(t('admin.reports.templateSaved'));
       queryClient.invalidateQueries({ queryKey: ['report-templates'] });
     },
     onError: () => {
-      toast.error(t('admin.reports.saveError'));
+      toast aria-live="polite" aria-atomic="true".error(t('admin.reports.saveError'));
     },
   });
 
@@ -439,7 +439,7 @@ export function ReportBuilder({ className }: ReportBuilderProps) {
       setSchedule(template.schedule);
     }
     setShowTemplateDialog(false);
-    toast.success(t('admin.reports.templateLoaded'));
+    toast aria-live="polite" aria-atomic="true".success(t('admin.reports.templateLoaded'));
   };
 
   const saveReport = () => {
@@ -453,7 +453,7 @@ export function ReportBuilder({ className }: ReportBuilderProps) {
   };
 
   const exportReport = (format: 'pdf' | 'csv' | 'excel') => {
-    toast.info(t('admin.reports.exporting', { format }));
+    toast aria-live="polite" aria-atomic="true".info(t('admin.reports.exporting', { format }));
     // Implementation would go here
   };
 
@@ -985,7 +985,7 @@ export function ReportBuilder({ className }: ReportBuilderProps) {
                   <div className="flex justify-end">
                     <Button onClick={() => {
                       // Save schedule
-                      toast.success(t('admin.reports.scheduleSaved'));
+                      toast aria-live="polite" aria-atomic="true".success(t('admin.reports.scheduleSaved'));
                     }}>
                       {t('admin.reports.saveSchedule')}
                     </Button>

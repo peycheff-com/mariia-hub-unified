@@ -5,7 +5,7 @@ import { MessageSquare, Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { BlogCommentWithProfile, SupabaseUser } from "@/types/supabase";
 
 interface Comment extends BlogCommentWithProfile {
@@ -23,7 +23,7 @@ const BlogComments = ({ postId }: BlogCommentsProps) => {
   const [replyContent, setReplyContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const { t } = useTranslation();
 
   const checkAuth = useCallback(async () => {
@@ -99,7 +99,7 @@ const BlogComments = ({ postId }: BlogCommentsProps) => {
 
   const handleSubmit = async (parentId: string | null = null) => {
     if (!user) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('comments.signInRequired', 'Sign in required'),
         description: t('comments.signInDesc', 'Please sign in to leave a comment'),
         variant: "destructive",
@@ -126,7 +126,7 @@ const BlogComments = ({ postId }: BlogCommentsProps) => {
 
       if (error) throw error;
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('comments.submitted', 'Comment submitted'),
         description: t('comments.pendingApproval', 'Your comment is pending approval'),
       });
@@ -140,7 +140,7 @@ const BlogComments = ({ postId }: BlogCommentsProps) => {
 
       loadComments();
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('comments.error', 'Error'),
         description: error.message,
         variant: "destructive",

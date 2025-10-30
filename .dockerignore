@@ -1,69 +1,242 @@
-# Node modules
-node_modules
+# Docker ignore file for mariia-hub
+# This file specifies files and directories that should be excluded from Docker build context
+
+# Dependencies
+node_modules/
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
 # Build outputs
-dist
-build
+dist/
+build/
+.next/
+out/
 
-# Environment files
-.env
+# Testing
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+playwright/.cache/
+cypress/
+.nyc_output/
+
+# Development
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# IDE files
-.vscode
-.idea
-*.swp
-*.swo
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Git
-.git
-.gitignore
-
-# Docker files
-Dockerfile*
-docker-compose*
-.dockerignore
-
-# Documentation
-docs
-*.md
-
-# Tests
-coverage
-.nyc_output
-test-results
-tests
+.env.*.local
+.env.development
+.env.test
 
 # Logs
-logs
+logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
 # Runtime data
-pids
+pids/
 *.pid
 *.seed
 *.pid.lock
 
-# Temporary folders
-tmp
-temp
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
 
-# Infrastructure files (will be copied selectively)
-infra/
-scripts/
+# nyc test coverage
+.nyc_output
+
+# Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
+.grunt
+
+# Bower dependency directory (https://bower.io/)
+bower_components
+
+# node-waf configuration
+.lock-wscript
+
+# Compiled binary addons (https://nodejs.org/api/addons.html)
+build/Release
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Vite build output
+dist/
+
+# Rollup.js default build output
+dist/
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Infrastructure
+infrastructure/
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+*.tfvars
+*.tfvars.json
 
 # CI/CD
-.github
+.github/
 .gitlab-ci.yml
+.travis.yml
+.circleci/
+azure-pipelines.yml
 
-# Monitoring and security
-security-reports/
-*.sql.backup
+# Documentation
+docs/
+*.md
+!README.md
+
+# Tests
+__tests__/
+tests/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+test.config.ts
+vitest.config.ts
+playwright.config.ts
+
+# Tools
+.eslintrc*
+.prettierrc*
+.stylelintrc*
+.editorconfig
+
+# Package managers
+.npm
+.yarn
+.pnpm.yaml
+pnpm-lock.yaml
+
+# Config files
+.envrc
+.env.example
+.env.template
+
+# Backup files
+*.bak
+*.backup
+*.tmp
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
+# IDE files
+*.sublime-*
+.vscode/
+.idea/
+
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# Custom ignore patterns for this project
+# Ignore storybook build files
+storybook-static/
+
+# Ignore performance reports
+lighthouse-reports/
+bundlesize-reports/
+
+# Ignore security audit reports
+security-audit-report.json
+
+# Ignore screenshot tests
+screenshots/
+visual-test-results/
+
+# Ignore local development files
+.local/
+local/
+
+# Ignore database backups
+backups/
+*.sql
+*.dump

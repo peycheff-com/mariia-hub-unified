@@ -11,8 +11,32 @@ import "./lib/performance";
 // Import parallax effects
 import "./scripts/parallax.js";
 
+// Initialize comprehensive performance monitoring system
+const initializePerformanceMonitoring = async () => {
+  try {
+    log.info('🚀 Initializing Mariia Hub Performance Monitoring System...');
+
+    // Initialize the comprehensive performance monitoring hub
+    const { initializePerformanceHub } = await import("./services/performanceHub");
+    const performanceHub = await initializePerformanceHub();
+
+    log.info('✅ Performance monitoring system fully operational');
+    return performanceHub;
+  } catch (error) {
+    log.warn('⚠️  Performance monitoring initialization failed:', error);
+    return null;
+  }
+};
+
 // Initialize monitoring services
 if (import.meta.env.PROD) {
+  // Initialize comprehensive performance monitoring first
+  initializePerformanceMonitoring().then((performanceHub) => {
+    if (performanceHub) {
+      log.info('Performance monitoring hub initialized successfully');
+    }
+  });
+
   // Initialize Sentry error tracking
   import("./lib/sentry").then(({ initSentry }) => {
     initSentry();
@@ -59,6 +83,26 @@ if (import.meta.env.PROD) {
     }).catch((error) => {
       log.warn('Failed to initialize push notifications:', error);
     });
+  });
+} else {
+  // In development, still initialize performance monitoring but with detailed logging
+  initializePerformanceMonitoring().then((performanceHub) => {
+    if (performanceHub) {
+      log.info('Development performance monitoring initialized');
+
+      // Log performance metrics in development
+      performanceHub.subscribe('performance-metric', (metric: any) => {
+        if (import.meta.env.DEV && metric.type === 'custom-timing') {
+          log.debug(`Performance metric: ${metric.name} = ${metric.timestamp}ms`);
+        }
+      });
+
+      performanceHub.subscribe('performance-alert', (alert: any) => {
+        if (import.meta.env.DEV) {
+          log.warn(`Performance alert: ${alert.title} - ${alert.message}`);
+        }
+      });
+    }
   });
 }
 

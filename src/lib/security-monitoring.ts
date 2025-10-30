@@ -1,649 +1,680 @@
 /**
- * Security Monitoring System
+ * Security Monitoring and Alerting System
  *
- * Comprehensive security monitoring for production environments including
- * real-time threat detection, performance monitoring, and security analytics.
+ * Provides comprehensive security monitoring for application including
+ * real-time threat detection, security event logging, and automated alerting.
  */
 
-interface SecurityMetrics {
-  // Authentication metrics
-  authAttempts: number;
-  authFailures: number;
-  suspiciousIPs: string[];
-  bruteForceAttempts: number;
-
-  // Request metrics
-  totalRequests: number;
-  blockedRequests: number;
-  rateLimitHits: number;
-  suspiciousRequests: number;
-
-  // Application metrics
-  errors: number;
-  securityViolations: number;
-  dataAccessAttempts: number;
-  configurationChanges: number;
-
-  // Performance metrics
-  responseTime: number;
-  memoryUsage: number;
-  cpuUsage: number;
-  activeUsers: number;
-}
-
-interface SecurityAlert {
+interface SecurityEvent {
   id: string;
-  timestamp: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  type: string;
-  message: string;
-  source: string;
-  details?: Record<string, any>;
+  type: SecurityEventType;
+  severity: SecuritySeverity;
+  timestamp: number;
+  description: string;
+  userId?: string;
+  sessionId?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  metadata: Record<string, any>;
   resolved: boolean;
-  resolvedAt?: string;
+  resolvedAt?: number;
+  resolvedBy?: string;
 }
 
-interface ThreatIntelligence {
-  maliciousIPs: string[];
-  suspiciousPatterns: string[];
-  attackSignatures: string[];
-  knownVulnerabilities: string[];
+export enum SecurityEventType {
+  AUTHENTICATION_FAILURE = 'AUTHENTICATION_FAILURE',
+  SUSPICIOUS_LOGIN = 'SUSPICIOUS_LOGIN',
+  BRUTE_FORCE_ATTEMPT = 'BRUTE_FORCE_ATTEMPT',
+  SESSION_HIJACKING = 'SESSION_HIJACKING',
+  XSS_DETECTED = 'XSS_DETECTED',
+  SQL_INJECTION_ATTEMPT = 'SQL_INJECTION_ATTEMPT',
+  CSRF_ATTACK = 'CSRF_ATTACK',
+  UNAUTHORIZED_ACCESS = 'UNAUTHORIZED_ACCESS',
+  DATA_EXFILTRATION = 'DATA_EXFILTRATION',
+  MALICIOUS_REQUEST = 'MALICIOUS_REQUEST',
+  RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
+  ACCOUNT_TAKEOVER = 'ACCOUNT_TAKEOVER',
+  PRIVILEGE_ESCALATION = 'PRIVILEGE_ESCALATION',
+  ANOMALOUS_BEHAVIOR = 'ANOMALOUS_BEHAVIOR',
+  SECURITY_POLICY_VIOLATION = 'SECURITY_POLICY_VIOLATION'
 }
 
-class SecurityMonitoring {
-  private metrics: SecurityMetrics;
-  private alerts: SecurityAlert[];
-  private threatIntel: ThreatIntelligence;
-  private monitoringInterval: NodeJS.Timeout | null = null;
-  private readonly METRICS_RETENTION_HOURS = 24;
-  private readonly ALERT_RETENTION_DAYS = 30;
+export enum SecuritySeverity {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+  CRITICAL = 'CRITICAL'
+}
 
-  constructor() {
-    this.metrics = this.initializeMetrics();
-    this.alerts = [];
-    this.threatIntel = this.initializeThreatIntelligence();
-    this.loadStoredData();
+interface SecurityThresholds {
+  failedLoginAttempts: number;
+  failedLoginTimeWindow: number;
+  suspiciousRequestRate: number;
+  suspiciousRequestTimeWindow: number;
+  dataAccessThreshold: number;
+  dataAccessTimeWindow: number;
+}
+
+export const SECURITY_THRESHOLDS: SecurityThresholds = {
+  failedLoginAttempts: 5,
+  failedLoginTimeWindow: 15 * 60 * 1000, // 15 minutes
+  suspiciousRequestRate: 100,
+  suspiciousRequestTimeWindow: 60 * 1000, // 1 minute
+  dataAccessThreshold: 1000,
+  dataAccessTimeWindow: 60 * 60 * 1000 // 1 hour
+};
+
+interface SecurityMetrics {
+  totalEvents: number;
+  criticalEvents: number;
+  highSeverityEvents: number;
+  mediumSeverityEvents: number;
+  lowSeverityEvents: number;
+  unresolvedEvents: number;
+  averageResolutionTime: number;
+  falsePositiveRate: number;
+  lastUpdated: number;
+}
+
+/**
+ * Security Monitoring System
+ */
+export class SecurityMonitoringSystem {
+  private static instance: SecurityMonitoringSystem;
+  private events: SecurityEvent[] = [];
+  private activeThreats: Map<string, SecurityEvent> = new Map();
+  private metrics: SecurityMetrics = {
+    totalEvents: 0,
+    criticalEvents: 0,
+    highSeverityEvents: 0,
+    mediumSeverityEvents: 0,
+    lowSeverityEvents: 0,
+    unresolvedEvents: 0,
+    averageResolutionTime: 0,
+    falsePositiveRate: 0,
+    lastUpdated: Date.now()
+  };
+  private alertCallbacks: Map<SecuritySeverity, Array<(event: SecurityEvent) => void>> = new Map();
+  private monitoringEnabled: boolean = true;
+
+  private constructor() {
+    this.initializeAlertCallbacks();
     this.startMonitoring();
   }
 
-  /**
-   * Initialize security metrics
-   */
-  private initializeMetrics(): SecurityMetrics {
-    return {
-      authAttempts: 0,
-      authFailures: 0,
-      suspiciousIPs: [],
-      bruteForceAttempts: 0,
-      totalRequests: 0,
-      blockedRequests: 0,
-      rateLimitHits: 0,
-      suspiciousRequests: 0,
-      errors: 0,
-      securityViolations: 0,
-      dataAccessAttempts: 0,
-      configurationChanges: 0,
-      responseTime: 0,
-      memoryUsage: 0,
-      cpuUsage: 0,
-      activeUsers: 0,
-    };
+  static getInstance(): SecurityMonitoringSystem {
+    if (!SecurityMonitoringSystem.instance) {
+      SecurityMonitoringSystem.instance = new SecurityMonitoringSystem();
+    }
+    return SecurityMonitoringSystem.instance;
   }
 
   /**
-   * Initialize threat intelligence data
+   * Log a security event
    */
-  private initializeThreatIntelligence(): ThreatIntelligence {
-    return {
-      maliciousIPs: [],
-      suspiciousPatterns: [
-        /\.\./,           // Directory traversal
-        /<script/i,       // XSS attempts
-        /union.*select/i, // SQL injection
-        /eval\(/i,        // Code injection
-        /document\.cookie/i, // Cookie theft attempts
-      ],
-      attackSignatures: [
-        'sqlmap',
-        'nikto',
-        'nmap',
-        'dirb',
-        'gobuster',
-      ],
-      knownVulnerabilities: [],
+  logSecurityEvent(
+    type: SecurityEventType,
+    severity: SecuritySeverity,
+    description: string,
+    metadata: Record<string, any> = {}
+  ): SecurityEvent {
+    const event: SecurityEvent = {
+      id: this.generateEventId(),
+      type,
+      severity,
+      timestamp: Date.now(),
+      description,
+      metadata,
+      resolved: false
     };
-  }
 
-  /**
-   * Start security monitoring
-   */
-  public startMonitoring(): void {
-    if (this.monitoringInterval) {
-      clearInterval(this.monitoringInterval);
+    this.events.push(event);
+    this.updateMetrics(event);
+    this.processEvent(event);
+
+    if (this.monitoringEnabled) {
+      console.warn(`[SECURITY] ${severity}: ${description}`, {
+        type,
+        timestamp: new Date(event.timestamp).toISOString(),
+        metadata
+      });
     }
 
-    this.monitoringInterval = setInterval(() => {
-      this.performSecurityChecks();
+    return event;
+  }
+
+  /**
+   * Report authentication failure
+   */
+  reportAuthenticationFailure(
+    email: string,
+    ipAddress: string,
+    userAgent: string,
+    reason: string = 'Invalid credentials'
+  ): void {
+    this.logSecurityEvent(
+      SecurityEventType.AUTHENTICATION_FAILURE,
+      SecuritySeverity.MEDIUM,
+      `Failed authentication attempt for ${email}: ${reason}`,
+      { email, ipAddress, userAgent, reason }
+    );
+
+    this.checkForBruteForceAttack(email, ipAddress);
+  }
+
+  /**
+   * Report suspicious activity
+   */
+  reportSuspiciousActivity(
+    type: SecurityEventType,
+    description: string,
+    userId?: string,
+    sessionId?: string,
+    metadata: Record<string, any> = {}
+  ): void {
+    this.logSecurityEvent(
+      type,
+      SecuritySeverity.HIGH,
+      description,
+      { userId, sessionId, ...metadata }
+    );
+  }
+
+  /**
+   * Report XSS attack attempt
+   */
+  reportXSSAttempt(
+    payload: string,
+    source: string,
+    userId?: string,
+    ipAddress?: string
+  ): void {
+    this.logSecurityEvent(
+      SecurityEventType.XSS_DETECTED,
+      SecuritySeverity.CRITICAL,
+      `XSS attack attempt detected from ${source}`,
+      { payload, source, userId, ipAddress }
+    );
+  }
+
+  /**
+   * Report SQL injection attempt
+   */
+  reportSQLInjectionAttempt(
+    query: string,
+    source: string,
+    userId?: string,
+    ipAddress?: string
+  ): void {
+    this.logSecurityEvent(
+      SecurityEventType.SQL_INJECTION_ATTEMPT,
+      SecuritySeverity.CRITICAL,
+      `SQL injection attempt detected from ${source}`,
+      { query, source, userId, ipAddress }
+    );
+  }
+
+  /**
+   * Report unauthorized access attempt
+   */
+  reportUnauthorizedAccess(
+    resource: string,
+    userId?: string,
+    ipAddress?: string,
+    userAgent?: string
+  ): void {
+    this.logSecurityEvent(
+      SecurityEventType.UNAUTHORIZED_ACCESS,
+      SecuritySeverity.HIGH,
+      `Unauthorized access attempt to ${resource}`,
+      { resource, userId, ipAddress, userAgent }
+    );
+  }
+
+  /**
+   * Report rate limit exceeded
+   */
+  reportRateLimitExceeded(
+    endpoint: string,
+    clientId: string,
+    requestCount: number,
+    timeWindow: number
+  ): void {
+    this.logSecurityEvent(
+      SecurityEventType.RATE_LIMIT_EXCEEDED,
+      SecuritySeverity.MEDIUM,
+      `Rate limit exceeded for ${endpoint}: ${requestCount} requests in ${timeWindow}ms`,
+      { endpoint, clientId, requestCount, timeWindow }
+    );
+  }
+
+  /**
+   * Get security metrics
+   */
+  getSecurityMetrics(): SecurityMetrics {
+    return { ...this.metrics };
+  }
+
+  /**
+   * Get unresolved security events
+   */
+  getUnresolvedEvents(severity?: SecuritySeverity): SecurityEvent[] {
+    let events = this.events.filter(event => !event.resolved);
+
+    if (severity) {
+      events = events.filter(event => event.severity === severity);
+    }
+
+    return events.sort((a, b) => b.timestamp - a.timestamp);
+  }
+
+  /**
+   * Get events by time range
+   */
+  getEventsByTimeRange(
+    startTime: number,
+    endTime: number,
+    severity?: SecuritySeverity
+  ): SecurityEvent[] {
+    let events = this.events.filter(event =>
+      event.timestamp >= startTime && event.timestamp <= endTime
+    );
+
+    if (severity) {
+      events = events.filter(event => event.severity === severity);
+    }
+
+    return events.sort((a, b) => b.timestamp - a.timestamp);
+  }
+
+  /**
+   * Resolve a security event
+   */
+  resolveEvent(eventId: string, resolvedBy: string, resolution: string): void {
+    const event = this.events.find(e => e.id === eventId);
+    if (event) {
+      event.resolved = true;
+      event.resolvedAt = Date.now();
+      event.resolvedBy = resolvedBy;
+      event.metadata.resolution = resolution;
+
       this.updateMetrics();
-      this.checkThresholds();
-      this.cleanupOldData();
-    }, 60000); // Check every minute
-
-    console.log('Security monitoring started');
-  }
-
-  /**
-   * Stop security monitoring
-   */
-  public stopMonitoring(): void {
-    if (this.monitoringInterval) {
-      clearInterval(this.monitoringInterval);
-      this.monitoringInterval = null;
-    }
-    console.log('Security monitoring stopped');
-  }
-
-  /**
-   * Record authentication attempt
-   */
-  public recordAuthAttempt(success: boolean, ip?: string, userAgent?: string): void {
-    this.metrics.authAttempts++;
-
-    if (!success) {
-      this.metrics.authFailures++;
-      this.detectBruteForce(ip, userAgent);
-    }
-
-    if (ip && this.isSuspiciousIP(ip)) {
-      this.createAlert('high', 'suspicious_auth',
-        `Authentication attempt from suspicious IP: ${ip}`,
-        'authentication', { ip, userAgent, success }
-      );
     }
   }
 
   /**
-   * Record API request
+   * Add alert callback for specific severity
    */
-  public recordRequest(url: string, method: string, ip?: string, userAgent?: string, statusCode?: number): void {
-    this.metrics.totalRequests++;
-
-    // Check for suspicious requests
-    if (this.isSuspiciousRequest(url, method, userAgent)) {
-      this.metrics.suspiciousRequests++;
-      this.createAlert('medium', 'suspicious_request',
-        `Suspicious request detected: ${method} ${url}`,
-        'request', { url, method, ip, userAgent, statusCode }
-      );
+  addAlertCallback(
+    severity: SecuritySeverity,
+    callback: (event: SecurityEvent) => void
+  ): void {
+    if (!this.alertCallbacks.has(severity)) {
+      this.alertCallbacks.set(severity, []);
     }
+    this.alertCallbacks.get(severity)!.push(callback);
+  }
 
-    // Check for attack signatures in user agent
-    if (userAgent && this.containsAttackSignature(userAgent)) {
-      this.metrics.blockedRequests++;
-      this.createAlert('high', 'attack_signature',
-        `Attack signature detected in user agent`,
-        'request', { url, method, ip, userAgent }
-      );
-    }
-
-    // Update suspicious IPs list
-    if (ip && this.shouldTrackIP(ip)) {
-      if (!this.metrics.suspiciousIPs.includes(ip)) {
-        this.metrics.suspiciousIPs.push(ip);
+  /**
+   * Remove alert callback
+   */
+  removeAlertCallback(
+    severity: SecuritySeverity,
+    callback: (event: SecurityEvent) => void
+  ): void {
+    const callbacks = this.alertCallbacks.get(severity);
+    if (callbacks) {
+      const index = callbacks.indexOf(callback);
+      if (index > -1) {
+        callbacks.splice(index, 1);
       }
     }
   }
 
   /**
-   * Record security violation
+   * Enable/disable monitoring
    */
-  public recordSecurityViolation(violationType: string, details?: Record<string, any>): void {
-    this.metrics.securityViolations++;
-
-    const severity = this.getViolationSeverity(violationType);
-    this.createAlert(severity, 'security_violation',
-      `Security violation: ${violationType}`,
-      'application', details
-    );
+  setMonitoringEnabled(enabled: boolean): void {
+    this.monitoringEnabled = enabled;
   }
 
   /**
-   * Record configuration change
+   * Generate security event ID
    */
-  public recordConfigurationChange(changeType: string, oldValue?: string, newValue?: string): void {
-    this.metrics.configurationChanges++;
-
-    this.createAlert('low', 'config_change',
-      `Configuration changed: ${changeType}`,
-      'configuration', { oldValue: 'REDACTED', newValue: 'REDACTED' }
-    );
+  private generateEventId(): string {
+    return `sec_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
   }
 
   /**
-   * Record data access
+   * Process security event and trigger alerts
    */
-  public recordDataAccess(resource: string, userId?: string, ip?: string): void {
-    this.metrics.dataAccessAttempts++;
+  private processEvent(event: SecurityEvent): void {
+    // Check for immediate threats
+    if (this.isImmediateThreat(event)) {
+      this.activeThreats.set(event.id, event);
+    }
 
-    // Check for unusual data access patterns
-    if (this.isUnusualDataAccess(resource, userId)) {
-      this.createAlert('medium', 'unusual_data_access',
-        `Unusual data access detected: ${resource}`,
-        'data', { resource, userId, ip }
+    // Trigger alerts
+    this.triggerAlerts(event);
+
+    // Automated response
+    this.handleAutomatedResponse(event);
+  }
+
+  /**
+   * Check if event represents an immediate threat
+   */
+  private isImmediateThreat(event: SecurityEvent): boolean {
+    const immediateThreatTypes = [
+      SecurityEventType.XSS_DETECTED,
+      SecurityEventType.SQL_INJECTION_ATTEMPT,
+      SecurityEventType.ACCOUNT_TAKEOVER,
+      SecurityEventType.PRIVILEGE_ESCALATION
+    ];
+
+    return immediateThreatTypes.includes(event.type) ||
+           event.severity === SecuritySeverity.CRITICAL;
+  }
+
+  /**
+   * Trigger alert callbacks
+   */
+  private triggerAlerts(event: SecurityEvent): void {
+    const callbacks = this.alertCallbacks.get(event.severity);
+    if (callbacks) {
+      callbacks.forEach(callback => {
+        try {
+          callback(event);
+        } catch (error) {
+          console.error('Error in alert callback:', error);
+        }
+      });
+    }
+  }
+
+  /**
+   * Handle automated security responses
+   */
+  private handleAutomatedResponse(event: SecurityEvent): void {
+    switch (event.type) {
+      case SecurityEventType.BRUTE_FORCE_ATTEMPT:
+        this.handleBruteForceResponse(event);
+        break;
+      case SecurityEventType.SESSION_HIJACKING:
+        this.handleSessionHijackingResponse(event);
+        break;
+      case SecurityEventType.XSS_DETECTED:
+      case SecurityEventType.SQL_INJECTION_ATTEMPT:
+        this.handleCriticalThreatResponse(event);
+        break;
+    }
+  }
+
+  /**
+   * Handle brute force attack response
+   */
+  private handleBruteForceResponse(event: SecurityEvent): void {
+    const { ipAddress, email } = event.metadata;
+
+    // Block IP temporarily (would integrate with firewall/rate limiting)
+    console.warn(`[AUTOMATED_RESPONSE] Blocking IP ${ipAddress} due to brute force attack`);
+
+    // Send alert to security team
+    this.sendSecurityAlert({
+      type: 'BRUTE_FORCE_BLOCK',
+      message: `IP ${ipAddress} automatically blocked due to brute force attack on ${email}`,
+      severity: SecuritySeverity.HIGH,
+      event
+    });
+  }
+
+  /**
+   * Handle session hijacking response
+   */
+  private handleSessionHijackingResponse(event: SecurityEvent): void {
+    const { sessionId, userId } = event.metadata;
+
+    // Invalidate all sessions for user
+    console.warn(`[AUTOMATED_RESPONSE] Invalidating all sessions for user ${userId} due to hijacking attempt`);
+
+    // Send alert to user and security team
+    this.sendSecurityAlert({
+      type: 'SESSION_INVALIDATION',
+      message: `All sessions invalidated for user ${userId} due to suspicious activity`,
+      severity: SecuritySeverity.CRITICAL,
+      event
+    });
+  }
+
+  /**
+   * Handle critical threat response
+   */
+  private handleCriticalThreatResponse(event: SecurityEvent): void {
+    // Send immediate alert to security team
+    this.sendSecurityAlert({
+      type: 'CRITICAL_THREAT',
+      message: `Critical security threat detected: ${event.description}`,
+      severity: SecuritySeverity.CRITICAL,
+      event
+    });
+  }
+
+  /**
+   * Send security alert
+   */
+  private sendSecurityAlert(alert: {
+    type: string;
+    message: string;
+    severity: SecuritySeverity;
+    event: SecurityEvent;
+  }): void {
+    console.error(`[SECURITY ALERT] ${alert.type}: ${alert.message}`, {
+      eventId: alert.event.id,
+      timestamp: new Date(alert.event.timestamp).toISOString(),
+      metadata: alert.event.metadata
+    });
+
+    // In production, integrate with alerting systems:
+    // - Send email/SMS to security team
+    // - Create incident in ticketing system
+    // - Send to SIEM system
+    // - Trigger automated incident response
+  }
+
+  /**
+   * Check for brute force attack patterns
+   */
+  private checkForBruteForceAttack(email: string, ipAddress: string): void {
+    const now = Date.now();
+    const timeWindow = SECURITY_THRESHOLDS.failedLoginTimeWindow;
+    const maxAttempts = SECURITY_THRESHOLDS.failedLoginAttempts;
+
+    const recentFailures = this.events.filter(event =>
+      event.type === SecurityEventType.AUTHENTICATION_FAILURE &&
+      event.metadata.email === email &&
+      (now - event.timestamp) <= timeWindow
+    );
+
+    if (recentFailures.length >= maxAttempts) {
+      this.logSecurityEvent(
+        SecurityEventType.BRUTE_FORCE_ATTEMPT,
+        SecuritySeverity.HIGH,
+        `Brute force attack detected against ${email}`,
+        { email, ipAddress, attemptCount: recentFailures.length, timeWindow }
       );
     }
-  }
-
-  /**
-   * Get current security metrics
-   */
-  public getSecurityMetrics(): SecurityMetrics {
-    return { ...this.metrics };
-  }
-
-  /**
-   * Get recent security alerts
-   */
-  public getSecurityAlerts(limit: number = 50): SecurityAlert[] {
-    return this.alerts
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-      .slice(0, limit);
-  }
-
-  /**
-   * Get unresolved security alerts
-   */
-  public getUnresolvedAlerts(): SecurityAlert[] {
-    return this.alerts.filter(alert => !alert.resolved);
-  }
-
-  /**
-   * Resolve security alert
-   */
-  public resolveAlert(alertId: string): void {
-    const alert = this.alerts.find(a => a.id === alertId);
-    if (alert) {
-      alert.resolved = true;
-      alert.resolvedAt = new Date().toISOString();
-      this.persistData();
-    }
-  }
-
-  /**
-   * Get security score (0-100)
-   */
-  public getSecurityScore(): number {
-    let score = 100;
-
-    // Deduct points for various issues
-    score -= Math.min(this.metrics.authFailures * 0.1, 10);
-    score -= Math.min(this.metrics.suspiciousRequests * 0.5, 15);
-    score -= Math.min(this.metrics.securityViolations * 2, 20);
-    score -= Math.min(this.getUnresolvedAlerts().length * 3, 15);
-
-    return Math.max(0, Math.round(score));
-  }
-
-  /**
-   * Get security recommendations
-   */
-  public getSecurityRecommendations(): string[] {
-    const recommendations: string[] = [];
-
-    if (this.metrics.authFailures > this.metrics.authAttempts * 0.1) {
-      recommendations.push('High authentication failure rate detected - consider implementing rate limiting');
-    }
-
-    if (this.metrics.suspiciousRequests > 10) {
-      recommendations.push('Multiple suspicious requests detected - review firewall rules');
-    }
-
-    if (this.metrics.securityViolations > 0) {
-      recommendations.push('Security violations detected - review application security measures');
-    }
-
-    if (this.getUnresolvedAlerts().length > 5) {
-      recommendations.push('Multiple unresolved security alerts - require immediate attention');
-    }
-
-    if (this.metrics.responseTime > 5000) {
-      recommendations.push('High response time detected - may impact security monitoring effectiveness');
-    }
-
-    return recommendations;
-  }
-
-  /**
-   * Export security data for compliance
-   */
-  public exportSecurityData(startDate?: Date, endDate?: Date): string {
-    const data = {
-      metrics: this.metrics,
-      alerts: this.filterAlertsByDate(startDate, endDate),
-      threatIntelligence: this.threatIntel,
-      exportTime: new Date().toISOString(),
-      score: this.getSecurityScore(),
-    };
-
-    return JSON.stringify(data, null, 2);
-  }
-
-  /**
-   * Perform comprehensive security checks
-   */
-  private performSecurityChecks(): void {
-    // Check for new threats
-    this.updateThreatIntelligence();
-
-    // Check application health
-    this.checkApplicationHealth();
-
-    // Validate security configurations
-    this.validateSecurityConfigurations();
   }
 
   /**
    * Update security metrics
    */
-  private updateMetrics(): void {
-    // Update performance metrics
-    if (performance && performance.memory) {
-      this.metrics.memoryUsage = performance.memory.usedJSHeapSize;
-    }
+  private updateMetrics(newEvent?: SecurityEvent): void {
+    if (newEvent) {
+      this.metrics.totalEvents++;
 
-    // Calculate average response time (mock implementation)
-    this.metrics.responseTime = Math.random() * 1000 + 200;
+      switch (newEvent.severity) {
+        case SecuritySeverity.CRITICAL:
+          this.metrics.criticalEvents++;
+          break;
+        case SecuritySeverity.HIGH:
+          this.metrics.highSeverityEvents++;
+          break;
+        case SecuritySeverity.MEDIUM:
+          this.metrics.mediumSeverityEvents++;
+          break;
+        case SecuritySeverity.LOW:
+          this.metrics.lowSeverityEvents++;
+          break;
+      }
 
-    // Update active users count (mock implementation)
-    this.metrics.activeUsers = Math.floor(Math.random() * 100) + 10;
-  }
-
-  /**
-   * Check security thresholds and create alerts
-   */
-  private checkThresholds(): void {
-    // Check authentication failure rate
-    if (this.metrics.authAttempts > 0) {
-      const failureRate = this.metrics.authFailures / this.metrics.authAttempts;
-      if (failureRate > 0.2) {
-        this.createAlert('high', 'high_failure_rate',
-          `High authentication failure rate: ${Math.round(failureRate * 100)}%`,
-          'authentication', { failureRate, attempts: this.metrics.authAttempts }
-        );
+      if (!newEvent.resolved) {
+        this.metrics.unresolvedEvents++;
       }
     }
 
-    // Check suspicious request volume
-    if (this.metrics.suspiciousRequests > 50) {
-      this.createAlert('critical', 'high_suspicious_activity',
-        `High volume of suspicious requests: ${this.metrics.suspiciousRequests}`,
-        'request', { suspiciousRequests: this.metrics.suspiciousRequests }
-      );
-    }
+    this.metrics.lastUpdated = Date.now();
 
-    // Check security violations
-    if (this.metrics.securityViolations > 10) {
-      this.createAlert('high', 'multiple_violations',
-        `Multiple security violations detected: ${this.metrics.securityViolations}`,
-        'application', { violations: this.metrics.securityViolations }
-      );
+    // Calculate average resolution time
+    const resolvedEvents = this.events.filter(e => e.resolved && e.resolvedAt);
+    if (resolvedEvents.length > 0) {
+      const totalResolutionTime = resolvedEvents.reduce((sum, event) => {
+        return sum + (event.resolvedAt! - event.timestamp);
+      }, 0);
+      this.metrics.averageResolutionTime = totalResolutionTime / resolvedEvents.length;
     }
   }
 
   /**
-   * Detect brute force attacks
+   * Initialize alert callbacks
    */
-  private detectBruteForce(ip?: string, userAgent?: string): void {
-    if (!ip) return;
-
-    // Simple brute force detection (in production, use more sophisticated algorithms)
-    const recentFailures = this.getRecentAuthFailures(ip);
-    if (recentFailures >= 5) {
-      this.metrics.bruteForceAttempts++;
-      this.createAlert('critical', 'brute_force_attack',
-        `Brute force attack detected from IP: ${ip}`,
-        'authentication', { ip, userAgent, failures: recentFailures }
-      );
-    }
-  }
-
-  /**
-   * Check if IP is suspicious
-   */
-  private isSuspiciousIP(ip: string): boolean {
-    return this.threatIntel.maliciousIPs.includes(ip) ||
-           this.metrics.suspiciousIPs.filter(suspiciousIP => suspiciousIP === ip).length > 10;
-  }
-
-  /**
-   * Check if request is suspicious
-   */
-  private isSuspiciousRequest(url: string, method: string, userAgent?: string): boolean {
-    const fullRequest = `${method} ${url} ${userAgent || ''}`.toLowerCase();
-
-    return this.threatIntel.suspiciousPatterns.some(pattern =>
-      pattern.test(fullRequest)
-    );
-  }
-
-  /**
-   * Check for attack signatures
-   */
-  private containsAttackSignature(userAgent: string): boolean {
-    return this.threatIntel.attackSignatures.some(signature =>
-      userAgent.toLowerCase().includes(signature.toLowerCase())
-    );
-  }
-
-  /**
-   * Check if IP should be tracked
-   */
-  private shouldTrackIP(ip: string): boolean {
-    // Don't track private IPs
-    const privateIPs = [/^10\./, /^172\.(1[6-9]|2[0-9]|3[0-1])\./, /^192\.168\./, /^127\./];
-    return !privateIPs.some(pattern => pattern.test(ip));
-  }
-
-  /**
-   * Check for unusual data access patterns
-   */
-  private isUnusualDataAccess(resource: string, userId?: string): boolean {
-    // Simple implementation - in production, use machine learning
-    const sensitiveResources = ['admin', 'config', 'secrets', 'keys'];
-    return sensitiveResources.some(sensitive => resource.toLowerCase().includes(sensitive));
-  }
-
-  /**
-   * Get violation severity
-   */
-  private getViolationSeverity(violationType: string): 'low' | 'medium' | 'high' | 'critical' {
-    const criticalViolations = ['data_breach', 'privilege_escalation', 'system_compromise'];
-    const highViolations = ['unauthorized_access', 'injection_attack', 'xss_attack'];
-    const mediumViolations = ['config_tamper', 'rate_limit_exceeded'];
-
-    if (criticalViolations.includes(violationType)) return 'critical';
-    if (highViolations.includes(violationType)) return 'high';
-    if (mediumViolations.includes(violationType)) return 'medium';
-    return 'low';
-  }
-
-  /**
-   * Create security alert
-   */
-  private createAlert(
-    severity: 'low' | 'medium' | 'high' | 'critical',
-    type: string,
-    message: string,
-    source: string,
-    details?: Record<string, any>
-  ): void {
-    const alert: SecurityAlert = {
-      id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      timestamp: new Date().toISOString(),
-      severity,
-      type,
-      message,
-      source,
-      details,
-      resolved: false,
-    };
-
-    this.alerts.push(alert);
-
-    // Immediate notification for critical alerts
-    if (severity === 'critical') {
-      this.triggerImmediateAlert(alert);
-    }
-
-    this.persistData();
-  }
-
-  /**
-   * Trigger immediate alert notification
-   */
-  private triggerImmediateAlert(alert: SecurityAlert): void {
-    console.error('CRITICAL SECURITY ALERT:', alert);
-
-    // In production, integrate with alerting systems:
-    // - Send email notifications
-    // - Send Slack/Teams messages
-    // - Create PagerDuty incidents
-    // - Send SMS alerts
-  }
-
-  /**
-   * Get recent authentication failures for IP
-   */
-  private getRecentAuthFailures(ip: string): number {
-    // Simple implementation - in production, use proper time-windowed counting
-    return Math.floor(Math.random() * 10);
-  }
-
-  /**
-   * Update threat intelligence
-   */
-  private updateThreatIntelligence(): void {
-    // In production, integrate with threat intelligence feeds
-    // This is a placeholder implementation
-  }
-
-  /**
-   * Check application health
-   */
-  private checkApplicationHealth(): void {
-    // Monitor application health indicators
-    if (this.metrics.errors > 100) {
-      this.createAlert('medium', 'high_error_rate',
-        'High application error rate detected',
-        'application', { errors: this.metrics.errors }
-      );
-    }
-  }
-
-  /**
-   * Validate security configurations
-   */
-  private validateSecurityConfigurations(): void {
-    // Check if security headers are properly configured
-    if (typeof window !== 'undefined') {
-      const csp = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
-      if (!csp) {
-        this.createAlert('low', 'missing_csp',
-          'Content Security Policy header not found',
-          'configuration'
-        );
-      }
-    }
-  }
-
-  /**
-   * Filter alerts by date range
-   */
-  private filterAlertsByDate(startDate?: Date, endDate?: Date): SecurityAlert[] {
-    return this.alerts.filter(alert => {
-      const alertDate = new Date(alert.timestamp);
-      if (startDate && alertDate < startDate) return false;
-      if (endDate && alertDate > endDate) return false;
-      return true;
+  private initializeAlertCallbacks(): void {
+    // Initialize empty callback arrays for each severity
+    Object.values(SecuritySeverity).forEach(severity => {
+      this.alertCallbacks.set(severity, []);
     });
   }
 
   /**
-   * Clean up old data
+   * Start background monitoring
    */
-  private cleanupOldData(): void {
-    const now = new Date();
+  private startMonitoring(): void {
+    // Periodic cleanup of old events
+    setInterval(() => {
+      this.cleanupOldEvents();
+    }, 60 * 60 * 1000); // Every hour
 
-    // Clean up old metrics (reset every hour)
-    this.metrics = this.initializeMetrics();
-
-    // Clean up old alerts
-    const cutoffDate = new Date(now.getTime() - this.ALERT_RETENTION_DAYS * 24 * 60 * 60 * 1000);
-    this.alerts = this.alerts.filter(alert => new Date(alert.timestamp) >= cutoffDate);
-
-    this.persistData();
+    // Periodic metrics update
+    setInterval(() => {
+      this.updateMetrics();
+    }, 5 * 60 * 1000); // Every 5 minutes
   }
 
   /**
-   * Persist monitoring data
+   * Clean up old events to prevent memory leaks
    */
-  private persistData(): void {
-    try {
-      const data = {
-        metrics: this.metrics,
-        alerts: this.alerts.slice(-100), // Keep only recent alerts
-        lastUpdated: new Date().toISOString(),
-      };
+  private cleanupOldEvents(): void {
+    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    const initialCount = this.events.length;
 
-      localStorage.setItem('security_monitoring_data', JSON.stringify(data));
-    } catch (error) {
-      console.warn('Failed to persist security monitoring data:', error);
-    }
-  }
+    this.events = this.events.filter(event => event.timestamp > thirtyDaysAgo);
 
-  /**
-   * Load stored monitoring data
-   */
-  private loadStoredData(): void {
-    try {
-      const stored = localStorage.getItem('security_monitoring_data');
-      if (stored) {
-        const data = JSON.parse(stored);
-        this.metrics = { ...this.metrics, ...data.metrics };
-        this.alerts = data.alerts || [];
-      }
-    } catch (error) {
-      console.warn('Failed to load security monitoring data:', error);
+    const cleanedUp = initialCount - this.events.length;
+    if (cleanedUp > 0) {
+      console.log(`[SECURITY] Cleaned up ${cleanedUp} old security events`);
     }
   }
 }
 
-// Create singleton instance
-const securityMonitoring = new SecurityMonitoring();
+/**
+ * Security monitoring helper functions
+ */
+export const securityMonitoring = {
+  /**
+   * Log authentication failure
+   */
+  authFailure: (email: string, ipAddress: string, userAgent: string, reason?: string) => {
+    const monitor = SecurityMonitoringSystem.getInstance();
+    monitor.reportAuthenticationFailure(email, ipAddress, userAgent, reason);
+  },
 
-// Export functions for use in application
-export const recordAuthAttempt = (success: boolean, ip?: string, userAgent?: string) =>
-  securityMonitoring.recordAuthAttempt(success, ip, userAgent);
+  /**
+   * Log XSS attempt
+   */
+  xssAttempt: (payload: string, source: string, userId?: string, ipAddress?: string) => {
+    const monitor = SecurityMonitoringSystem.getInstance();
+    monitor.reportXSSAttempt(payload, source, userId, ipAddress);
+  },
 
-export const recordRequest = (url: string, method: string, ip?: string, userAgent?: string, statusCode?: number) =>
-  securityMonitoring.recordRequest(url, method, ip, userAgent, statusCode);
+  /**
+   * Log SQL injection attempt
+   */
+  sqlInjectionAttempt: (query: string, source: string, userId?: string, ipAddress?: string) => {
+    const monitor = SecurityMonitoringSystem.getInstance();
+    monitor.reportSQLInjectionAttempt(query, source, userId, ipAddress);
+  },
 
-export const recordSecurityViolation = (violationType: string, details?: Record<string, any>) =>
-  securityMonitoring.recordSecurityViolation(violationType, details);
+  /**
+   * Log unauthorized access
+   */
+  unauthorizedAccess: (resource: string, userId?: string, ipAddress?: string, userAgent?: string) => {
+    const monitor = SecurityMonitoringSystem.getInstance();
+    monitor.reportUnauthorizedAccess(resource, userId, ipAddress, userAgent);
+  },
 
-export const recordConfigurationChange = (changeType: string, oldValue?: string, newValue?: string) =>
-  securityMonitoring.recordConfigurationChange(changeType, oldValue, newValue);
+  /**
+   * Log suspicious activity
+   */
+  suspiciousActivity: (type: SecurityEventType, description: string, userId?: string, metadata?: any) => {
+    const monitor = SecurityMonitoringSystem.getInstance();
+    monitor.reportSuspiciousActivity(type, description, userId, undefined, metadata);
+  },
 
-export const recordDataAccess = (resource: string, userId?: string, ip?: string) =>
-  securityMonitoring.recordDataAccess(resource, userId, ip);
+  /**
+   * Get security dashboard data
+   */
+  getDashboardData: () => {
+    const monitor = SecurityMonitoringSystem.getInstance();
+    const metrics = monitor.getSecurityMetrics();
+    const unresolvedEvents = monitor.getUnresolvedEvents();
+    const criticalEvents = monitor.getUnresolvedEvents(SecuritySeverity.CRITICAL);
 
-export const getSecurityMetrics = () => securityMonitoring.getSecurityMetrics();
-export const getSecurityAlerts = (limit?: number) => securityMonitoring.getSecurityAlerts(limit);
-export const getUnresolvedSecurityAlerts = () => securityMonitoring.getUnresolvedAlerts();
-export const resolveSecurityAlert = (alertId: string) => securityMonitoring.resolveAlert(alertId);
-export const getSecurityScore = () => securityMonitoring.getSecurityScore();
-export const getSecurityRecommendations = () => securityMonitoring.getSecurityRecommendations();
-export const exportSecurityData = (startDate?: Date, endDate?: Date) =>
-  securityMonitoring.exportSecurityData(startDate, endDate);
+    return {
+      metrics,
+      unresolvedEvents,
+      criticalEvents,
+      activeThreats: criticalEvents.length,
+      recentActivity: monitor.getEventsByTimeRange(
+        Date.now() - 24 * 60 * 60 * 1000, // Last 24 hours
+        Date.now()
+      )
+    };
+  },
 
-export default securityMonitoring;
+  /**
+   * Setup security alerts
+   */
+  setupAlerts: (callbacks: {
+    critical?: (event: SecurityEvent) => void;
+    high?: (event: SecurityEvent) => void;
+    medium?: (event: SecurityEvent) => void;
+    low?: (event: SecurityEvent) => void;
+  }) => {
+    const monitor = SecurityMonitoringSystem.getInstance();
+
+    if (callbacks.critical) {
+      monitor.addAlertCallback(SecuritySeverity.CRITICAL, callbacks.critical);
+    }
+    if (callbacks.high) {
+      monitor.addAlertCallback(SecuritySeverity.HIGH, callbacks.high);
+    }
+    if (callbacks.medium) {
+      monitor.addAlertCallback(SecuritySeverity.MEDIUM, callbacks.medium);
+    }
+    if (callbacks.low) {
+      monitor.addAlertCallback(SecuritySeverity.LOW, callbacks.low);
+    }
+  }
+};
+
+// Export singleton instance
+export const securityMonitor = SecurityMonitoringSystem.getInstance();

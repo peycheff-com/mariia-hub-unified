@@ -713,7 +713,7 @@ export function BookingConflictResolver() {
 
                 <TabsContent value="manual_reschedule" className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium">Select Action</label>
+                    <label className="text-sm font-medium" htmlFor="select-action">Select Action</label>
                     <Select onValueChange={(value) => setCurrentResolution(prev => ({ ...prev, selectedAction: value }))}>
                       <SelectTrigger>
                         <SelectValue placeholder="Choose resolution action" />
@@ -730,7 +730,7 @@ export function BookingConflictResolver() {
                   {currentResolution.selectedAction?.includes('reschedule') && (
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-sm font-medium">New Date</label>
+                        <label className="text-sm font-medium" htmlFor="new-date">New Date</label>
                         <input
                           type="date"
                           className="w-full mt-1 px-3 py-2 border rounded-md"
@@ -741,7 +741,7 @@ export function BookingConflictResolver() {
                         />
                       </div>
                       <div>
-                        <label className="text-sm font-medium">New Time</label>
+                        <label className="text-sm font-medium" htmlFor="new-time">New Time</label>
                         <input
                           type="time"
                           className="w-full mt-1 px-3 py-2 border rounded-md"
@@ -798,10 +798,10 @@ export function BookingConflictResolver() {
 
               {/* Communication Templates */}
               <div>
-                <label className="text-sm font-medium">Communication Template</label>
+                <label className="text-sm font-medium" htmlFor="communication-template">Communication Template</label>
                 <Select onValueChange={(value) => setCurrentResolution(prev => ({ ...prev, communicationTemplate: value }))}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select notification template" />
+                    <SelectValue placeholder="Select notification aria-live="polite" aria-atomic="true" template" />
                   </SelectTrigger>
                   <SelectContent>
                     {templates.map(template => (
@@ -815,7 +815,7 @@ export function BookingConflictResolver() {
 
               {/* Notes */}
               <div>
-                <label className="text-sm font-medium">Resolution Notes</label>
+                <label className="text-sm font-medium" htmlFor="resolution-notes">Resolution Notes</label>
                 <Textarea
                   placeholder="Add any notes about this resolution..."
                   value={currentResolution.notes || ''}

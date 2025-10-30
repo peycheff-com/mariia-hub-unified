@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 
 interface HourlyData {
   hour: number;
@@ -53,7 +53,7 @@ export function TimeAnalysis({ dateRange }: TimeAnalysisProps) {
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState<'hourly' | 'daily' | 'monthly' | 'seasonal'>('hourly');
   const [analysisType, setAnalysisType] = useState<'bookings' | 'revenue' | 'clients'>('bookings');
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   useEffect(() => {
     fetchTimeAnalysisData();
@@ -198,7 +198,7 @@ export function TimeAnalysis({ dateRange }: TimeAnalysisProps) {
       setSeasonalData(seasonalDataArray);
     } catch (error) {
       console.error('Error fetching time analysis data:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to fetch time analysis data',
         variant: 'destructive',

@@ -27,7 +27,7 @@ import { ReviewCard } from "@/components/reviews/ReviewCard";
 import ReviewForm from "@/components/reviews/ReviewForm";
 import { ReviewBadges } from "@/components/reviews/VerifiedBadges";
 import { SEOHead } from "@/components/seo/SEOHead";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { useAuth } from "@/hooks/useAuth";
 
 interface Review {
@@ -66,7 +66,7 @@ interface Stats {
 
 export default function ReviewsPage() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -99,7 +99,7 @@ export default function ReviewsPage() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Failed to load reviews",
         variant: "destructive",
@@ -364,7 +364,7 @@ export default function ReviewsPage() {
               <div className="bg-pearl/10 backdrop-blur-lg rounded-xl p-6 mb-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-pearl mb-2 block">Rating</label>
+                    <label className="text-sm font-medium text-pearl mb-2 block" htmlFor="rating">Rating</label>
                     <Select value={filterRating} onValueChange={setFilterRating}>
                       <SelectTrigger className="bg-pearl/20 border-champagne/30 text-pearl">
                         <SelectValue />
@@ -381,7 +381,7 @@ export default function ReviewsPage() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-pearl mb-2 block">Service</label>
+                    <label className="text-sm font-medium text-pearl mb-2 block" htmlFor="service">Service</label>
                     <Select value={filterService} onValueChange={setFilterService}>
                       <SelectTrigger className="bg-pearl/20 border-champagne/30 text-pearl">
                         <SelectValue />
@@ -398,7 +398,7 @@ export default function ReviewsPage() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-pearl mb-2 block">Verification</label>
+                    <label className="text-sm font-medium text-pearl mb-2 block" htmlFor="verification">Verification</label>
                     <Select value={filterVerified} onValueChange={setFilterVerified}>
                       <SelectTrigger className="bg-pearl/20 border-champagne/30 text-pearl">
                         <SelectValue />

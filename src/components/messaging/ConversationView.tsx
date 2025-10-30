@@ -86,7 +86,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
             )}
           />
           <div className="absolute bottom-2 right-2 bg-black/50 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-            <ImageIcon className="h-4 w-4" />
+            <ImageIcon className="h-4 w-4" alt="" />
           </div>
         </div>
       )

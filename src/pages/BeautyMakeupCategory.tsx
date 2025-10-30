@@ -10,12 +10,12 @@ import MobileFooter from "@/components/MobileFooter";
 import StandardServiceCard from "@/components/StandardServiceCard";
 import ServiceCardSkeleton from "@/components/ServiceCardSkeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 
 
 const BeautyMakeupCategory = () => {
   const { i18n } = useTranslation();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,7 +34,7 @@ const BeautyMakeupCategory = () => {
         if (error) throw error;
         setServices(data || []);
       } catch (error) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Error",
           description: "Could not load makeup services",
           variant: "destructive",
@@ -45,7 +45,7 @@ const BeautyMakeupCategory = () => {
     };
 
     fetchMakeupServices();
-  }, [toast]);
+  }, [toast aria-live="polite" aria-atomic="true"]);
 
   const makeupCategories = [
     {

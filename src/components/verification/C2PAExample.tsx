@@ -346,7 +346,7 @@ app.post('/webhook/c2pa', (req, res) => {
       }
     })
 
-    // Send notification
+    // Send notification aria-live="polite" aria-atomic="true"
     if (verified) {
       await sendNotification({
         type: 'c2pa_verified',

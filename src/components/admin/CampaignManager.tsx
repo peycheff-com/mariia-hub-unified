@@ -42,7 +42,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Progress } from '@/components/ui/progress'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useToast } from '@/hooks/use-toast'
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"'
 import { cn } from '@/lib/utils'
 
 
@@ -74,7 +74,7 @@ interface SegmentCriteria {
 export const CampaignManager: React.FC<CampaignManagerProps> = ({ className }) => {
   const { t, i18n } = useTranslation()
   const locale = i18n.language === 'pl' ? pl : enUS
-  const { toast } = useToast()
+  const { toast aria-live="polite" aria-atomic="true" } = useToast()
 
   // State
   const [campaigns, setCampaigns] = useState<any[]>([])
@@ -183,7 +183,7 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ className }) =
   // Handle campaign creation
   const handleCreateCampaign = async () => {
     if (!formData.name) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('error', 'Error'),
         description: t('campaign_name_required', 'Campaign name is required'),
         variant: 'destructive'
@@ -212,7 +212,7 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ className }) =
       setShowCreateDialog(false)
       resetForm()
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('success', 'Success'),
         description: t('campaign_created', 'Campaign created successfully')
       })
@@ -232,7 +232,7 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ className }) =
         c.id === campaignId ? { ...c, status: 'running' } : c
       ))
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('campaign_launched', 'Campaign Launched'),
         description: t('campaign_is_running', 'The campaign is now running')
       })
@@ -249,7 +249,7 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ className }) =
         c.id === campaignId ? { ...c, status: 'paused' } : c
       ))
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('campaign_paused', 'Campaign Paused'),
         description: t('campaign_paused_description', 'The campaign has been paused')
       })
@@ -266,7 +266,7 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ className }) =
         c.id === campaignId ? { ...c, status: 'cancelled' } : c
       ))
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('campaign_stopped', 'Campaign Stopped'),
         description: t('campaign_stopped_description', 'The campaign has been stopped')
       })
@@ -285,7 +285,7 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ className }) =
       // TODO: Implement actual API call to delete campaign
       setCampaigns(prev => prev.filter(c => c.id !== campaignId))
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('campaign_deleted', 'Campaign Deleted'),
         description: t('campaign_deleted_description', 'The campaign has been deleted')
       })

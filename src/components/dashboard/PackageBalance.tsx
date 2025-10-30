@@ -19,7 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
 import { packageService, ClientPackage } from '@/services/packageService';
 import { cn } from '@/lib/utils';
 
@@ -30,7 +30,7 @@ interface PackageBalanceProps {
 const PackageBalance: React.FC<PackageBalanceProps> = ({ className }) => {
   const { t, i18n } = useTranslation();
   const { formatPrice } = useCurrency();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   // Fetch active packages
   const {
@@ -122,7 +122,7 @@ const PackageBalance: React.FC<PackageBalanceProps> = ({ className }) => {
 
   const handleQuickBook = (pkg: ClientPackage) => {
     // Find next available session and navigate to booking
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: t('dashboard.packageBalance.booking', 'Booking Session'),
       description: t('dashboard.packageBalance.bookingDesc', 'Redirecting to booking...'),
     });

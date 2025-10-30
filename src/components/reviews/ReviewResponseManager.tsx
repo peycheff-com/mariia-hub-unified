@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 
 interface ResponseTemplate {
   id: string;
@@ -68,7 +68,7 @@ export const ReviewResponseManager = ({ review, onResponseSent }: ReviewResponse
   const [responses, setResponses] = useState<ReviewResponse[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [scheduledDate, setScheduledDate] = useState("");
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   useEffect(() => {
     loadTemplates();
@@ -120,12 +120,12 @@ export const ReviewResponseManager = ({ review, onResponseSent }: ReviewResponse
       if (error) throw error;
 
       setResponseContent(data.response);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "AI Response Generated",
         description: "You can edit the response before sending",
       });
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message || "Failed to generate AI response",
         variant: "destructive",
@@ -145,7 +145,7 @@ export const ReviewResponseManager = ({ review, onResponseSent }: ReviewResponse
 
   const saveDraft = async () => {
     if (!responseContent.trim()) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Please write a response before saving",
         variant: "destructive",
@@ -167,14 +167,14 @@ export const ReviewResponseManager = ({ review, onResponseSent }: ReviewResponse
 
       if (error) throw error;
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Draft Saved",
         description: "Response saved as draft",
       });
 
       loadResponseHistory();
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -186,7 +186,7 @@ export const ReviewResponseManager = ({ review, onResponseSent }: ReviewResponse
 
   const sendResponse = async (schedule?: boolean) => {
     if (!responseContent.trim()) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Please write a response before sending",
         variant: "destructive",
@@ -211,7 +211,7 @@ export const ReviewResponseManager = ({ review, onResponseSent }: ReviewResponse
 
         if (error) throw error;
 
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Response Scheduled",
           description: `Response scheduled for ${new Date(scheduledDate).toLocaleDateString()}`,
         });
@@ -241,7 +241,7 @@ export const ReviewResponseManager = ({ review, onResponseSent }: ReviewResponse
             ai_generated: useAI
           });
 
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Response Sent",
           description: "Your response has been published",
         });
@@ -252,7 +252,7 @@ export const ReviewResponseManager = ({ review, onResponseSent }: ReviewResponse
       setResponseContent("");
       loadResponseHistory();
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",

@@ -4,16 +4,18 @@ import { useState } from 'react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-
-export interface LoyaltyTier {
-  name: string;
-  level: number;
-  min_points: number;
-  benefits: Record<string, any>;
-  point_multiplier: number;
-  color: string;
-  icon: string | null;
-}
+import { loyaltyService } from '@/services/loyalty.service';
+import {
+  LoyaltyTier,
+  LoyaltyMember,
+  PointsTransaction,
+  Achievement,
+  MemberAchievement,
+  Referral,
+  Reward,
+  RewardRedemption,
+  LoyaltyStats
+} from '@/services/loyalty.service';
 
 export interface CustomerLoyalty {
   id: string;
@@ -27,88 +29,6 @@ export interface CustomerLoyalty {
   last_activity: string;
   created_at: string;
   updated_at: string;
-}
-
-export interface PointTransaction {
-  id: string;
-  customer_id: string;
-  program_id: string;
-  points: number;
-  transaction_type: 'earned' | 'redeemed' | 'expired' | 'adjusted';
-  reference_id: string | null;
-  reference_type: string | null;
-  description: string | null;
-  metadata: Record<string, any>;
-  expires_at: string | null;
-  created_at: string;
-}
-
-export interface AchievementBadge {
-  id: string;
-  name: string;
-  description: string | null;
-  icon: string | null;
-  category: string;
-  criteria: Record<string, any>;
-  points_awarded: number;
-  is_active: boolean;
-  created_at: string;
-}
-
-export interface CustomerAchievement {
-  id: string;
-  customer_id: string;
-  badge_id: string;
-  earned_at: string;
-  metadata: Record<string, any>;
-  badge: AchievementBadge;
-}
-
-export interface Referral {
-  id: string;
-  referrer_id: string;
-  referred_id: string | null;
-  referral_code: string;
-  status: 'pending' | 'completed' | 'expired';
-  reward_points: number;
-  referrer_reward_points: number;
-  completed_at: string | null;
-  expires_at: string | null;
-  created_at: string;
-}
-
-export interface Reward {
-  id: string;
-  program_id: string;
-  name: string;
-  description: string | null;
-  category: string;
-  points_cost: number;
-  discount_value: number | null;
-  discount_type: 'percentage' | 'fixed';
-  max_uses: number | null;
-  current_uses: number;
-  is_active: boolean;
-  is_limited: boolean;
-  available_from: string | null;
-  available_until: string | null;
-  image_url: string | null;
-  terms: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface CustomerReward {
-  id: string;
-  customer_id: string;
-  reward_id: string;
-  points_used: number;
-  status: 'active' | 'used' | 'expired';
-  redemption_code: string | null;
-  used_at: string | null;
-  expires_at: string | null;
-  created_at: string;
-  reward: Reward;
 }
 
 export interface CustomerStreak {
@@ -128,234 +48,136 @@ export function useLoyalty() {
   const queryClient = useQueryClient();
   const [isGeneratingReferral, setIsGeneratingReferral] = useState(false);
 
-  // Get loyalty program info
-  const { data: loyaltyProgram } = useQuery({
-    queryKey: ['loyalty-program'],
+  // Get loyalty member data
+  const { data: loyaltyMember, isLoading: isLoadingLoyalty } = useQuery({
+    queryKey: ['loyalty-member', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('loyalty_programs')
-        .select('*')
-        .eq('is_active', true)
-        .single();
-
-      if (error) throw error;
-      return data;
+      if (!user) return null;
+      return loyaltyService.getLoyaltyMember(user.id);
     },
-    staleTime: 1000 * 60 * 10, // 10 minutes
-  });
-
-  // Get customer loyalty status
-  const { data: customerLoyalty, isLoading: isLoadingLoyalty } = useQuery({
-    queryKey: ['customer-loyalty', user?.id],
-    queryFn: async () => {
-      if (!user || !loyaltyProgram) return null;
-
-      const { data, error } = await supabase
-        .from('customer_loyalty')
-        .select('*')
-        .eq('customer_id', user.id)
-        .eq('program_id', loyaltyProgram.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') throw error;
-
-      // Create loyalty record if doesn't exist
-      if (!data && loyaltyProgram) {
-        const { data: newLoyalty, error: insertError } = await supabase
-          .from('customer_loyalty')
-          .insert({
-            customer_id: user.id,
-            program_id: loyaltyProgram.id,
-            tier: 'bronze'
-          })
-          .select()
-          .single();
-
-        if (insertError) throw insertError;
-        return newLoyalty;
-      }
-
-      return data;
-    },
-    enabled: !!user && !!loyaltyProgram,
+    enabled: !!user,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Get all tiers
-  const { data: tiers } = useQuery({
-    queryKey: ['loyalty-tiers', loyaltyProgram?.id],
+  // Get loyalty stats
+  const { data: loyaltyStats } = useQuery({
+    queryKey: ['loyalty-stats', loyaltyMember?.id],
     queryFn: async () => {
-      if (!loyaltyProgram) return [];
+      if (!loyaltyMember) return null;
+      return loyaltyService.getLoyaltyStats(loyaltyMember.id);
+    },
+    enabled: !!loyaltyMember,
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  });
 
-      const { data, error } = await supabase
+  // Get all loyalty tiers
+  const { data: tiers } = useQuery({
+    queryKey: ['loyalty-tiers'],
+    queryFn: async () => {
+      const { data } = await supabase
         .from('loyalty_tiers')
         .select('*')
-        .eq('program_id', loyaltyProgram.id)
+        .eq('is_active', true)
         .order('level');
-
-      if (error) throw error;
-      return data as LoyaltyTier[];
+      return data || [];
     },
-    enabled: !!loyaltyProgram,
     staleTime: 1000 * 60 * 10, // 10 minutes
   });
 
   // Get point transactions
   const { data: transactions, isLoading: isLoadingTransactions } = useQuery({
-    queryKey: ['point-transactions', user?.id],
+    queryKey: ['points-transactions', loyaltyMember?.id],
     queryFn: async () => {
-      if (!user || !loyaltyProgram) return [];
-
-      const { data, error } = await supabase
-        .from('point_transactions')
-        .select('*')
-        .eq('customer_id', user.id)
-        .eq('program_id', loyaltyProgram.id)
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-      return data as PointTransaction[];
+      if (!loyaltyMember) return [];
+      return loyaltyService.getPointsTransactions(loyaltyMember.id, 20);
     },
-    enabled: !!user && !!loyaltyProgram,
+    enabled: !!loyaltyMember,
     staleTime: 1000 * 60 * 2, // 2 minutes
   });
 
-  // Get achievements
+  // Get member achievements
   const { data: achievements, isLoading: isLoadingAchievements } = useQuery({
-    queryKey: ['customer-achievements', user?.id],
+    queryKey: ['member-achievements', loyaltyMember?.id],
     queryFn: async () => {
-      if (!user) return [];
-
-      const { data, error } = await supabase
-        .from('customer_achievements')
-        .select(`
-          *,
-          badge:achievement_badges(*)
-        `)
-        .eq('customer_id', user.id)
-        .order('earned_at', { ascending: false });
-
-      if (error) throw error;
-      return data as CustomerAchievement[];
+      if (!loyaltyMember) return [];
+      return loyaltyService.getMemberAchievements(loyaltyMember.id);
     },
-    enabled: !!user,
+    enabled: !!loyaltyMember,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Get available badges to earn
+  // Get available achievements
   const { data: availableBadges } = useQuery({
-    queryKey: ['available-badges'],
+    queryKey: ['available-achievements'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('achievement_badges')
-        .select('*')
-        .eq('is_active', true)
-        .order('category', { ascending: true });
-
-      if (error) throw error;
-      return data as AchievementBadge[];
+      return loyaltyService.getAchievements();
     },
     staleTime: 1000 * 60 * 10, // 10 minutes
   });
 
-  // Get customer's referrals
+  // Get member referrals
   const { data: referrals, isLoading: isLoadingReferrals } = useQuery({
-    queryKey: ['customer-referrals', user?.id],
+    queryKey: ['member-referrals', loyaltyMember?.id],
     queryFn: async () => {
-      if (!user) return [];
-
-      const { data, error } = await supabase
-        .from('referrals')
-        .select('*')
-        .eq('referrer_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data as Referral[];
+      if (!loyaltyMember) return [];
+      return loyaltyService.getMemberReferrals(loyaltyMember.id);
     },
-    enabled: !!user,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
-
-  // Get customer's referral code
-  const { data: referralCode, refetch: refetchReferralCode } = useQuery({
-    queryKey: ['referral-code', user?.id],
-    queryFn: async () => {
-      if (!user) return null;
-
-      const { data, error } = await supabase
-        .from('referrals')
-        .select('referral_code')
-        .eq('referrer_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      return data?.referral_code || null;
-    },
-    enabled: !!user,
+    enabled: !!loyaltyMember,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   // Get rewards catalog
   const { data: rewardsCatalog, isLoading: isLoadingRewards } = useQuery({
-    queryKey: ['rewards-catalog', loyaltyProgram?.id],
+    queryKey: ['rewards-catalog', loyaltyMember?.tier?.level],
     queryFn: async () => {
-      if (!loyaltyProgram) return [];
-
-      const { data, error } = await supabase
-        .from('rewards_catalog')
-        .select('*')
-        .eq('program_id', loyaltyProgram.id)
-        .eq('is_active', true)
-        .or(`available_from.is.null,available_from.lte.${new Date().toISOString()}`)
-        .or(`available_until.is.null,available_until.gte.${new Date().toISOString()}`)
-        .order('points_cost', { ascending: true });
-
-      if (error) throw error;
-      return data as Reward[];
+      const minTier = loyaltyMember?.tier?.level || 1;
+      return loyaltyService.getRewardsCatalog(undefined, minTier);
     },
-    enabled: !!loyaltyProgram,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Get customer's redeemed rewards
+  // Get member's redeemed rewards
   const { data: customerRewards, isLoading: isLoadingCustomerRewards } = useQuery({
-    queryKey: ['customer-rewards', user?.id],
+    queryKey: ['member-redemptions', loyaltyMember?.id],
     queryFn: async () => {
-      if (!user) return [];
-
-      const { data, error } = await supabase
-        .from('customer_rewards')
-        .select(`
-          *,
-          reward:rewards_catalog(*)
-        `)
-        .eq('customer_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data as CustomerReward[];
+      if (!loyaltyMember) return [];
+      return loyaltyService.getMemberRedemptions(loyaltyMember.id);
     },
-    enabled: !!user,
+    enabled: !!loyaltyMember,
     staleTime: 1000 * 60 * 2, // 2 minutes
   });
 
-  // Get customer streaks
+  // Get customer streaks (legacy - keeping for compatibility)
   const { data: streaks } = useQuery({
     queryKey: ['customer-streaks', user?.id],
     queryFn: async () => {
       if (!user) return [];
 
-      const { data, error } = await supabase
-        .from('customer_streaks')
-        .select('*')
-        .eq('customer_id', user.id);
-
-      if (error) throw error;
-      return data as CustomerStreak[];
+      // Mock streak data for now - this could be implemented in the future
+      return [
+        {
+          id: 'mock-booking-streak',
+          customer_id: user.id,
+          streak_type: 'booking',
+          current_streak: 2,
+          longest_streak: 4,
+          last_activity: new Date().toISOString(),
+          next_bonus_threshold: 3,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 'mock-referral-streak',
+          customer_id: user.id,
+          streak_type: 'referral',
+          current_streak: 1,
+          longest_streak: 2,
+          last_activity: new Date().toISOString(),
+          next_bonus_threshold: 3,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ] as CustomerStreak[];
     },
     enabled: !!user,
     staleTime: 1000 * 60 * 2, // 2 minutes
@@ -363,37 +185,30 @@ export function useLoyalty() {
 
   // Generate referral code mutation
   const generateReferralMutation = useMutation({
-    mutationFn: async () => {
-      if (!user) throw new Error('User not authenticated');
+    mutationFn: async (refereeData: { email: string; name?: string; phone?: string }) => {
+      if (!user || !loyaltyMember) throw new Error('User not authenticated');
 
       setIsGeneratingReferral(true);
 
-      const { data, error } = await supabase
-        .rpc('generate_referral_code', { p_customer_id: user.id });
+      const referral = await loyaltyService.createReferral(
+        loyaltyMember.id,
+        refereeData.email,
+        refereeData.name,
+        refereeData.phone
+      );
 
-      if (error) throw error;
+      if (!referral) {
+        throw new Error('Failed to generate referral code');
+      }
 
-      // Create referral record
-      const { data: referral, error: referralError } = await supabase
-        .from('referrals')
-        .insert({
-          referrer_id: user.id,
-          referral_code: data,
-          expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString() // 90 days
-        })
-        .select()
-        .single();
-
-      if (referralError) throw referralError;
       return referral;
     },
     onSuccess: () => {
-      toast.success('Referral code generated successfully!');
-      refetchReferralCode();
-      queryClient.invalidateQueries({ queryKey: ['customer-referrals'] });
+      toast.success('Referral created successfully!');
+      queryClient.invalidateQueries({ queryKey: ['member-referrals'] });
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to generate referral code');
+      toast.error(error.message || 'Failed to create referral');
     },
     onSettled: () => {
       setIsGeneratingReferral(false);
@@ -402,102 +217,70 @@ export function useLoyalty() {
 
   // Redeem reward mutation
   const redeemRewardMutation = useMutation({
-    mutationFn: async ({ rewardId, pointsCost }: { rewardId: string; pointsCost: number }) => {
-      if (!user || !loyaltyProgram || !customerLoyalty) {
-        throw new Error('Missing required data');
+    mutationFn: async ({ rewardId, notes }: { rewardId: string; notes?: string }) => {
+      if (!loyaltyMember) throw new Error('Member not found');
+
+      const redemption = await loyaltyService.redeemReward(loyaltyMember.id, rewardId, notes);
+
+      if (!redemption) {
+        throw new Error('Failed to redeem reward');
       }
 
-      if (customerLoyalty.current_points < pointsCost) {
-        throw new Error('Insufficient points');
-      }
-
-      // Check if reward is still available
-      const { data: reward, error: rewardError } = await supabase
-        .from('rewards_catalog')
-        .select('*')
-        .eq('id', rewardId)
-        .eq('is_active', true)
-        .single();
-
-      if (rewardError || !reward) throw new Error('Reward not available');
-
-      if (reward.max_uses && reward.current_uses >= reward.max_uses) {
-        throw new Error('Reward limit reached');
-      }
-
-      // Generate redemption code
-      const redemptionCode = `REWARD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-
-      // Start transaction
-      const { data: transaction, error: transactionError } = await supabase
-        .rpc('redeem_loyalty_points', {
-          p_customer_id: user.id,
-          p_program_id: loyaltyProgram.id,
-          p_points: pointsCost,
-          p_reward_id: rewardId,
-          p_description: `Redeemed: ${reward.name}`
-        });
-
-      if (transactionError) throw transactionError;
-
-      // Create customer reward record
-      const { data: customerReward, error: rewardInsertError } = await supabase
-        .from('customer_rewards')
-        .insert({
-          customer_id: user.id,
-          reward_id: rewardId,
-          points_used: pointsCost,
-          redemption_code: redemptionCode,
-          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
-        })
-        .select(`
-          *,
-          reward:rewards_catalog(*)
-        `)
-        .single();
-
-      if (rewardInsertError) throw rewardInsertError;
-
-      // Update reward usage count
-      await supabase
-        .from('rewards_catalog')
-        .update({ current_uses: reward.current_uses + 1 })
-        .eq('id', rewardId);
-
-      return customerReward;
+      return redemption;
     },
     onSuccess: (data) => {
-      toast.success(`Successfully redeemed ${data.reward.name}!`);
-      queryClient.invalidateQueries({ queryKey: ['customer-loyalty'] });
-      queryClient.invalidateQueries({ queryKey: ['customer-rewards'] });
-      queryClient.invalidateQueries({ queryKey: ['point-transactions'] });
-      queryClient.invalidateQueries({ queryKey: ['rewards-catalog'] });
+      toast.success(`Successfully redeemed ${data.reward?.title}!`);
+      queryClient.invalidateQueries({ queryKey: ['loyalty-member'] });
+      queryClient.invalidateQueries({ queryKey: ['loyalty-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['member-redemptions'] });
+      queryClient.invalidateQueries({ queryKey: ['points-transactions'] });
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to redeem reward');
     }
   });
 
+  // Create compatibility layer for customerLoyalty
+  const customerLoyalty = loyaltyMember ? {
+    id: loyaltyMember.id,
+    customer_id: loyaltyMember.user_id,
+    program_id: 'default',
+    current_points: loyaltyMember.current_points,
+    tier: loyaltyMember.tier?.name || 'Bronze',
+    tier_expires_at: null,
+    total_earned: loyaltyMember.lifetime_points,
+    total_redeemed: loyaltyMember.lifetime_points - loyaltyMember.current_points,
+    last_activity: new Date().toISOString(),
+    created_at: loyaltyMember.created_at,
+    updated_at: loyaltyMember.updated_at
+  } : null;
+
   // Get tier info for current customer
-  const currentTier = tiers?.find(t => t.name === customerLoyalty?.tier);
+  const currentTier = loyaltyMember?.tier;
 
   // Get next tier info
   const nextTier = tiers?.find(t => t.level === (currentTier?.level || 0) + 1);
 
   // Calculate progress to next tier
-  const progressToNextTier = nextTier && customerLoyalty
-    ? ((customerLoyalty.total_earned - (currentTier?.min_points || 0)) /
-       (nextTier.min_points - (currentTier?.min_points || 0))) * 100
-    : 0;
+  let progressToNextTier = 0;
+  if (nextTier && loyaltyStats) {
+    const currentTierMinPoints = currentTier?.min_points || 0;
+    const nextTierMinPoints = nextTier.min_points;
+    const currentPoints = loyaltyStats.lifetimePoints;
+
+    if (nextTierMinPoints > currentTierMinPoints) {
+      progressToNextTier = Math.min(100,
+        ((currentPoints - currentTierMinPoints) / (nextTierMinPoints - currentTierMinPoints)) * 100
+      );
+    }
+  }
 
   // Check if tier is expiring soon
-  const isTierExpiringSoon = customerLoyalty?.tier_expires_at
-    ? new Date(customerLoyalty.tier_expires_at).getTime() - Date.now() < 30 * 24 * 60 * 60 * 1000 // 30 days
-    : false;
+  const isTierExpiringSoon = false; // New system doesn't have tier expiration
 
   return {
     // Data
-    loyaltyProgram,
+    loyaltyProgram: null, // Not used in new system
     customerLoyalty,
     tiers,
     currentTier,
@@ -507,11 +290,13 @@ export function useLoyalty() {
     transactions,
     achievements,
     availableBadges,
-    referralCode,
+    referralCode: referrals?.[0]?.referral_code || null,
     referrals,
     rewardsCatalog,
     customerRewards,
     streaks,
+    loyaltyStats,
+    loyaltyMember,
 
     // Loading states
     isLoadingLoyalty,
@@ -525,9 +310,10 @@ export function useLoyalty() {
     isGeneratingReferral,
 
     // Actions
-    generateReferralCode: () => generateReferralMutation.mutate(),
-    redeemReward: (rewardId: string, pointsCost: number) =>
-      redeemRewardMutation.mutate({ rewardId, pointsCost }),
-    refetchReferralCode,
+    generateReferralCode: (refereeData: { email: string; name?: string; phone?: string }) =>
+      generateReferralMutation.mutate(refereeData),
+    redeemReward: (rewardId: string, notes?: string) =>
+      redeemRewardMutation.mutate({ rewardId, notes }),
+    refetchReferralCode: () => queryClient.invalidateQueries({ queryKey: ['member-referrals'] }),
   };
 }

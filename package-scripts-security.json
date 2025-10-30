@@ -1,0 +1,22 @@
+{
+  "security": {
+    "test": "tsx src/test/security/security-test-runner.ts",
+    "test:regression": "vitest run src/test/security/security-regression.test.ts",
+    "test:penetration": "vitest run src/test/security/penetration-testing.test.ts",
+    "test:dependencies": "vitest run src/test/security/dependency-vulnerability.test.ts",
+    "test:auth": "vitest run src/test/security/authentication-authorization.test.ts",
+    "test:validation": "vitest run src/test/security/input-validation.test.ts",
+    "test:xss": "vitest run src/test/security/xss-injection-prevention.test.ts",
+    "test:session": "vitest run src/test/security/session-security.test.ts",
+    "test:api": "vitest run src/test/security/api-security.test.ts",
+    "test:ci": "npm run security:test && npm run security:audit",
+    "audit": "npm audit && node scripts/security-audit.cjs",
+    "audit:fix": "npm audit fix",
+    "scan": "npm run security:test && npm run security:audit",
+    "report": "tsx src/test/security/security-test-runner.ts && cat security-test-report.json",
+    "monitor": "watch 'npm run security:scan' src/test/security",
+    "check": "npm run security:test && npm run lint && npm run type-check",
+    "verify": "npm run security:scan && npm run build",
+    "comprehensive": "npm run security:test && npm run security:audit && npm run test:e2e && npm run build"
+  }
+}

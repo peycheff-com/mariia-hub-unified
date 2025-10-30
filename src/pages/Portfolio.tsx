@@ -32,7 +32,7 @@ const Portfolio = () => {
     <div className="min-h-screen bg-background">
       <SEO title={t('portfolioPage.title')} description={t('blogSection.subtitle')} />
       <Navigation />
-      <main className="pt-24 pb-24">
+      <main role="main" className="pt-24 pb-24">
         <div className="container mx-auto px-6 md:px-8 max-w-6xl">
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-4xl font-bold">{t('portfolioPage.title')}</h1>

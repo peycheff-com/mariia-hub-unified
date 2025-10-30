@@ -1,84 +1,165 @@
+# Application Configuration Maps
+# =============================
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: app-config
-  namespace: mariia-platform
+  name: mariia-hub-app-config
+  namespace: mariia-hub
   labels:
     app: mariia-hub
-    component: frontend
+    component: app
+    environment: production
 data:
+  # Application Settings
   NODE_ENV: "production"
-  VITE_API_URL: "https://api.mariia.pl"
-  VITE_WS_URL: "wss://api.mariia.pl"
-  VITE_SENTRY_ENVIRONMENT: "production"
-  VITE_APP_VERSION: "1.0.0"
-  VITE_BUILD_TIME: "2024-01-01T00:00:00Z"
-  nginx.conf: |
-    user nginx;
-    worker_processes auto;
-    error_log /var/log/nginx/error.log warn;
-    pid /var/run/nginx.pid;
+  APP_NAME: "Mariia Hub"
+  APP_VERSION: "1.0.0"
+  APP_DOMAIN: "mariaborysevych.com"
+  APP_URL: "https://mariaborysevych.com"
 
-    events {
-        worker_connections 1024;
-        use epoll;
-        multi_accept on;
-    }
+  # Build Information
+  BUILD_TARGET: "production"
+  BUILD_SHA: "{{ .Values.build.sha }}"
+  BUILD_DATE: "{{ .Values.build.date }}"
+  BUILD_TIME: "{{ .Values.build.time }}"
 
-    http {
-        include /etc/nginx/mime.types;
-        default_type application/octet-stream;
+  # Currency and Localization
+  DEFAULT_CURRENCY: "PLN"
+  DEFAULT_LOCALE: "en"
+  SUPPORTED_LOCALES: "en,pl"
 
-        log_format main '$remote_addr - $remote_user [$time_local] "$request" '
-                        '$status $body_bytes_sent "$http_referer" '
-                        '"$http_user_agent" "$http_x_forwarded_for"';
+  # Feature Flags
+  ENABLE_ANALYTICS: "true"
+  ENABLE_SOCIAL_LOGIN: "true"
+  ENABLE_DEBUG: "false"
+  ENABLE_PWA: "true"
+  ENABLE_OFFLINE: "true"
 
-        access_log /var/log/nginx/access.log main;
+  # Performance Settings
+  CACHE_TTL: "300"
+  MAX_CACHE_SIZE: "100"
+  ENABLE_BUNDLING: "true"
+  ENABLE_MINIFICATION: "true"
 
-        sendfile on;
-        tcp_nopush on;
-        tcp_nodelay on;
-        keepalive_timeout 65;
+  # Security Settings
+  ENABLE_CSRF: "true"
+  ENABLE_CONTENT_SECURITY_POLICY: "true"
+  SESSION_TIMEOUT: "3600"
+  MAX_LOGIN_ATTEMPTS: "5"
 
-        gzip on;
-        gzip_vary on;
-        gzip_min_length 1024;
-        gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+  # Booking System Settings
+  BOOKING_TIMEZONE: "Europe/Warsaw"
+  MAX_BOOKING_PER_DAY: "50"
+  BOOKING_CONFIRMATION_TIMEOUT: "1800"
+  ENABLE_BOOKING_NOTIFICATIONS: "true"
 
-        server {
-            listen 8080;
-            server_name _;
-            root /usr/share/nginx/html;
-            index index.html;
+  # External Services
+  STRIPE_WEBHOOK_ENDPOINT: "/api/stripe/webhook"
+  BOOKSY_SYNC_ENABLED: "true"
+  BOOKSY_SYNC_INTERVAL: "300"
 
-            location / {
-                try_files $uri $uri/ /index.html;
-            }
+  # Monitoring and Logging
+  LOG_LEVEL: "info"
+  ENABLE_PERFORMANCE_MONITORING: "true"
+  ENABLE_ERROR_TRACKING: "true"
+  METRICS_ENABLED: "true"
 
-            location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-                expires 1y;
-                add_header Cache-Control "public, immutable";
-            }
+  # Content Delivery
+  CDN_ENABLED: "true"
+  CDN_URL: "https://cdn.mariaborysevych.com"
+  ASSET_VERSIONING: "true"
 
-            location = /health {
-                access_log off;
-                return 200 "healthy\n";
-                add_header Content-Type text/plain;
-            }
-        }
-    }
+  # Database Connection Pool Settings
+  DB_POOL_MIN: "2"
+  DB_POOL_MAX: "20"
+  DB_CONNECTION_TIMEOUT: "30"
+
+  # Redis Settings
+  REDIS_PREFIX: "mariia_hub:"
+  REDIS_SESSION_PREFIX: "session:"
+  REDIS_CACHE_PREFIX: "cache:"
+  REDIS_LOCK_PREFIX: "lock:"
+
+  # Email Configuration
+  EMAIL_FROM: "noreply@mariaborysevych.com"
+  EMAIL_SUPPORT: "support@mariaborysevych.com"
+  SMTP_HOST: "smtp.sendgrid.net"
+  SMTP_PORT: "587"
+
+  # File Upload Settings
+  MAX_FILE_SIZE: "10485760"  # 10MB
+  ALLOWED_FILE_TYPES: "jpg,jpeg,png,gif,pdf"
+  UPLOAD_PATH: "/uploads"
+
+  # API Rate Limiting
+  API_RATE_LIMIT: "100"
+  API_RATE_WINDOW: "60"
+  API_BURST_LIMIT: "200"
+
+  # SEO Settings
+  SITE_TITLE: "Mariia Hub - Beauty & Fitness Booking"
+  SITE_DESCRIPTION: "Premium beauty and fitness booking platform in Warsaw"
+  SITE_AUTHOR: "Mariia Borysevych"
+  OG_IMAGE: "/assets/og-image.jpg"
+
+  # Social Media Links
+  FACEBOOK_URL: "https://facebook.com/mariaborysevych"
+  INSTAGRAM_URL: "https://instagram.com/mariaborysevych"
+  LINKEDIN_URL: "https://linkedin.com/in/mariaborysevych"
+
 ---
+# Staging Configuration
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: redis-config
-  namespace: mariia-platform
+  name: mariia-hub-app-config
+  namespace: mariia-hub-staging
   labels:
     app: mariia-hub
-    component: cache
+    component: app
+    environment: staging
+data:
+  NODE_ENV: "staging"
+  APP_NAME: "Mariia Hub (Staging)"
+  APP_DOMAIN: "staging.mariaborysevych.com"
+  APP_URL: "https://staging.mariaborysevych.com"
+
+  DEFAULT_CURRENCY: "PLN"
+  DEFAULT_LOCALE: "en"
+  SUPPORTED_LOCALES: "en,pl"
+
+  ENABLE_ANALYTICS: "false"
+  ENABLE_SOCIAL_LOGIN: "false"
+  ENABLE_DEBUG: "true"
+  ENABLE_PWA: "true"
+  ENABLE_OFFLINE: "true"
+
+  LOG_LEVEL: "debug"
+  ENABLE_PERFORMANCE_MONITORING: "true"
+  ENABLE_ERROR_TRACKING: "true"
+  METRICS_ENABLED: "true"
+
+  BOOKING_TIMEZONE: "Europe/Warsaw"
+  MAX_BOOKING_PER_DAY: "10"
+  BOOKING_CONFIRMATION_TIMEOUT: "1800"
+  ENABLE_BOOKING_NOTIFICATIONS: "false"
+
+---
+# Redis Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariia-hub-redis-config
+  namespace: mariia-hub
+  labels:
+    app: mariia-hub
+    component: redis
+    environment: production
 data:
   redis.conf: |
-    maxmemory 256mb
+    # Redis Production Configuration
+    maxmemory 512mb
     maxmemory-policy allkeys-lru
     save 900 1
     save 300 10
@@ -87,3 +168,98 @@ data:
     appendfsync everysec
     tcp-keepalive 300
     timeout 0
+
+    # Performance tuning
+    tcp-backlog 511
+    databases 16
+    always-show-logo yes
+
+    # Security
+    protected-mode yes
+    port 6379
+
+    # Persistence
+    rdbcompression yes
+    rdbchecksum yes
+    stop-writes-on-bgsave-error yes
+
+    # Memory optimization
+    hash-max-ziplist-entries 512
+    hash-max-ziplist-value 64
+    list-max-ziplist-size -2
+    list-compress-depth 0
+    set-max-intset-entries 512
+    zset-max-ziplist-entries 128
+    zset-max-ziplist-value 64
+
+    # Logging
+    loglevel notice
+    logfile ""
+    syslog-enabled no
+
+---
+# PostgreSQL Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariia-hub-postgres-config
+  namespace: mariia-hub
+  labels:
+    app: mariia-hub
+    component: postgres
+    environment: production
+data:
+  postgresql.conf: |
+    # PostgreSQL Production Configuration
+
+    # Connection Settings
+    listen_addresses = '*'
+    port = 5432
+    max_connections = 200
+
+    # Memory Settings
+    shared_buffers = 256MB
+    effective_cache_size = 1GB
+    work_mem = 4MB
+    maintenance_work_mem = 64MB
+
+    # Checkpoint Settings
+    checkpoint_completion_target = 0.9
+    wal_buffers = 16MB
+    default_statistics_target = 100
+
+    # Logging
+    logging_collector = on
+    log_directory = 'pg_log'
+    log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+    log_statement = 'all'
+    log_min_duration_statement = 1000
+
+    # Performance
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+
+    # Autovacuum
+    autovacuum = on
+    autovacuum_max_workers = 3
+    autovacuum_naptime = 1min
+
+  pg_hba.conf: |
+    # PostgreSQL Client Authentication Configuration
+
+    # TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+    # Local connections
+    local   all             postgres                                peer
+    local   all             all                                     md5
+
+    # IPv4 local connections
+    host    all             all             127.0.0.1/32            md5
+    host    all             all             0.0.0.0/0               md5
+
+    # IPv6 local connections
+    host    all             all             ::1/128                 md5
+
+    # Allow replication connections from localhost
+    host    replication     replicator      127.0.0.1/32            md5
+    host    replication     replicator      ::1/128                 md5

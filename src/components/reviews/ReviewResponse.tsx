@@ -276,7 +276,7 @@ export const ReviewResponse: React.FC<ReviewResponseProps> = ({
           {/* Template Selection */}
           {showTemplates && templates.length > 0 && (
             <div className="space-y-2">
-              <label className="text-xs font-medium">Use a template:</label>
+              <label className="text-xs font-medium" htmlFor="use-a-template">Use a template:</label>
               <Select value={selectedTemplate} onValueChange={handleTemplateSelect}>
                 <SelectTrigger className="h-8">
                   <SelectValue placeholder="Choose a template" />

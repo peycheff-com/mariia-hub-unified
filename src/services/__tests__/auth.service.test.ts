@@ -25,6 +25,7 @@ import {
 } from '@/test/mocks/auth.mock';
 
 import { AuthService, authService } from '../auth.service';
+import { testCredentials, invalidCredentials, weakPasswords } from '@/test/test-credentials';
 
 // ==================== MOCK SETUP ====================
 
@@ -158,38 +159,29 @@ describe('AuthService', () => {
 
   describe('Sign In Functionality', () => {
     it('should sign in user with valid credentials', async () => {
-      const credentials = {
-        email: 'test@example.com',
-        password: 'password123',
-      };
+      const credentials = testCredentials.basicUser;
 
       const result = await service.signIn(credentials);
 
       expect(result.user).toBeTruthy();
       expect(result.session).toBeTruthy();
       expect(result.error).toBe(null);
-      expect(result.user?.email).toBe('test@example.com');
+      expect(result.user?.email).toBe(credentials.email);
     });
 
     it('should sign in admin user with valid credentials', async () => {
-      const credentials = {
-        email: 'admin@example.com',
-        password: 'admin123',
-      };
+      const credentials = testCredentials.adminUser;
 
       const result = await service.signIn(credentials);
 
       expect(result.user).toBeTruthy();
       expect(result.session).toBeTruthy();
       expect(result.error).toBe(null);
-      expect(result.user?.email).toBe('admin@example.com');
+      expect(result.user?.email).toBe(credentials.email);
     });
 
     it('should return error for invalid credentials', async () => {
-      const credentials = {
-        email: 'invalid@example.com',
-        password: 'wrongpassword',
-      };
+      const credentials = invalidCredentials[0];
 
       const result = await service.signIn(credentials);
 
@@ -199,10 +191,7 @@ describe('AuthService', () => {
     });
 
     it('should handle sign in errors gracefully', async () => {
-      const credentials = {
-        email: 'test@example.com',
-        password: 'password123',
-      };
+      const credentials = testCredentials.basicUser;
 
       // Mock network error
       mockSupabaseAuth.signInWithPassword.mockRejectedValueOnce(new Error('Network error'));
@@ -220,7 +209,7 @@ describe('AuthService', () => {
     it('should sign up new user successfully', async () => {
       const credentials = {
         email: 'newuser@example.com',
-        password: 'password123',
+        password: testCredentials.basicUser.password,
         fullName: 'New User',
       };
 
@@ -235,7 +224,7 @@ describe('AuthService', () => {
     it('should return error for existing email', async () => {
       const credentials = {
         email: 'existing@example.com',
-        password: 'password123',
+        password: testCredentials.basicUser.password,
       };
 
       const result = await service.signUp(credentials);
@@ -248,7 +237,7 @@ describe('AuthService', () => {
     it('should return error for weak password', async () => {
       const credentials = {
         email: 'newuser@example.com',
-        password: '123', // Too short
+        password: weakPasswords[0], // Too short
       };
 
       const result = await service.signUp(credentials);
@@ -261,7 +250,7 @@ describe('AuthService', () => {
     it('should handle sign up errors gracefully', async () => {
       const credentials = {
         email: 'newuser@example.com',
-        password: 'password123',
+        password: testCredentials.basicUser.password,
       };
 
       // Mock network error
@@ -673,10 +662,7 @@ describe('AuthService', () => {
       const callback = vi.fn();
       service.onAuthStateChange(callback);
 
-      const credentials = {
-        email: 'test@example.com',
-        password: 'password123',
-      };
+      const credentials = testCredentials.basicUser;
 
       await service.signIn(credentials);
 
@@ -708,7 +694,7 @@ describe('AuthService', () => {
 
       const credentials = {
         email: 'newuser@example.com',
-        password: 'password123',
+        password: testCredentials.basicUser.password,
         fullName: 'New User',
       };
 

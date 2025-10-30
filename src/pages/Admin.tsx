@@ -5,7 +5,7 @@ import { LogOut, Home, TrendingUp, Users, Calendar, DollarSign, Activity, Star, 
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 
@@ -57,7 +57,7 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("analytics");
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   // Mock data for luxury dashboard
   const dashboardData = useMemo(() => ({
@@ -394,7 +394,7 @@ const Admin = () => {
 
         <div className="flex-1 flex flex-col relative">
           {/* Premium Header */}
-          <header className="h-16 bg-white/80 backdrop-blur-md border-b border-cocoa-200/60 sticky top-0 z-40">
+          <header role="banner" className="h-16 bg-white/80 backdrop-blur-md border-b border-cocoa-200/60 sticky top-0 z-40">
             <div className="h-full px-6 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <SidebarTrigger className="lg:hidden hover:bg-champagne-400/20 transition-colors duration-200" />
@@ -438,7 +438,7 @@ const Admin = () => {
           </header>
 
           {/* Main Content with premium background */}
-          <main className="flex-1 overflow-auto relative">
+          <main role="main" className="flex-1 overflow-auto relative">
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0iI0Y1REJDMiIgZmlsbC1vcGFjaXR5PSIwLjEiLz4KPC9zdmc+')] opacity-30" />
             <div className="relative max-w-7xl mx-auto p-6">
               {renderContent()}

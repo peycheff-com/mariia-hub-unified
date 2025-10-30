@@ -38,7 +38,7 @@ import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useToast } from '@/hooks/use-toast'
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"'
 import { cn } from '@/lib/utils'
 
 
@@ -292,7 +292,7 @@ const PREBUILT_WORKFLOWS: WorkflowTemplate[] = [
 
 export const PrebuiltWorkflows: React.FC<PrebuiltWorkflowsProps> = ({ className }) => {
   const { t } = useTranslation()
-  const { toast } = useToast()
+  const { toast aria-live="polite" aria-atomic="true" } = useToast()
 
   const [selectedWorkflow, setSelectedWorkflow] = useState<WorkflowTemplate | null>(null)
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
@@ -317,7 +317,7 @@ export const PrebuiltWorkflows: React.FC<PrebuiltWorkflowsProps> = ({ className 
 
   const handleActivateWorkflow = (workflow: WorkflowTemplate) => {
     // In a real implementation, this would activate the workflow
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: t('workflow_activated', 'Workflow Activated'),
       description: t('workflow_activated_description', `${workflow.name} has been activated and is now running`)
     })
@@ -325,7 +325,7 @@ export const PrebuiltWorkflows: React.FC<PrebuiltWorkflowsProps> = ({ className 
 
   const handleDeactivateWorkflow = (workflow: WorkflowTemplate) => {
     // In a real implementation, this would deactivate the workflow
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: t('workflow_deactivated', 'Workflow Deactivated'),
       description: t('workflow_deactivated_description', `${workflow.name} has been deactivated`)
     })
@@ -333,7 +333,7 @@ export const PrebuiltWorkflows: React.FC<PrebuiltWorkflowsProps> = ({ className 
 
   const handleDuplicateWorkflow = (workflow: WorkflowTemplate) => {
     // In a real implementation, this would duplicate the workflow
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: t('workflow_duplicated', 'Workflow Duplicated'),
       description: t('workflow_duplicated_description', `${workflow.name} has been duplicated for customization`)
     })
@@ -367,7 +367,7 @@ export const PrebuiltWorkflows: React.FC<PrebuiltWorkflowsProps> = ({ className 
     if (!selectedWorkflow) return
 
     // In a real implementation, this would save the configuration and activate the workflow
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: t('workflow_configured', 'Workflow Configured'),
       description: t('workflow_configured_description', `${selectedWorkflow.name} has been configured and activated`)
     })

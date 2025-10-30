@@ -34,7 +34,7 @@ const Reviews = () => {
     <div className="min-h-screen bg-background">
       <SEO title="Client Reviews — Beauty & Fitness" description="Approved client reviews and success stories" />
       <Navigation />
-      <main className="pt-24 pb-24">
+      <main role="main" className="pt-24 pb-24">
         <div className="container mx-auto px-6 md:px-8 max-w-6xl">
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-4xl font-bold">{t('reviewsPage.title')}</h1>

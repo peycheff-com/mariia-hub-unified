@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { useAuth } from "@/hooks/useAuth";
 import { ResponsiveAvatar } from "@/components/ui/responsive-image";
 
@@ -43,7 +43,7 @@ export const ReviewCard = ({
   onReply
 }: ReviewCardProps) => {
   const { user } = useAuth();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   const [isHelpful, setIsHelpful] = useState(false);
   const [helpfulCount, setHelpfulCount] = useState(review.helpful_count || 0);
@@ -78,7 +78,7 @@ export const ReviewCard = ({
 
   const handleHelpful = async () => {
     if (!user) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Login required",
         description: "Please log in to mark reviews as helpful",
         variant: "destructive",
@@ -111,7 +111,7 @@ export const ReviewCard = ({
         setIsHelpful(true);
       }
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -121,7 +121,7 @@ export const ReviewCard = ({
 
   const handleReport = async () => {
     if (!user) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Login required",
         description: "Please log in to report reviews",
         variant: "destructive",
@@ -130,7 +130,7 @@ export const ReviewCard = ({
     }
 
     if (!reportReason.trim()) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Reason required",
         description: "Please provide a reason for reporting this review",
         variant: "destructive",
@@ -150,7 +150,7 @@ export const ReviewCard = ({
           description: `Reported by user: ${user.id}`
         });
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Review reported",
         description: "Thank you. Our team will review this report.",
       });
@@ -158,7 +158,7 @@ export const ReviewCard = ({
       setShowReportDialog(false);
       setReportReason('');
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -182,7 +182,7 @@ export const ReviewCard = ({
     } else {
       // Fallback: Copy to clipboard
       navigator.clipboard.writeText(window.location.href);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Link copied",
         description: "Review link copied to clipboard",
       });

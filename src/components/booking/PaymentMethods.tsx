@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
 import { useTranslation } from 'react-i18next';
 import { useMetaTracking } from '@/hooks/useMetaTracking';
 
@@ -21,7 +21,7 @@ export const PaymentMethods = ({
   onPaymentComplete,
   onBack
 }: PaymentMethodsProps) => {
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const { t } = useTranslation();
   const { trackCustomConversion } = useMetaTracking();
 
@@ -182,7 +182,7 @@ export const PaymentMethods = ({
       session.begin();
 
     } catch (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Apple Pay Error',
         description: 'Unable to process Apple Pay. Please try another method.',
         variant: 'destructive',
@@ -250,7 +250,7 @@ export const PaymentMethods = ({
       });
 
     } catch (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Google Pay Error',
         description: 'Unable to process Google Pay. Please try another method.',
         variant: 'destructive',
@@ -262,7 +262,7 @@ export const PaymentMethods = ({
 
   const handleCardPayment = async () => {
     if (!cardData.number || !cardData.expiry || !cardData.cvv || !cardData.name) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Missing Information',
         description: 'Please complete all card details.',
         variant: 'destructive',
@@ -290,7 +290,7 @@ export const PaymentMethods = ({
       });
 
     } catch (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Payment Failed',
         description: 'Unable to process card payment. Please check your details.',
         variant: 'destructive',
@@ -328,7 +328,7 @@ export const PaymentMethods = ({
       });
 
     } catch (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Payment Failed',
         description: 'Unable to process deposit. Please try another method.',
         variant: 'destructive',

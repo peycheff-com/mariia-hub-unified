@@ -144,7 +144,7 @@ export const TranslationAssistant: React.FC<TranslationAssistantProps> = ({
       <CardContent className="space-y-4">
         {/* Source Text */}
         <div>
-          <label className="text-sm font-medium mb-2 block">
+          <label className="text-sm font-medium mb-2 block" htmlFor="t-translation-sourcetext-source-text">
             {t('translation.sourceText', 'Source Text')}
           </label>
           <div className="p-3 bg-muted rounded-md">
@@ -251,7 +251,7 @@ export const TranslationAssistant: React.FC<TranslationAssistantProps> = ({
           {/* Custom Translation */}
           <TabsContent value="custom" className="space-y-3">
             <div>
-              <label className="text-sm font-medium mb-2 block">
+              <label className="text-sm font-medium mb-2 block" htmlFor="t-translation-yourtranslation-your-translation">
                 {t('translation.yourTranslation', 'Your Translation')}
               </label>
               <Textarea

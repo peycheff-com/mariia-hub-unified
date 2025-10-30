@@ -702,7 +702,7 @@ export const TMManager: React.FC<TMManagerProps> = ({ className }) => {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">Format</label>
+              <label className="text-sm font-medium mb-2 block" htmlFor="format">Format</label>
               <select
                 value={importFormat}
                 onChange={(e) => setImportFormat(e.target.value as any)}
@@ -716,7 +716,7 @@ export const TMManager: React.FC<TMManagerProps> = ({ className }) => {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">File</label>
+              <label className="text-sm font-medium mb-2 block" htmlFor="file">File</label>
               <input
                 type="file"
                 accept={`.${importFormat}`}
@@ -773,7 +773,7 @@ export const TMManager: React.FC<TMManagerProps> = ({ className }) => {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">Format</label>
+              <label className="text-sm font-medium mb-2 block" htmlFor="format">Format</label>
               <div className="grid grid-cols-2 gap-2">
                 {(['json', 'csv', 'xliff', 'tmx'] as const).map((format) => (
                   <Button

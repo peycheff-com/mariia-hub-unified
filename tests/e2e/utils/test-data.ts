@@ -113,9 +113,9 @@ export class TestDataManager {
   private createdUsers: TestUser[] = [];
   private createdBookings: TestBooking[] = [];
   private createdPackages: TestPackage[] = [];
-  private context: BrowserContext;
+  private context: any;
 
-  constructor(context: BrowserContext) {
+  constructor(context: any) {
     this.context = context;
   }
 
@@ -321,3 +321,100 @@ export const TestCreditCards = {
     name: 'Test User',
   },
 };
+
+// Additional test data for comprehensive E2E testing
+export interface TestBookingFlow {
+  serviceName: string;
+  serviceType: 'beauty' | 'fitness';
+  customer: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    notes?: string;
+  };
+  date: string;
+  time: string;
+  payment?: typeof TestCreditCards.visa;
+}
+
+// Complete booking scenarios for different use cases
+export const BOOKING_SCENARIOS = {
+  polishBeautyBooking: {
+    serviceName: 'Beauty Brows Enhancement',
+    serviceType: 'beauty' as const,
+    customer: {
+      firstName: 'Anna',
+      lastName: 'Nowak',
+      email: 'anna.nowak@example.pl',
+      phone: '+48 512 345 678',
+      notes: 'Proszę o kontakt SMS w razie zmiany terminu'
+    },
+    date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    time: '10:30',
+    payment: TestCreditCards.visa
+  },
+  internationalFitnessBooking: {
+    serviceName: 'Glute Sculpting Program',
+    serviceType: 'fitness' as const,
+    customer: {
+      firstName: 'Sarah',
+      lastName: 'Johnson',
+      email: 'sarah.johnson@example.com',
+      phone: '+44 20 7946 0958',
+      notes: 'Please contact via WhatsApp for any changes'
+    },
+    date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    time: '14:00',
+    payment: TestCreditCards.mastercard
+  },
+  declinedPaymentScenario: {
+    serviceName: 'Lip Enhancement',
+    serviceType: 'beauty' as const,
+    customer: {
+      firstName: 'Test',
+      lastName: 'User',
+      email: 'test@example.com',
+      phone: '+48 123 456 789'
+    },
+    date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    time: '16:00',
+    payment: TestCreditCards.declined
+  }
+} as const;
+
+// Mobile device configurations for responsive testing
+export const MOBILE_VIEWPORTS = {
+  iPhone12: { width: 390, height: 844, isMobile: true, hasTouch: true },
+  Pixel5: { width: 393, height: 851, isMobile: true, hasTouch: true },
+  GalaxyS20: { width: 360, height: 760, isMobile: true, hasTouch: true }
+} as const;
+
+// Tablet device configurations
+export const TABLET_VIEWPORTS = {
+  iPad: { width: 768, height: 1024, isMobile: true, hasTouch: true },
+  SurfacePro: { width: 1368, height: 912, isMobile: false, hasTouch: true }
+} as const;
+
+// Time slots for testing
+export const AVAILABLE_TIME_SLOTS = {
+  morning: ['09:00', '09:30', '10:00', '10:30', '11:00'],
+  afternoon: ['12:00', '12:30', '14:00', '14:30', '15:00'],
+  evening: ['16:00', '16:30', '17:00', '17:30', '18:00']
+} as const;
+
+// Accessibility test configurations
+export const ACCESSIBILITY_CONFIG = {
+  wcagLevel: 'AA',
+  rules: {
+    enabled: [
+      'color-contrast',
+      'keyboard-accessibility',
+      'focus-management',
+      'aria-labels',
+      'heading-order',
+      'landmark-roles'
+    ],
+    disabled: ['bypass'] // Skip link not required for SPA
+  }
+} as const;

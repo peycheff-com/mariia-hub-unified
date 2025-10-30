@@ -1,0 +1,690 @@
+# Blue-Green Deployment Docker Compose Configuration
+# ==================================================
+
+version: '3.8'
+
+x-common-variables: &common-variables
+  NODE_ENV: production
+  TZ: Europe/Warsaw
+  DEPLOYMENT_COLOR: ${DEPLOYMENT_COLOR:-blue}
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 40s
+
+x-restart-policy: &restart-policy
+  restart: unless-stopped
+
+services:
+  # Blue Environment (Primary)
+  app-blue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+      args:
+        BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+        BUILD_VERSION: ${BUILD_VERSION:-blue-${BUILD_SHA:-latest}}
+        BUILD_SHA: ${BUILD_SHA:-$(git rev-parse HEAD)}
+        BUILD_TIME: ${BUILD_TIME:-$(date -u +'%H:%M:%S')}
+        VITE_BUILD_TARGET: production
+        VITE_APP_ENV: production
+        DEPLOYMENT_COLOR: blue
+    image: mariia-hub:blue-${BUILD_VERSION:-latest}
+    container_name: mariia-hub-app-blue
+    ports:
+      - "${BLUE_APP_PORT:-8080}:8080"
+      - "${BLUE_METRICS_PORT:-9090}:9090"
+    environment:
+      <<: *common-variables
+      DEPLOYMENT_COLOR: blue
+      APP_NAME: Mariia Hub (Blue)
+      APP_DOMAIN: ${APP_DOMAIN:-mariaborysevych.com}
+      APP_URL: ${APP_URL:-https://mariaborysevych.com}
+      BLUE_GREEN_MODE: blue
+
+      # External Services
+      VITE_SUPABASE_URL: ${SUPABASE_URL}
+      VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      VITE_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+      VITE_GA4_MEASUREMENT_ID: ${GA4_MEASUREMENT_ID}
+      VITE_SENTRY_DSN: ${SENTRY_DSN}
+
+      # Feature Flags for Blue
+      VITE_ENABLE_ANALYTICS: ${ENABLE_ANALYTICS:-true}
+      VITE_ENABLE_PWA: ${ENABLE_PWA:-true}
+      VITE_ENABLE_DEBUG: false
+
+      # Build Information
+      BUILD_SHA: ${BUILD_SHA:-$(git rev-parse HEAD)}
+      BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+      BUILD_TIME: ${BUILD_TIME:-$(date -u +'%H:%M:%S')}
+    volumes:
+      - app_blue_logs:/var/log/nginx
+      - nginx_blue_cache:/var/cache/nginx
+      - ssl_certs:/etc/nginx/ssl:ro
+      - ./infrastructure/nginx/blue-nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      postgres-blue:
+        condition: service_healthy
+      redis-blue:
+        condition: service_healthy
+    networks:
+      - blue-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+      replicas: 2
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.mariia-hub-blue.rule=Host(`blue.mariaborysevych.com`)"
+        - "traefik.http.routers.mariia-hub-blue.entrypoints=websecure"
+        - "traefik.http.routers.mariia-hub-blue.tls.certresolver=letsencrypt"
+        - "traefik.http.services.mariia-hub-blue.loadbalancer.server.port=8080"
+        - "deployment.color=blue"
+        - "deployment.environment=production"
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "app,deployment,color,environment"
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "app=mariia-hub"
+      - "deployment.color=blue"
+      - "environment=production"
+      - "tier=frontend"
+      - "version=${BUILD_VERSION:-blue-latest}"
+
+  # Green Environment (Secondary/New)
+  app-green:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+      args:
+        BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+        BUILD_VERSION: ${BUILD_VERSION:-green-${BUILD_SHA:-latest}}
+        BUILD_SHA: ${BUILD_SHA:-$(git rev-parse HEAD)}
+        BUILD_TIME: ${BUILD_TIME:-$(date -u +'%H:%M:%S')}
+        VITE_BUILD_TARGET: production
+        VITE_APP_ENV: production
+        DEPLOYMENT_COLOR: green
+    image: mariia-hub:green-${BUILD_VERSION:-latest}
+    container_name: mariia-hub-app-green
+    ports:
+      - "${GREEN_APP_PORT:-8081}:8080"
+      - "${GREEN_METRICS_PORT:-9091}:9090"
+    environment:
+      <<: *common-variables
+      DEPLOYMENT_COLOR: green
+      APP_NAME: Mariia Hub (Green)
+      APP_DOMAIN: ${APP_DOMAIN:-mariaborysevych.com}
+      APP_URL: ${APP_URL:-https://mariaborysevych.com}
+      BLUE_GREEN_MODE: green
+
+      # External Services
+      VITE_SUPABASE_URL: ${SUPABASE_URL}
+      VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      VITE_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+      VITE_GA4_MEASUREMENT_ID: ${GA4_MEASUREMENT_ID}
+      VITE_SENTRY_DSN: ${SENTRY_DSN}
+
+      # Feature Flags for Green
+      VITE_ENABLE_ANALYTICS: ${ENABLE_ANALYTICS:-true}
+      VITE_ENABLE_PWA: ${ENABLE_PWA:-true}
+      VITE_ENABLE_DEBUG: false
+
+      # Build Information
+      BUILD_SHA: ${BUILD_SHA:-$(git rev-parse HEAD)}
+      BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+      BUILD_TIME: ${BUILD_TIME:-$(date -u +'%H:%M:%S')}
+    volumes:
+      - app_green_logs:/var/log/nginx
+      - nginx_green_cache:/var/cache/nginx
+      - ssl_certs:/etc/nginx/ssl:ro
+      - ./infrastructure/nginx/green-nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      postgres-green:
+        condition: service_healthy
+      redis-green:
+        condition: service_healthy
+    networks:
+      - green-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+      replicas: 2
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.mariia-hub-green.rule=Host(`green.mariaborysevych.com`)"
+        - "traefik.http.routers.mariia-hub-green.entrypoints=websecure"
+        - "traefik.http.routers.mariia-hub-green.tls.certresolver=letsencrypt"
+        - "traefik.http.services.mariia-hub-green.loadbalancer.server.port=8080"
+        - "deployment.color=green"
+        - "deployment.environment=production"
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "app,deployment,color,environment"
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "app=mariia-hub"
+      - "deployment.color=green"
+      - "environment=production"
+      - "tier=frontend"
+      - "version=${BUILD_VERSION:-green-latest}"
+    profiles:
+      - green
+
+  # Blue PostgreSQL
+  postgres-blue:
+    image: postgres:15-alpine
+    container_name: mariia-hub-postgres-blue
+    ports:
+      - "${BLUE_POSTGRES_PORT:-5432}:5432"
+    environment:
+      <<: *common-variables
+      POSTGRES_DB: ${POSTGRES_DB}_blue
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: --encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres_blue_data:/var/lib/postgresql/data
+      - postgres_blue_logs:/var/log/postgresql
+      - ./infrastructure/postgres/postgresql-blue.conf:/etc/postgresql/postgresql.conf:ro
+      - ./infrastructure/postgres/pg_hba-blue.conf:/etc/postgresql/pg_hba.conf:ro
+      - ./infrastructure/postgres/init-blue.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - blue-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+      labels:
+        - "deployment.color=blue"
+        - "deployment.environment=production"
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}_blue"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Green PostgreSQL
+  postgres-green:
+    image: postgres:15-alpine
+    container_name: mariia-hub-postgres-green
+    ports:
+      - "${GREEN_POSTGRES_PORT:-5433}:5432"
+    environment:
+      <<: *common-variables
+      POSTGRES_DB: ${POSTGRES_DB}_green
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: --encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres_green_data:/var/lib/postgresql/data
+      - postgres_green_logs:/var/log/postgresql
+      - ./infrastructure/postgres/postgresql-green.conf:/etc/postgresql/postgresql.conf:ro
+      - ./infrastructure/postgres/pg_hba-green.conf:/etc/postgresql/pg_hba.conf:ro
+      - ./infrastructure/postgres/init-green.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - green-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+      labels:
+        - "deployment.color=green"
+        - "deployment.environment=production"
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}_green"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - green
+
+  # Blue Redis
+  redis-blue:
+    image: redis:7-alpine
+    container_name: mariia-hub-redis-blue
+    ports:
+      - "${BLUE_REDIS_PORT:-6379}:6379"
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      --protected-mode yes
+      --tcp-keepalive 300
+      --timeout 0
+    volumes:
+      - redis_blue_data:/data
+      - redis_blue_logs:/var/log/redis
+      - ./infrastructure/redis/redis-blue.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - blue-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+      labels:
+        - "deployment.color=blue"
+        - "deployment.environment=production"
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Green Redis
+  redis-green:
+    image: redis:7-alpine
+    container_name: mariia-hub-redis-green
+    ports:
+      - "${GREEN_REDIS_PORT:-6380}:6379"
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      --protected-mode yes
+      --tcp-keepalive 300
+      --timeout 0
+    volumes:
+      - redis_green_data:/data
+      - redis_green_logs:/var/log/redis
+      - ./infrastructure/redis/redis-green.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - green-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+      labels:
+        - "deployment.color=green"
+        - "deployment.environment=production"
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - green
+
+  # Load Balancer for Blue-Green Switching
+  nginx-lb:
+    image: nginx:alpine
+    container_name: mariia-hub-nginx-lb
+    ports:
+      - "${LB_HTTP_PORT:-80}:80"
+      - "${LB_HTTPS_PORT:-443}:443"
+    environment:
+      <<: *common-variables
+      ACTIVE_COLOR: ${ACTIVE_COLOR:-blue}
+      CANARY_TRAFFIC_PERCENTAGE: ${CANARY_TRAFFIC_PERCENTAGE:-0}
+    volumes:
+      - ./infrastructure/nginx/blue-green-lb.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/nginx/upstream-blue-green.conf:/etc/nginx/conf.d/upstream.conf:ro
+      - ssl_certs:/etc/nginx/ssl:ro
+      - nginx_lb_logs:/var/log/nginx
+      - nginx_lb_cache:/var/cache/nginx
+    networks:
+      - blue-network
+      - green-network
+      - lb-network
+    depends_on:
+      - app-blue
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+      labels:
+        - "component=load-balancer"
+        - "environment=production"
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Health Check and Switching Service
+  deployment-manager:
+    image: alpine:latest
+    container_name: mariia-hub-deployment-manager
+    environment:
+      <<: *common-variables
+      ACTIVE_COLOR: ${ACTIVE_COLOR:-blue}
+      TARGET_COLOR: ${TARGET_COLOR:-green}
+      SWITCH_ENABLED: ${SWITCH_ENABLED:-false}
+      HEALTH_CHECK_INTERVAL: ${HEALTH_CHECK_INTERVAL:-30}
+      SWITCH_THRESHOLD: ${SWITCH_THRESHOLD:-90}
+    volumes:
+      - ./infrastructure/deployment/switch-blue-green.sh:/switch.sh:ro
+      - ./infrastructure/deployment/health-check.sh:/health-check.sh:ro
+      - ./infrastructure/deployment/canary.sh:/canary.sh:ro
+    networks:
+      - blue-network
+      - green-network
+      - lb-network
+    command: >
+      sh -c "
+        apk add --no-cache curl jq &&
+        chmod +x /switch.sh /health-check.sh /canary.sh &&
+        echo '*/${HEALTH_CHECK_INTERVAL:-30} * * * * /health-check.sh' > /etc/crontabs/root &&
+        echo '*/${HEALTH_CHECK_INTERVAL:-30} * * * * /canary.sh' > /etc/crontabs/root &&
+        crond -f
+      "
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+      labels:
+        - "component=deployment-manager"
+        - "environment=production"
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "sh", "-c", "curl -f http://nginx-lb/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Monitoring for Blue-Green Deployment
+  prometheus-bluegreen:
+    image: prom/prometheus:latest
+    container_name: mariia-hub-prometheus-bluegreen
+    ports:
+      - "${PROMETHEUS_BLUEGREEN_PORT:-9092}:9090"
+    volumes:
+      - ./infrastructure/monitoring/prometheus-bluegreen.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_bluegreen_data:/prometheus
+    networks:
+      - blue-network
+      - green-network
+      - lb-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'
+      - '--web.enable-lifecycle'
+      - '--log.level=info'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+      labels:
+        - "component=monitoring"
+        - "environment=production"
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Canary Analysis Service
+  canary-analyzer:
+    image: alpine:latest
+    container_name: mariia-hub-canary-analyzer
+    environment:
+      <<: *common-variables
+      CANARY_ENABLED: ${CANARY_ENABLED:-false}
+      CANARY_DURATION: ${CANARY_DURATION:-300}
+      SUCCESS_THRESHOLD: ${SUCCESS_THRESHOLD:-95}
+      ERROR_THRESHOLD: ${ERROR_THRESHOLD:-5}
+      RESPONSE_TIME_THRESHOLD: ${RESPONSE_TIME_THRESHOLD:-1000}
+    volumes:
+      - ./infrastructure/canary/analyze.sh:/analyze.sh:ro
+      - ./infrastructure/canary/promote.sh:/promote.sh:ro
+      - ./infrastructure/canary/rollback.sh:/rollback.sh:ro
+    networks:
+      - blue-network
+      - green-network
+      - lb-network
+    command: >
+      sh -c "
+        apk add --no-cache curl jq &&
+        chmod +x /analyze.sh /promote.sh /rollback.sh &&
+        echo '*/1 * * * * /analyze.sh' > /etc/crontabs/root &&
+        crond -f
+      "
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+      labels:
+        - "component=canary-analyzer"
+        - "environment=production"
+    <<: *restart-policy
+
+# Networks for Blue-Green Deployment
+networks:
+  blue-network:
+    name: mariia-hub-blue-network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.24.0.0/16
+          gateway: 172.24.0.1
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "deployment.color=blue"
+      - "environment=production"
+
+  green-network:
+    name: mariia-hub-green-network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+          gateway: 172.25.0.1
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "deployment.color=green"
+      - "environment=production"
+
+  lb-network:
+    name: mariia-hub-lb-network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.26.0.0/16
+          gateway: 172.26.0.1
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "component=load-balancer"
+      - "environment=production"
+
+# Volumes for Blue-Green Deployment
+volumes:
+  # Blue Environment Volumes
+  app_blue_logs:
+    name: mariia-hub-blue-app-logs
+    driver: local
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "deployment.color=blue"
+
+  nginx_blue_cache:
+    name: mariia-hub-blue-nginx-cache
+    driver: local
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "deployment.color=blue"
+
+  postgres_blue_data:
+    name: mariia-hub-blue-postgres-data
+    driver: local
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "deployment.color=blue"
+
+  postgres_blue_logs:
+    name: mariia-hub-blue-postgres-logs
+    driver: local
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "deployment.color=blue"
+
+  redis_blue_data:
+    name: mariia-hub-blue-redis-data
+    driver: local
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "deployment.color=blue"
+
+  redis_blue_logs:
+    name: mariia-hub-blue-redis-logs
+    driver: local
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "deployment.color=blue"
+
+  # Green Environment Volumes
+  app_green_logs:
+    name: mariia-hub-green-app-logs
+    driver: local
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "deployment.color=green"
+
+  nginx_green_cache:
+    name: mariia-hub-green-nginx-cache
+    driver: local
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "deployment.color=green"
+
+  postgres_green_data:
+    name: mariia-hub-green-postgres-data
+    driver: local
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "deployment.color=green"
+
+  postgres_green_logs:
+    name: mariia-hub-green-postgres-logs
+    driver: local
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "deployment.color=green"
+
+  redis_green_data:
+    name: mariia-hub-green-redis-data
+    driver: local
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "deployment.color=green"
+
+  redis_green_logs:
+    name: mariia-hub-green-redis-logs
+    driver: local
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "deployment.color=green"
+
+  # Load Balancer Volumes
+  nginx_lb_logs:
+    name: mariia-hub-lb-nginx-logs
+    driver: local
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "component=load-balancer"
+
+  nginx_lb_cache:
+    name: mariia-hub-lb-nginx-cache
+    driver: local
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "component=load-balancer"
+
+  # Shared Volumes
+  ssl_certs:
+    name: mariia-hub-blue-green-ssl-certs
+    driver: local
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "component=ssl"
+
+  prometheus_bluegreen_data:
+    name: mariia-hub-blue-green-prometheus-data
+    driver: local
+    labels:
+      - "com.docker.compose.project=mariia-hub-blue-green"
+      - "component=monitoring"

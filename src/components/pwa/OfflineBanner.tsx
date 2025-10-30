@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
 
 interface OfflineBannerProps {
   className?: string;
@@ -13,7 +13,7 @@ interface OfflineBannerProps {
 
 export function OfflineBanner({ className = '' }: OfflineBannerProps) {
   const { t } = useTranslation();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showBanner, setShowBanner] = useState(false);
   const [connectionType, setConnectionType] = useState<string>('');
@@ -38,7 +38,7 @@ export function OfflineBanner({ className = '' }: OfflineBannerProps) {
           const duration = Math.floor((Date.now() - offlineStartTime.getTime()) / 1000);
           setOfflineDuration(duration);
 
-          toast({
+          toast aria-live="polite" aria-atomic="true"({
             title: t('pwa.backOnline'),
             description: t('pwa.offlineDuration', {
               minutes: Math.floor(duration / 60),
@@ -56,7 +56,7 @@ export function OfflineBanner({ className = '' }: OfflineBannerProps) {
         setShowBanner(true);
         setOfflineStartTime(new Date());
 
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: t('pwa.nowOffline'),
           description: t('pwa.offlineMessage'),
           variant: 'destructive',
@@ -86,7 +86,7 @@ export function OfflineBanner({ className = '' }: OfflineBannerProps) {
       window.removeEventListener('offline', updateConnectionStatus);
       cleanupConnectionType?.();
     };
-  }, [isOnline, offlineStartTime, toast, t]);
+  }, [isOnline, offlineStartTime, toast aria-live="polite" aria-atomic="true", t]);
 
   const handleSync = async () => {
     if (!isOnline || syncing) return;
@@ -110,13 +110,13 @@ export function OfflineBanner({ className = '' }: OfflineBannerProps) {
       // Additional manual sync for critical data
       await fetch('/api/sync-offline', { method: 'POST' });
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('pwa.syncComplete'),
         description: t('pwa.syncCompleteDesc'),
       });
     } catch (error) {
       console.error('Sync failed:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('pwa.syncFailed'),
         description: t('pwa.syncFailedDesc'),
         variant: 'destructive',

@@ -1,6 +1,8 @@
-import { test, expect } from '@playwright/test';
-
-import { BookingPage } from './page-objects/BookingPage';
+import { test, expect, devices } from '@playwright/test';
+import { HomePage } from './page-objects/home-page';
+import { BookingWizardPage } from './page-objects/booking-wizard';
+import { BeautyPage } from './page-objects/beauty-page';
+import { BOOKING_SCENARIOS, MOBILE_VIEWPORTS, TABLET_VIEWPORTS } from './utils/test-data';
 
 test.describe('Complete Booking Flow E2E', () => {
   let bookingPage: BookingPage;

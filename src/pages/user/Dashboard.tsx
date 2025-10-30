@@ -428,7 +428,7 @@ const UserDashboard: React.FC = () => {
                   </Button>
                   <Button size="sm" variant="outline" className="w-full justify-start">
                     <Bell className="h-4 w-4 mr-2" />
-                    {t('user.dashboard.notificationSettings')}
+                    {t('user.dashboard.notification aria-live="polite" aria-atomic="true"Settings')}
                   </Button>
                 </div>
               </CardContent>

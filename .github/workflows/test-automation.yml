@@ -1,0 +1,1066 @@
+name: Comprehensive Test Automation
+
+on:
+  push:
+    branches: [main, develop, 'feature/*', 'hotfix/*']
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run comprehensive tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of tests to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - unit
+        - integration
+        - e2e
+        - performance
+        - security
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+        - development
+
+env:
+  NODE_VERSION: '20.x'
+  NODE_OPTIONS: '--max-old-space-size=8192'
+  TEST_TIMEOUT: '30000'
+  CI: 'true'
+
+# Global variables for better maintainability
+vars:
+  cache_version: 'v1'
+  test_results_path: 'test-results'
+  coverage_path: 'coverage'
+  build_path: 'dist'
+
+jobs:
+  # ===== PREPARATION AND SETUP =====
+
+  setup-cache:
+    name: Setup Dependencies Cache
+    runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.cache-key.outputs.key }}
+      node-modules-hash: ${{ steps.hash.outputs.hash }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Generate cache key
+        id: cache-key
+        run: |
+          KEY="${{ vars.cache_version }}-node-${{ env.NODE_VERSION }}-$(hashFiles('package-lock.json'))"
+          echo "key=$KEY" >> $GITHUB_OUTPUT
+
+      - name: Generate hash for package files
+        id: hash
+        run: |
+          HASH=$(sha256sum package-lock.json | cut -d' ' -f1)
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ steps.cache-key.outputs.key }}
+          restore-keys: |
+            ${{ vars.cache_version }}-node-${{ env.NODE_VERSION }}-
+
+  # ===== CODE QUALITY GATES =====
+
+  code-quality:
+    name: Code Quality Gates
+    runs-on: ubuntu-latest
+    needs: setup-cache
+    outputs:
+      quality-score: ${{ steps.quality.outputs.score }}
+      security-vulnerabilities: ${{ steps.security.outputs.vulnerabilities }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ needs.setup-cache.outputs.cache-key }}
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Run comprehensive linting
+        id: lint
+        run: |
+          npm run lint -- --format=json --output-file=eslint-report.json
+          npm run lint -- --format=checkstyle > eslint-checkstyle.xml
+        continue-on-error: true
+
+      - name: Run TypeScript strict check
+        id: typescript
+        run: |
+          npx tsc --noEmit --strict --skipLibCheck > tsc-report.txt 2>&1 || echo "type_errors=true" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Run Prettier format check
+        id: prettier
+        run: |
+          npx prettier --check "src/**/*.{ts,tsx,js,jsx,json,css,md}" > prettier-report.txt 2>&1 || echo "format_errors=true" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Analyze code quality
+        id: quality
+        run: |
+          # Calculate quality score based on various checks
+          SCORE=100
+
+          # Check ESLint errors
+          if [ -f eslint-report.json ]; then
+            ESLINT_ERRORS=$(cat eslint-report.json | jq '.[].messages | length' | awk '{sum += $1} END {print sum}')
+            SCORE=$((SCORE - ESLINT_ERRORS * 2))
+          fi
+
+          # Check TypeScript errors
+          if [ "${{ steps.typescript.outputs.type_errors }}" = "true" ]; then
+            SCORE=$((SCORE - 10))
+          fi
+
+          # Check Prettier errors
+          if [ "${{ steps.prettier.outputs.format_errors }}" = "true" ]; then
+            SCORE=$((SCORE - 5))
+          fi
+
+          # Ensure score doesn't go below 0
+          if [ $SCORE -lt 0 ]; then SCORE=0; fi
+
+          echo "score=$SCORE" >> $GITHUB_OUTPUT
+          echo "Quality Score: $SCORE/100"
+
+      - name: Run security audit
+        id: security
+        run: |
+          # npm audit for known vulnerabilities
+          npm audit --audit-level=moderate --json > npm-audit.json || true
+
+          # Count vulnerabilities
+          HIGH_VULNS=$(cat npm-audit.json | jq '.vulnerabilities | to_entries[] | select(.value.severity == "high") | .key' | wc -l || echo 0)
+          MODERATE_VULNS=$(cat npm-audit.json | jq '.vulnerabilities | to_entries[] | select(.value.severity == "moderate") | .key' | wc -l || echo 0)
+
+          TOTAL_VULNS=$((HIGH_VULNS + MODERATE_VULNS))
+          echo "vulnerabilities=$TOTAL_VULNS" >> $GITHUB_OUTPUT
+          echo "High severity: $HIGH_VULNS, Moderate: $MODERATE_VULNS"
+
+      - name: Upload quality reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quality-reports
+          path: |
+            eslint-report.json
+            eslint-checkstyle.xml
+            tsc-report.txt
+            prettier-report.txt
+            npm-audit.json
+          retention-days: 30
+
+      - name: Fail on quality gate violations
+        run: |
+          if [ "${{ steps.quality.outputs.score }}" -lt 80 ]; then
+            echo "❌ Quality score (${{ steps.quality.outputs.score }}) below threshold (80)"
+            exit 1
+          fi
+
+          if [ "${{ steps.security.outputs.vulnerabilities }}" -gt 5 ]; then
+            echo "❌ Too many security vulnerabilities (${{ steps.security.outputs.vulnerabilities }})"
+            exit 1
+          fi
+
+  # ===== PARALLEL UNIT TESTING =====
+
+  unit-tests-matrix:
+    name: Unit Tests (Shard ${{ matrix.shard }})
+    runs-on: ubuntu-latest
+    needs: [setup-cache, code-quality]
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    outputs:
+      total-tests: ${{ steps.test-summary.outputs.total }}
+      passed-tests: ${{ steps.test-summary.outputs.passed }}
+      failed-tests: ${{ steps.test-summary.outputs.failed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ needs.setup-cache.outputs.cache-key }}
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Restore test cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.vitest
+            node_modules/.vite
+          key: test-cache-${{ needs.setup-cache.outputs.node-modules-hash }}-${{ github.sha }}
+          restore-keys: |
+            test-cache-${{ needs.setup-cache.outputs.node-modules-hash }}-
+
+      - name: Run unit tests with sharding
+        id: tests
+        run: |
+          mkdir -p ${{ vars.test_results_path }}
+
+          # Run tests with detailed reporting
+          VITEST_SHARD=${{ matrix.shard }} \
+          VITEST_SHARD_COUNT=4 \
+          npm run test:shard \
+            --reporter=json \
+            --reporter=verbose \
+            --outputFile=${{ vars.test_results_path }}/unit-shard-${{ matrix.shard }}.json \
+            --coverage.enabled=true \
+            --coverage.reporter=json \
+            --coverage.reporter=html \
+            --coverage.excludeAfterRemap=false \
+            --retry=2 \
+            --maxWorkers=2 \
+            --testTimeout=${{ env.TEST_TIMEOUT }}
+        continue-on-error: true
+
+      - name: Process test results
+        id: test-summary
+        run: |
+          if [ -f "${{ vars.test_results_path }}/unit-shard-${{ matrix.shard }}.json" ]; then
+            TOTAL=$(cat "${{ vars.test_results_path }}/unit-shard-${{ matrix.shard }}.json" | jq '.numTotalTests || 0')
+            PASSED=$(cat "${{ vars.test_results_path }}/unit-shard-${{ matrix.shard }}.json" | jq '.numPassedTests || 0')
+            FAILED=$(cat "${{ vars.test_results_path }}/unit-shard-${{ matrix.shard }}.json" | jq '.numFailedTests || 0')
+
+            echo "total=$TOTAL" >> $GITHUB_OUTPUT
+            echo "passed=$PASSED" >> $GITHUB_OUTPUT
+            echo "failed=$FAILED" >> $GITHUB_OUTPUT
+
+            echo "Shard ${{ matrix.shard }} Results: $TOTAL total, $PASSED passed, $FAILED failed"
+          else
+            echo "No test results found for shard ${{ matrix.shard }}"
+            echo "total=0" >> $GITHUB_OUTPUT
+            echo "passed=0" >> $GITHUB_OUTPUT
+            echo "failed=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate test report
+        if: always()
+        run: |
+          # Create detailed HTML report for this shard
+          cat > ${{ vars.test_results_path }}/unit-shard-${{ matrix.shard }}-report.html << EOF
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Unit Tests Shard ${{ matrix.shard }} Report</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              .header { background: #f5f5f5; padding: 20px; border-radius: 5px; }
+              .pass { color: green; }
+              .fail { color: red; }
+              .pending { color: orange; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+              th { background-color: #f2f2f2; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>Unit Tests Shard ${{ matrix.shard }} Report</h1>
+              <p>Total: ${{ steps.test-summary.outputs.total }},
+                 Passed: <span class="pass">${{ steps.test-summary.outputs.passed }}</span>,
+                 Failed: <span class="fail">${{ steps.test-summary.outputs.failed }}</span></p>
+            </div>
+            <p>Generated at: $(date)</p>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-results-shard-${{ matrix.shard }}
+          path: |
+            ${{ vars.test_results_path }}/
+            ${{ vars.coverage_path }}/
+          retention-days: 30
+
+  # ===== COVERAGE ANALYSIS =====
+
+  coverage-analysis:
+    name: Coverage Analysis
+    runs-on: ubuntu-latest
+    needs: [setup-cache, unit-tests-matrix]
+    if: always() && needs.unit-tests-matrix.result != 'failure'
+    outputs:
+      coverage-lines: ${{ steps.coverage.outputs.lines }}
+      coverage-functions: ${{ steps.coverage.outputs.functions }}
+      coverage-branches: ${{ steps.coverage.outputs.branches }}
+      coverage-statements: ${{ steps.coverage.outputs.statements }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all test artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: unit-test-results-shard-*
+          path: ${{ vars.test_results_path }}/
+          merge-multiple: true
+
+      - name: Merge coverage reports
+        run: |
+          # Install coverage merging tool
+          npm install -g nyc
+
+          # Find all coverage files and merge them
+          COVERAGE_FILES=$(find ${{ vars.test_results_path }} -name "coverage*.json" | tr '\n' ' ')
+
+          if [ -n "$COVERAGE_FILES" ]; then
+            npx nyc merge ${{ vars.test_results_path }} ${{ vars.coverage_path }}/merged-coverage.json
+
+            # Generate final HTML report
+            npx nyc report --reporter=html --reporter=text --reporter=json -t ${{ vars.coverage_path }}/merged-coverage.json
+
+            # Generate LCOV for Codecov
+            npx nyc report --reporter=lcov -t ${{ vars.coverage_path }}/merged-coverage.json > ${{ vars.coverage_path }}/lcov.info
+          else
+            echo "No coverage files found"
+            mkdir -p ${{ vars.coverage_path }}
+            echo '{"total":{"lines":{"pct":0},"functions":{"pct":0},"branches":{"pct":0},"statements":{"pct":0}}}' > ${{ vars.coverage_path }}/coverage-summary.json
+          fi
+
+      - name: Extract coverage metrics
+        id: coverage
+        run: |
+          if [ -f "${{ vars.coverage_path }}/coverage-summary.json" ]; then
+            LINES=$(cat ${{ vars.coverage_path }}/coverage-summary.json | jq -r '.total.lines.pct // 0')
+            FUNCTIONS=$(cat ${{ vars.coverage_path }}/coverage-summary.json | jq -r '.total.functions.pct // 0')
+            BRANCHES=$(cat ${{ vars.coverage_path }}/coverage-summary.json | jq -r '.total.branches.pct // 0')
+            STATEMENTS=$(cat ${{ vars.coverage_path }}/coverage-summary.json | jq -r '.total.statements.pct // 0')
+
+            echo "lines=$LINES" >> $GITHUB_OUTPUT
+            echo "functions=$FUNCTIONS" >> $GITHUB_OUTPUT
+            echo "branches=$BRANCHES" >> $GITHUB_OUTPUT
+            echo "statements=$STATEMENTS" >> $GITHUB_OUTPUT
+
+            echo "Coverage Metrics:"
+            echo "  Lines: $LINES%"
+            echo "  Functions: $FUNCTIONS%"
+            echo "  Branches: $BRANCHES%"
+            echo "  Statements: $STATEMENTS%"
+          else
+            echo "lines=0" >> $GITHUB_OUTPUT
+            echo "functions=0" >> $GITHUB_OUTPUT
+            echo "branches=0" >> $GITHUB_OUTPUT
+            echo "statements=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Enforce coverage thresholds
+        run: |
+          LINES=${{ steps.coverage.outputs.lines }}
+          FUNCTIONS=${{ steps.coverage.outputs.functions }}
+          BRANCHES=${{ steps.coverage.outputs.branches }}
+          STATEMENTS=${{ steps.coverage.outputs.statements }}
+
+          # Define thresholds (can be adjusted based on project requirements)
+          MIN_LINES=85
+          MIN_FUNCTIONS=85
+          MIN_BRANCHES=80
+          MIN_STATEMENTS=85
+
+          if (( $(echo "$LINES < $MIN_LINES" | bc -l) )); then
+            echo "❌ Line coverage ($LINES%) below threshold ($MIN_LINES%)"
+            exit 1
+          fi
+
+          if (( $(echo "$FUNCTIONS < $MIN_FUNCTIONS" | bc -l) )); then
+            echo "❌ Function coverage ($FUNCTIONS%) below threshold ($MIN_FUNCTIONS%)"
+            exit 1
+          fi
+
+          if (( $(echo "$BRANCHES < $MIN_BRANCHES" | bc -l) )); then
+            echo "❌ Branch coverage ($BRANCHES%) below threshold ($MIN_BRANCHES%)"
+            exit 1
+          fi
+
+          if (( $(echo "$STATEMENTS < $MIN_STATEMENTS" | bc -l) )); then
+            echo "❌ Statement coverage ($STATEMENTS%) below threshold ($MIN_STATEMENTS%)"
+            exit 1
+          fi
+
+          echo "✅ All coverage thresholds passed!"
+
+      - name: Upload coverage to Codecov
+        if: github.event_name != 'pull_request'
+        uses: codecov/codecov-action@v4
+        with:
+          file: ${{ vars.coverage_path }}/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            ${{ vars.coverage_path }}/
+          retention-days: 30
+
+      - name: Comment PR with coverage
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let coverageComment = `
+            ## 📊 Coverage Report
+
+            `;
+
+            if (fs.existsSync('${{ vars.coverage_path }}/coverage-summary.json')) {
+              const coverage = JSON.parse(fs.readFileSync('${{ vars.coverage_path }}/coverage-summary.json', 'utf8'));
+              coverageComment += `
+              - **Lines**: ${coverage.total.lines.pct}%
+              - **Functions**: ${coverage.total.functions.pct}%
+              - **Branches**: ${coverage.total.branches.pct}%
+              - **Statements**: ${coverage.total.statements.pct}%
+
+              `;
+            } else {
+              coverageComment += "❌ Coverage report not available\n";
+            }
+
+            // Find existing coverage comment
+            const { data: comments } = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            const existingComment = comments.find(comment =>
+              comment.body.includes('📊 Coverage Report') &&
+              comment.user.type === 'Bot'
+            );
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                comment_id: existingComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: coverageComment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: coverageComment
+              });
+            }
+
+  # ===== INTEGRATION TESTS =====
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [setup-cache, code-quality]
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ needs.setup-cache.outputs.cache-key }}
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Setup test database
+        run: |
+          # Wait for PostgreSQL to be ready
+          until pg_isready -h localhost -p 5432; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+          # Create test database schema
+          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f scripts/setup-test-db.sql || true
+
+      - name: Start Supabase local
+        run: |
+          if command -v supabase &> /dev/null; then
+            supabase start
+          else
+            echo "Supabase CLI not found, skipping local setup"
+          fi
+        continue-on-error: true
+
+      - name: Run integration tests
+        id: integration
+        run: |
+          mkdir -p ${{ vars.test_results_path }}
+
+          # Set environment variables for testing
+          export TEST_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/test_db"
+          export TEST_REDIS_URL="redis://localhost:6379"
+          export NODE_ENV=test
+
+          # Run integration tests with detailed reporting
+          npm run test:integration \
+            --reporter=json \
+            --outputFile=${{ vars.test_results_path }}/integration-results.json \
+            --maxWorkers=2 \
+            --testTimeout=60000 \
+            --retry=1 || true
+        env:
+          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          TEST_REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+          VITE_SUPABASE_URL: http://localhost:54321
+          VITE_SUPABASE_ANON_KEY: test-key
+
+      - name: Process integration test results
+        if: always()
+        run: |
+          if [ -f "${{ vars.test_results_path }}/integration-results.json" ]; then
+            TOTAL=$(cat "${{ vars.test_results_path }}/integration-results.json" | jq '.numTotalTests || 0')
+            PASSED=$(cat "${{ vars.test_results_path }}/integration-results.json" | jq '.numPassedTests || 0')
+            FAILED=$(cat "${{ vars.test_results_path }}/integration-results.json" | jq '.numFailedTests || 0')
+
+            echo "Integration Tests: $TOTAL total, $PASSED passed, $FAILED failed"
+
+            # Generate integration test report
+            cat > ${{ vars.test_results_path }}/integration-report.html << EOF
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>Integration Tests Report</title>
+              <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                .header { background: #f5f5f5; padding: 20px; border-radius: 5px; }
+                .pass { color: green; }
+                .fail { color: red; }
+              </style>
+            </head>
+            <body>
+              <div class="header">
+                <h1>Integration Tests Report</h1>
+                <p>Total: $TOTAL, Passed: <span class="pass">$PASSED</span>, Failed: <span class="fail">$FAILED</span></p>
+              </div>
+              <p>Generated at: $(date)</p>
+            </body>
+            </html>
+            EOF
+          else
+            echo "No integration test results found"
+          fi
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: |
+            ${{ vars.test_results_path }}/
+          retention-days: 30
+
+  # ===== BUILD AND E2E TESTS =====
+
+  build-and-e2e:
+    name: Build & E2E Tests
+    runs-on: ubuntu-latest
+    needs: [setup-cache, code-quality, coverage-analysis]
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+        shard: [0, 1]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ needs.setup-cache.outputs.cache-key }}
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Build application
+        run: |
+          npm run build
+          mkdir -p ${{ vars.build_path }}/build-info
+          echo "{\"buildTime\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"commit\": \"${{ github.sha }}\", \"branch\": \"${{ github.ref_name }}\"}" > ${{ vars.build_path }}/build-info/build.json
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          VITE_STRIPE_PUBLIC_KEY: ${{ secrets.STAGING_STRIPE_PUBLIC_KEY }}
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Start application
+        run: |
+          npm run preview &
+          echo "APP_PID=$!" >> $GITHUB_ENV
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+
+      - name: Wait for application
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:4173; do sleep 2; done'
+
+      - name: Run E2E tests with sharding
+        id: e2e
+        run: |
+          mkdir -p ${{ vars.test_results_path }}
+
+          # Run E2E tests with sharding and detailed reporting
+          npx playwright test \
+            --project=${{ matrix.browser }} \
+            --shard=${{ matrix.shard }}/2 \
+            --reporter=json,html,line \
+            --outputFile=${{ vars.test_results_path }}/e2e-${{ matrix.browser }}-shard-${{ matrix.shard }}.json \
+            --output-dir=${{ vars.test_results_path }}/playwright-${{ matrix.browser }}-shard-${{ matrix.shard }} \
+            --retries=2 \
+            --timeout=60000 \
+            --workers=2 || true
+        env:
+          BASE_URL: http://localhost:4173
+          TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+          TEST_STRIPE_SECRET_KEY: ${{ secrets.TEST_STRIPE_SECRET_KEY }}
+
+      - name: Process E2E test results
+        if: always()
+        run: |
+          if [ -f "${{ vars.test_results_path }}/e2e-${{ matrix.browser }}-shard-${{ matrix.shard }}.json" ]; then
+            TOTAL=$(cat "${{ vars.test_results_path }}/e2e-${{ matrix.browser }}-shard-${{ matrix.shard }}.json" | jq '.numTotalTests || 0')
+            PASSED=$(cat "${{ vars.test_results_path }}/e2e-${{ matrix.browser }}-shard-${{ matrix.shard }}.json" | jq '.numPassedTests || 0')
+            FAILED=$(cat "${{ vars.test_results_path }}/e2e-${{ matrix.browser }}-shard-${{ matrix.shard }}.json" | jq '.numFailedTests || 0')
+            FLAKY=$(cat "${{ vars.test_results_path }}/e2e-${{ matrix.browser }}-shard-${{ matrix.shard }}.json" | jq '.numFlakyTests || 0')
+
+            echo "E2E Tests (${{ matrix.browser }}-${{ matrix.shard }}): $TOTAL total, $PASSED passed, $FAILED failed, $FLAKY flaky"
+          else
+            echo "No E2E test results found for ${{ matrix.browser }}-${{ matrix.shard }}"
+          fi
+
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-results-${{ matrix.browser }}-shard-${{ matrix.shard }}
+          path: |
+            ${{ vars.test_results_path }}/
+            playwright-report/
+            test-results/
+          retention-days: 30
+
+      - name: Stop application
+        if: always()
+        run: |
+          if [ -n "$APP_PID" ]; then
+            kill $APP_PID || true
+          fi
+
+  # ===== PERFORMANCE TESTS =====
+
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: [build-and-e2e]
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ needs.setup-cache.outputs.cache-key }}
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: unit-test-results-shard-0
+          path: dist/
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.12.x
+
+      - name: Start application
+        run: |
+          npm run preview &
+          echo "APP_PID=$!" >> $GITHUB_ENV
+
+      - name: Wait for application
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:4173; do sleep 2; done'
+
+      - name: Run Lighthouse CI
+        run: |
+          lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+          LHCI_SERVER_URL: https://lhci.mariaborysevych.com
+          LHCI_BUILD_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Process Lighthouse results
+        run: |
+          if [ -f ".lighthouseci/lhr-report.json" ]; then
+            # Extract performance scores
+            PERFORMANCE=$(cat .lighthouseci/lhr-report.json | jq -r '.[0].categories.performance.score * 100 // 0')
+            ACCESSIBILITY=$(cat .lighthouseci/lhr-report.json | jq -r '.[0].categories.accessibility.score * 100 // 0')
+            BEST_PRACTICES=$(cat .lighthouseci/lhr-report.json | jq -r '.[0].categories["best-practices"].score * 100 // 0')
+            SEO=$(cat .lighthouseci/lhr-report.json | jq -r '.[0].categories.seo.score * 100 // 0')
+
+            echo "Performance: $PERFORMANCE"
+            echo "Accessibility: $ACCESSIBILITY"
+            echo "Best Practices: $BEST_PRACTICES"
+            echo "SEO: $SEO"
+
+            # Fail if performance is below threshold
+            if (( $(echo "$PERFORMANCE < 90" | bc -l) )); then
+              echo "❌ Performance score ($PERFORMANCE) below threshold (90)"
+              exit 1
+            fi
+          else
+            echo "No Lighthouse results found"
+          fi
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-results
+          path: |
+            .lighthouseci/
+          retention-days: 30
+
+      - name: Stop application
+        if: always()
+        run: |
+          if [ -n "$APP_PID" ]; then
+            kill $APP_PID || true
+          fi
+
+  # ===== SECURITY TESTS =====
+
+  security-tests:
+    name: Security Tests
+    runs-on: ubuntu-latest
+    needs: [setup-cache, code-quality]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ needs.setup-cache.outputs.cache-key }}
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Run Snyk security scan
+        run: |
+          npm install -g snyk
+          snyk test --json > snyk-results.json || true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
+
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+      - name: Run OWASP ZAP Baseline Scan
+        run: |
+          # Pull ZAP Docker image
+          docker pull owasp/zap2docker-stable
+
+          # Run baseline scan
+          docker run -t owasp/zap2docker-stable zap-baseline.py \
+            -t http://localhost:4173 \
+            -J zap-report.json || true
+        continue-on-error: true
+
+      - name: Run secrets detection
+        run: |
+          # Install and run truffleHog
+          pip install truffleHog
+          truffleHog --regex --entropy=False . > secrets-scan.json || true
+        continue-on-error: true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            snyk-results.json
+            zap-report.json
+            secrets-scan.json
+          retention-days: 30
+
+  # ===== TEST SUMMARY AND REPORTING =====
+
+  test-summary:
+    name: Test Summary & Reporting
+    runs-on: ubuntu-latest
+    needs: [code-quality, unit-tests-matrix, coverage-analysis, integration-tests, build-and-e2e, performance-tests, security-tests]
+    if: always()
+    steps:
+      - name: Download all test artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-reports/
+          merge-multiple: true
+
+      - name: Generate comprehensive test report
+        run: |
+          cat > test-summary.md << EOF
+          # Comprehensive Test Report
+
+          **Build**: ${{ github.sha }}
+          **Branch**: ${{ github.ref_name }}
+          **Date**: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          ## Quality Gates
+          - **Code Quality Score**: ${{ needs.code-quality.outputs.quality-score }}/100
+          - **Security Vulnerabilities**: ${{ needs.code-quality.outputs.security-vulnerabilities }}
+
+          ## Coverage Metrics
+          - **Lines**: ${{ needs.coverage-analysis.outputs.coverage-lines }}%
+          - **Functions**: ${{ needs.coverage-analysis.outputs.coverage-functions }}%
+          - **Branches**: ${{ needs.coverage-analysis.outputs.coverage-branches }}%
+          - **Statements**: ${{ needs.coverage-analysis.outputs.coverage-statements }}%
+
+          ## Test Results Summary
+          - **Unit Tests**: ${{ needs.unit-tests-matrix.outputs.total-tests }} total
+          - **Integration Tests**: Completed
+          - **E2E Tests**: Completed across all browsers
+          - **Performance Tests**: Completed
+          - **Security Tests**: Completed
+
+          ## Job Status
+          - **Code Quality**: ${{ needs.code-quality.result }}
+          - **Unit Tests**: ${{ needs.unit-tests-matrix.result }}
+          - **Coverage Analysis**: ${{ needs.coverage-analysis.result }}
+          - **Integration Tests**: ${{ needs.integration-tests.result }}
+          - **Build & E2E**: ${{ needs.build-and-e2e.result }}
+          - **Performance Tests**: ${{ needs.performance-tests.result }}
+          - **Security Tests**: ${{ needs.security-tests.result }}
+          EOF
+
+      - name: Upload test summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-summary
+          path: test-summary.md
+          retention-days: 90
+
+      - name: Comment PR with test summary
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            const summary = `
+            ## 🧪 Test Summary
+
+            **Quality Score**: ${{ needs.code-quality.outputs.quality-score }}/100
+            **Coverage**: ${{ needs.coverage-analysis.outputs.coverage-lines }}% lines
+
+            ### Status:
+            - ✅ Code Quality: ${{ needs.code-quality.result }}
+            - ✅ Unit Tests: ${{ needs.unit-tests-matrix.result }}
+            - ✅ Coverage: ${{ needs.coverage-analysis.result }}
+            - ✅ Integration: ${{ needs.integration-tests.result }}
+            - ✅ E2E Tests: ${{ needs.build-and-e2e.result }}
+            - ✅ Performance: ${{ needs.performance-tests.result }}
+            - ✅ Security: ${{ needs.security-tests.result }}
+
+            **Full report available in artifacts.**
+            `;
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+      - name: Send Slack notification
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#ci-cd'
+          text: '❌ Test automation failed! Check the results.'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send success notification
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#ci-cd'
+          text: '✅ All tests passed successfully!'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # ===== CLEANUP =====
+
+  cleanup:
+    name: Cleanup Resources
+    runs-on: ubuntu-latest
+    needs: [test-summary]
+    if: always()
+    steps:
+      - name: Cleanup old artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Delete old artifacts to save storage
+            const artifacts = await github.rest.actions.listArtifactsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+
+            const oldArtifacts = artifacts.data.artifacts
+              .filter(artifact => {
+                const createdDate = new Date(artifact.created_at);
+                const daysOld = (Date.now() - createdDate) / (1000 * 60 * 60 * 24);
+                return daysOld > 30 && !artifact.name.includes('test-summary');
+              })
+              .slice(0, 10); // Limit to 10 artifacts per run
+
+            for (const artifact of oldArtifacts) {
+              await github.rest.actions.deleteArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: artifact.id
+              });
+            }

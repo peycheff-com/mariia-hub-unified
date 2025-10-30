@@ -1,0 +1,1770 @@
+name: Performance & Quality Gates
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run performance checks daily at 5 AM UTC
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+    inputs:
+      gate_type:
+        description: 'Type of quality gate to run'
+        required: true
+        default: 'comprehensive'
+        type: choice
+        options:
+        - comprehensive
+        - performance-only
+        - quality-only
+        - accessibility-only
+        - seo-only
+      performance_threshold:
+        description: 'Performance score threshold'
+        required: true
+        default: '80'
+        type: choice
+        options:
+        - '60'
+        - '70'
+        - '80'
+        - '90'
+        - '95'
+      bundle_size_limit:
+        description: 'Bundle size limit (MB)'
+        required: true
+        default: '5'
+        type: choice
+        options:
+        - '3'
+        - '5'
+        - '8'
+        - '10'
+      fail_on_regression:
+        description: 'Fail on performance regression'
+        required: false
+        default: true
+        type: boolean
+      generate_comparison:
+        description: 'Generate performance comparison'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  NODE_VERSION: '20.x'
+  PERFORMANCE_TIMEOUT: '600000' # 10 minutes
+  LHCI_TIMEOUT: '900000'       # 15 minutes
+
+permissions:
+  contents: read
+  packages: read
+  pull-requests: write
+  checks: write
+  issues: write
+
+jobs:
+  # Quality gate configuration
+  quality-gate-configuration:
+    name: Quality Gate Configuration
+    runs-on: ubuntu-latest
+    outputs:
+      gate_matrix: ${{ steps.config.outputs.gate_matrix }}
+      gate_type: ${{ steps.config.outputs.gate_type }}
+      performance_threshold: ${{ steps.config.outputs.performance_threshold }}
+      bundle_size_limit: ${{ steps.config.outputs.bundle_size_limit }}
+      fail_on_regression: ${{ steps.config.outputs.fail_on_regression }}
+      generate_comparison: ${{ steps.config.outputs.generate_comparison }}
+      should_check_performance: ${{ steps.config.outputs.should_check_performance }}
+      should_check_quality: ${{ steps.config.outputs.should_check_quality }}
+      should_check_accessibility: ${{ steps.config.outputs.should_check_accessibility }}
+      should_check_seo: ${{ steps.config.outputs.should_check_seo }}
+      should_check_bundle_size: ${{ steps.config.outputs.should_check_bundle_size }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure quality gates
+        id: config
+        run: |
+          GATE_TYPE="${{ github.event.inputs.gate_type || 'comprehensive' }}"
+          PERFORMANCE_THRESHOLD="${{ github.event.inputs.performance_threshold || '80' }}"
+          BUNDLE_SIZE_LIMIT="${{ github.event.inputs.bundle_size_limit || '5' }}"
+          FAIL_ON_REGRESSION="${{ github.event.inputs.fail_on_regression || 'true' }}"
+          GENERATE_COMPARISON="${{ github.event.inputs.generate_comparison || 'true' }}"
+
+          # Set gate execution flags
+          case "$GATE_TYPE" in
+            "comprehensive")
+              SHOULD_CHECK_PERFORMANCE="true"
+              SHOULD_CHECK_QUALITY="true"
+              SHOULD_CHECK_ACCESSIBILITY="true"
+              SHOULD_CHECK_SEO="true"
+              SHOULD_CHECK_BUNDLE_SIZE="true"
+              ;;
+            "performance-only")
+              SHOULD_CHECK_PERFORMANCE="true"
+              SHOULD_CHECK_QUALITY="false"
+              SHOULD_CHECK_ACCESSIBILITY="false"
+              SHOULD_CHECK_SEO="false"
+              SHOULD_CHECK_BUNDLE_SIZE="true"
+              ;;
+            "quality-only")
+              SHOULD_CHECK_PERFORMANCE="false"
+              SHOULD_CHECK_QUALITY="true"
+              SHOULD_CHECK_ACCESSIBILITY="true"
+              SHOULD_CHECK_SEO="false"
+              SHOULD_CHECK_BUNDLE_SIZE="true"
+              ;;
+            "accessibility-only")
+              SHOULD_CHECK_PERFORMANCE="false"
+              SHOULD_CHECK_QUALITY="false"
+              SHOULD_CHECK_ACCESSIBILITY="true"
+              SHOULD_CHECK_SEO="false"
+              SHOULD_CHECK_BUNDLE_SIZE="false"
+              ;;
+            "seo-only")
+              SHOULD_CHECK_PERFORMANCE="false"
+              SHOULD_CHECK_QUALITY="false"
+              SHOULD_CHECK_ACCESSIBILITY="false"
+              SHOULD_CHECK_SEO="true"
+              SHOULD_CHECK_BUNDLE_SIZE="false"
+              ;;
+          esac
+
+          # Generate gate matrix
+          GATE_MATRIX=$(cat << EOF
+          {
+            "gate_type": "$GATE_TYPE",
+            "performance_threshold": $PERFORMANCE_THRESHOLD,
+            "bundle_size_limit": $BUNDLE_SIZE_LIMIT,
+            "fail_on_regression": $FAIL_ON_REGRESSION,
+            "generate_comparison": $GENERATE_COMPARISON,
+            "gates": {
+              "performance": $SHOULD_CHECK_PERFORMANCE,
+              "quality": $SHOULD_CHECK_QUALITY,
+              "accessibility": $SHOULD_CHECK_ACCESSIBILITY,
+              "seo": $SHOULD_CHECK_SEO,
+              "bundle_size": $SHOULD_CHECK_BUNDLE_SIZE
+            }
+          }
+          EOF
+          )
+
+          echo "gate_matrix=$GATE_MATRIX" >> $GITHUB_OUTPUT
+          echo "gate_type=$GATE_TYPE" >> $GITHUB_OUTPUT
+          echo "performance_threshold=$PERFORMANCE_THRESHOLD" >> $GITHUB_OUTPUT
+          echo "bundle_size_limit=$BUNDLE_SIZE_LIMIT" >> $GITHUB_OUTPUT
+          echo "fail_on_regression=$FAIL_ON_REGRESSION" >> $GITHUB_OUTPUT
+          echo "generate_comparison=$GENERATE_COMPARISON" >> $GITHUB_OUTPUT
+          echo "should_check_performance=$SHOULD_CHECK_PERFORMANCE" >> $GITHUB_OUTPUT
+          echo "should_check_quality=$SHOULD_CHECK_QUALITY" >> $GITHUB_OUTPUT
+          echo "should_check_accessibility=$SHOULD_CHECK_ACCESSIBILITY" >> $GITHUB_OUTPUT
+          echo "should_check_seo=$SHOULD_CHECK_SEO" >> $GITHUB_OUTPUT
+          echo "should_check_bundle_size=$SHOULD_CHECK_BUNDLE_SIZE" >> $GITHUB_OUTPUT
+
+  # Performance testing and monitoring
+  performance-gates:
+    name: Performance Gates
+    runs-on: ubuntu-latest
+    needs: quality-gate-configuration
+    if: needs.quality-gate-configuration.outputs.should_check_performance == 'true'
+    outputs:
+      performance_score: ${{ steps.performance.outputs.score }}
+      performance_grade: ${{ steps.performance.outputs.grade }}
+      performance_passed: ${{ steps.performance.outputs.passed }}
+      core_web_vitals: ${{ steps.performance.outputs.core_web_vitals }}
+      lighthouse_report: ${{ steps.performance.outputs.report_url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.13.x
+
+      - name: Build application for performance testing
+        run: |
+          export NODE_ENV="production"
+          export VITE_NODE_ENV="production"
+          npm run build
+
+      - name: Start application
+        run: |
+          npm run preview &
+          PREVIEW_PID=$!
+          echo "PREVIEW_PID=$PREVIEW_PID" >> $GITHUB_ENV
+
+          # Wait for application to start
+          timeout 60 bash -c 'until curl -f http://localhost:4173; do sleep 2; done'
+
+      - name: Configure Lighthouse CI for performance testing
+        run: |
+          cat > .lighthouserc-performance.json << EOF
+          {
+            "ci": {
+              "collect": {
+                "numberOfRuns": 5,
+                "settings": {
+                  "chromeFlags": "--no-sandbox --headless",
+                  "emulatedFormFactor": "desktop",
+                  "throttling": {
+                    "rttMs": 40,
+                    "throughputKbps": 10240,
+                    "cpuSlowdownMultiplier": 1,
+                    "requestLatencyMs": 0,
+                    "downloadThroughputKbps": 0,
+                    "uploadThroughputKbps": 0
+                  },
+                  "output": "json"
+                },
+                "url": [
+                  "http://localhost:4173/",
+                  "http://localhost:4173/beauty",
+                  "http://localhost:4173/fitness",
+                  "http://localhost:4173/booking",
+                  "http://localhost:4173/about"
+                ]
+              },
+              "assert": {
+                "assertions": {
+                  "categories:performance": ["error", {"minScore": ${{ needs.quality-gate-configuration.outputs.performance_threshold }}/100}],
+                  "categories:accessibility": ["warn", {"minScore": 0.9}],
+                  "categories:best-practices": ["warn", {"minScore": 0.8}],
+                  "categories:seo": ["warn", {"minScore": 0.8}],
+                  "categories:pwa": "off"
+                }
+              },
+              "upload": {
+                "target": "temporary-public-storage"
+              }
+            }
+          }
+          EOF
+
+      - name: Run Lighthouse CI performance tests
+        run: |
+          echo "🚀 Running comprehensive Lighthouse performance tests..."
+          lhci autorun --config=.lighthouserc-performance.json
+
+      - name: Run WebPageTest performance analysis
+        run: |
+          echo "🌐 Running WebPageTest analysis..."
+
+          # Install WebPageTest API wrapper
+          npm install -g webpagetest
+
+          # Run WebPageTest for critical pages
+          PAGES=("http://localhost:4173/" "http://localhost:4173/beauty" "http://localhost:4173/booking")
+
+          for page in "${PAGES[@]}"; do
+            PAGE_NAME=$(echo "$page" | sed 's/http:\/\/localhost:4173\///g' | sed 's/\//_/g')
+            webpagetest test "$page" \
+              --location "us-east-1:Chrome" \
+              --connectivity "Cable" \
+              --pollResults 15 \
+              --key "${{ secrets.WEBPAGETEST_API_KEY }}" \
+              --output "json" \
+              --file "wpt-results-${PAGE_NAME}.json" || true
+          done
+
+      - name: Analyze performance results
+        id: performance
+        run: |
+          node -e "
+            const fs = require('fs');
+            try {
+              // Read Lighthouse results
+              const lhrDir = '.lighthouseci';
+              const files = fs.readdirSync(lhrDir).filter(f => f.endsWith('.lhr.json'));
+
+              let totalPerformanceScore = 0;
+              let totalAccessibilityScore = 0;
+              let totalBestPracticesScore = 0;
+              let totalSeoScore = 0;
+              let reportCount = 0;
+
+              // Core Web Vitals aggregation
+              let fcpValues = [];
+              let lcpValues = [];
+              let clsValues = [];
+              let tbtValues = [];
+
+              files.forEach(file => {
+                const lhr = JSON.parse(fs.readFileSync(\`\${lhrDir}/\${file}\`, 'utf8'));
+
+                totalPerformanceScore += lhr.categories.performance.score * 100;
+                totalAccessibilityScore += lhr.categories.accessibility.score * 100;
+                totalBestPracticesScore += lhr.categories.bestPractices.score * 100;
+                totalSeoScore += lhr.categories.seo.score * 100;
+                reportCount++;
+
+                // Extract Core Web Vitals
+                const audits = lhr.audits;
+                if (audits['first-contentful-paint']) {
+                  fcpValues.push(audits['first-contentful-paint'].numericValue);
+                }
+                if (audits['largest-contentful-paint']) {
+                  lcpValues.push(audits['largest-contentful-paint'].numericValue);
+                }
+                if (audits['cumulative-layout-shift']) {
+                  clsValues.push(audits['cumulative-layout-shift'].numericValue);
+                }
+                if (audits['total-blocking-time']) {
+                  tbtValues.push(audits['total-blocking-time'].numericValue);
+                }
+              });
+
+              const avgPerformanceScore = Math.round(totalPerformanceScore / reportCount);
+              const avgAccessibilityScore = Math.round(totalAccessibilityScore / reportCount);
+              const avgBestPracticesScore = Math.round(totalBestPracticesScore / reportCount);
+              const avgSeoScore = Math.round(totalSeoScore / reportCount);
+
+              // Calculate Core Web Vitals averages
+              const coreWebVitals = {
+                fcp: fcpValues.length > 0 ? Math.round(fcpValues.reduce((a, b) => a + b) / fcpValues.length) : 0,
+                lcp: lcpValues.length > 0 ? Math.round(lcpValues.reduce((a, b) => a + b) / lcpValues.length) : 0,
+                cls: clsValues.length > 0 ? parseFloat((clsValues.reduce((a, b) => a + b) / clsValues.length).toFixed(3)) : 0,
+                tbt: tbtValues.length > 0 ? Math.round(tbtValues.reduce((a, b) => a + b) / tbtValues.length) : 0
+              };
+
+              // Calculate overall performance score (weighted)
+              const overallScore = Math.round(
+                (avgPerformanceScore * 0.5) +
+                (avgAccessibilityScore * 0.2) +
+                (avgBestPracticesScore * 0.2) +
+                (avgSeoScore * 0.1)
+              );
+
+              // Determine performance grade
+              let grade;
+              if (overallScore >= 95) grade = 'A+';
+              else if (overallScore >= 90) grade = 'A';
+              else if (overallScore >= 85) grade = 'B+';
+              else if (overallScore >= 80) grade = 'B';
+              else if (overallScore >= 75) grade = 'C+';
+              else if (overallScore >= 70) grade = 'C';
+              else if (overallScore >= 65) grade = 'D';
+              else grade = 'F';
+
+              // Check against threshold
+              const threshold = parseInt('${{ needs.quality-gate-configuration.outputs.performance_threshold }}');
+              const passed = overallScore >= threshold;
+
+              const performanceData = {
+                scores: {
+                  performance: avgPerformanceScore,
+                  accessibility: avgAccessibilityScore,
+                  bestPractices: avgBestPracticesScore,
+                  seo: avgSeoScore,
+                  overall: overallScore
+                },
+                coreWebVitals,
+                grade,
+                threshold,
+                passed,
+                pagesAnalyzed: reportCount,
+                timestamp: new Date().toISOString()
+              };
+
+              fs.writeFileSync('performance-gate-results.json', JSON.stringify(performanceData, null, 2));
+
+              console.log('Performance Gate Results:');
+              console.log(\`Performance Score: \${avgPerformanceScore}\`);
+              console.log(\`Accessibility Score: \${avgAccessibilityScore}\`);
+              console.log(\`Best Practices Score: \${avgBestPracticesScore}\`);
+              console.log(\`SEO Score: \${avgSeoScore}\`);
+              console.log(\`Overall Score: \${overallScore}\`);
+              console.log(\`Grade: \${grade}\`);
+              console.log(\`Threshold: \${threshold}\`);
+              console.log(\`Status: \${passed ? 'PASSED' : 'FAILED'}\`);
+              console.log('');
+              console.log('Core Web Vitals:');
+              console.log(\`FCP: \${coreWebVitals.fcp}ms\`);
+              console.log(\`LCP: \${coreWebVitals.lcp}ms\`);
+              console.log(\`CLS: \${coreWebVitals.cls}\`);
+              console.log(\`TBT: \${coreWebVitals.tbt}ms\`);
+
+              console.log(\`::set-output name=score::\${overallScore}\`);
+              console.log(\`::set-output name=grade::\${grade}\`);
+              console.log(\`::set-output name=passed::\${passed}\`);
+              console.log(\`::set-output name=core_web_vitals::\${JSON.stringify(coreWebVitals)}\`);
+              console.log(\`::set-output name=report_url::https://storage.googleapis.com/lighthouse-infrastructure.appspot.com/reports/\${{ github.run_id }}.html\`);
+            } catch (e) {
+              console.error('Could not analyze performance results:', e);
+              console.log(\`::set-output name=score::0\`);
+              console.log(\`::set-output name=grade::F\`);
+              console.log(\`::set-output name=passed::false\`);
+            }
+          "
+
+      - name: Stop application
+        if: always()
+        run: |
+          if [ -n "$PREVIEW_PID" ]; then
+            kill $PREVIEW_PID || true
+          fi
+
+      - name: Generate performance regression report
+        if: needs.quality-gate-configuration.outputs.generate_comparison == 'true'
+        run: |
+          echo "📊 Generating performance regression report..."
+
+          # Create baseline comparison (simplified)
+          cat > performance-regression-report.md << EOF
+          # Performance Regression Report
+
+          ## Current Performance Metrics
+          - **Overall Score**: ${{ steps.performance.outputs.score }}/100
+          - **Grade**: ${{ steps.performance.outputs.grade }}
+          - **Status**: ${{ steps.performance.outputs.passed == 'true' && '✅ PASSED' || '❌ FAILED' }}
+
+          ## Core Web Vitals
+          $(node -e "
+            const vitals = JSON.parse('${{ steps.performance.outputs.core_web_vitals }}');
+            console.log(\`- **First Contentful Paint (FCP)**: \${vitals.fcp}ms\`);
+            console.log(\`- **Largest Contentful Paint (LCP)**: \${vitals.lcp}ms\`);
+            console.log(\`- **Cumulative Layout Shift (CLS)**: \${vitals.cls}\`);
+            console.log(\`- **Total Blocking Time (TBT)**: \${vitals.tbt}ms\`);
+          ")
+
+          ## Threshold Analysis
+          - **Required Score**: ${{ needs.quality-gate-configuration.outputs.performance_threshold }}/100
+          - **Actual Score**: ${{ steps.performance.outputs.score }}/100
+          - **Difference**: ${{ steps.performance.outputs.score - needs.quality-gate-configuration.outputs.performance_threshold }}
+
+          ## Recommendations
+          ${{ steps.performance.outputs.passed == 'true' && '✅ Performance meets quality standards' || '❌ Performance below threshold - optimization required' }}
+
+          EOF
+
+      - name: Upload performance artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-gate-results
+          path: |
+            performance-gate-results.json
+            .lighthouseci/
+            wpt-results-*.json
+            performance-regression-report.md
+          retention-days: 30
+
+      - name: Fail on performance regression
+        if: steps.performance.outputs.passed == 'false' && needs.quality-gate-configuration.outputs.fail_on_regression == 'true'
+        run: |
+          echo "❌ Performance gate failed!"
+          echo "Score: ${{ steps.performance.outputs.score }}/100 (Required: ${{ needs.quality-gate-configuration.outputs.performance_threshold }}/100)"
+          echo "Grade: ${{ steps.performance.outputs.grade }}"
+          exit 1
+
+  # Code quality analysis
+  code-quality-gates:
+    name: Code Quality Gates
+    runs-on: ubuntu-latest
+    needs: quality-gate-configuration
+    if: needs.quality-gate-configuration.outputs.should_check_quality == 'true'
+    outputs:
+      quality_score: ${{ steps.quality.outputs.score }}
+      quality_grade: ${{ steps.quality.outputs.grade }}
+      quality_passed: ${{ steps.quality.outputs.passed }}
+      maintainability_index: ${{ steps.quality.outputs.maintainability }}
+      technical_debt: ${{ steps.quality.outputs.debt }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint with quality rules
+        run: |
+          echo "🔍 Running comprehensive ESLint analysis..."
+
+          # Run ESLint with all quality rules
+          npx eslint . --ext .ts,.tsx,.js,.jsx \
+            --format=json \
+            --output-file=eslint-quality-results.json || true
+
+          # Run ESLint with complexity rules
+          npx eslint . --ext .ts,.tsx,.js,.jsx \
+            --rule 'complexity: ["error", { "max": 10 }]' \
+            --rule 'max-lines-per-function: ["error", { "max": 50, "skipBlankLines": true, "skipComments": true }]' \
+            --rule 'max-depth: ["error", 4]' \
+            --rule 'max-params: ["error", 4]' \
+            --format=json \
+            --output-file=eslint-complexity-results.json || true
+
+      - name: Run SonarQube code analysis
+        if: env.SONAR_TOKEN != ''
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          echo "🔍 Running SonarQube code analysis..."
+
+          # Install and run SonarScanner
+          npm install -g sonarqube-scanner
+
+          sonar-scanner \
+            -Dsonar.projectKey=mariia-hub-unified \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=${SONAR_HOST_URL} \
+            -Dsonar.login=${SONAR_TOKEN} \
+            -Dsonar.typescript.lcov.reportPaths=coverage/lcov.info \
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info || true
+
+      - name: Analyze code complexity with Plato
+        run: |
+          echo "🔍 Analyzing code complexity..."
+
+          # Install Plato
+          npm install -g plato
+
+          # Run complexity analysis
+          plato -r -d plato-reports -t "Mariia Hub" -x .json src/ || true
+
+      - name: Calculate maintainability metrics
+        run: |
+          echo "📊 Calculating maintainability metrics..."
+
+          # Install complexity calculation tools
+          npm install -g complexity-report
+
+          # Generate complexity report
+          complexity-report -f json -o complexity-report.json src/ || true
+
+      - name: Analyze code quality results
+        id: quality
+        run: |
+          node -e "
+            const fs = require('fs');
+
+            let totalIssues = 0;
+            let errorIssues = 0;
+            let warningIssues = 0;
+            let maintainabilityIndex = 85; // Default
+            let technicalDebtMinutes = 0;
+            let complexityScore = 100;
+
+            try {
+              // Analyze ESLint results
+              if (fs.existsSync('eslint-quality-results.json')) {
+                const eslintResults = JSON.parse(fs.readFileSync('eslint-quality-results.json', 'utf8'));
+                eslintResults.forEach(file => {
+                  if (file.messages) {
+                    file.messages.forEach(msg => {
+                      totalIssues++;
+                      if (msg.severity === 2) errorIssues++;
+                      else if (msg.severity === 1) warningIssues++;
+                    });
+                  }
+                });
+              }
+
+              // Analyze complexity results
+              if (fs.existsSync('complexity-report.json')) {
+                const complexityReport = JSON.parse(fs.readFileSync('complexity-report.json', 'utf8'));
+                const reports = complexityReport.reports || [];
+
+                let totalComplexity = 0;
+                let totalFiles = 0;
+
+                reports.forEach(report => {
+                  if (report.complexity && report.complexity.cyclomatic) {
+                    totalComplexity += report.complexity.cyclomatic;
+                    totalFiles++;
+                  }
+                });
+
+                if (totalFiles > 0) {
+                  const avgComplexity = totalComplexity / totalFiles;
+                  // Complexity score penalizes high complexity
+                  complexityScore = Math.max(0, 100 - (avgComplexity - 5) * 5);
+                }
+              }
+
+              // Calculate maintainability index (simplified)
+              const errorDensity = totalFiles > 0 ? (errorIssues / totalFiles) : 0;
+              const warningDensity = totalFiles > 0 ? (warningIssues / totalFiles) : 0;
+
+              maintainabilityIndex = Math.max(0, 100 - (errorDensity * 20) - (warningDensity * 10) - ((100 - complexityScore) * 0.5));
+
+              // Calculate technical debt (simplified calculation)
+              technicalDebtMinutes = errorIssues * 15 + warningIssues * 5 + (100 - maintainabilityIndex) * 2;
+
+            } catch (e) {
+              console.error('Error analyzing code quality:', e);
+            }
+
+            // Calculate overall quality score
+            const overallScore = Math.round((maintainabilityIndex + complexityScore) / 2);
+
+            // Determine quality grade
+            let grade;
+            if (overallScore >= 90) grade = 'A';
+            else if (overallScore >= 80) grade = 'B';
+            else if (overallScore >= 70) grade = 'C';
+            else if (overallScore >= 60) grade = 'D';
+            else grade = 'F';
+
+            // Determine if quality gate passed
+            const passed = errorIssues === 0 && overallScore >= 70;
+
+            const qualityData = {
+              scores: {
+                overall: overallScore,
+                maintainability: Math.round(maintainabilityIndex),
+                complexity: Math.round(complexityScore)
+              },
+              grade,
+              issues: {
+                total: totalIssues,
+                errors: errorIssues,
+                warnings: warningIssues
+              },
+              maintainabilityIndex: Math.round(maintainabilityIndex),
+              technicalDebtMinutes: Math.round(technicalDebtMinutes),
+              passed,
+              timestamp: new Date().toISOString()
+            };
+
+            fs.writeFileSync('code-quality-results.json', JSON.stringify(qualityData, null, 2));
+
+            console.log('Code Quality Gate Results:');
+            console.log(\`Overall Score: \${overallScore}/100\`);
+            console.log(\`Grade: \${grade}\`);
+            console.log(\`Maintainability Index: \${Math.round(maintainabilityIndex)}/100\`);
+            console.log(\`Complexity Score: \${Math.round(complexityScore)}/100\`);
+            console.log(\`Total Issues: \${totalIssues}\`);
+            console.log(\`Errors: \${errorIssues}\`);
+            console.log(\`Warnings: \${warningIssues}\`);
+            console.log(\`Technical Debt: \${Math.round(technicalDebtMinutes)} minutes\`);
+            console.log(\`Status: \${passed ? 'PASSED' : 'FAILED'}\`);
+
+            console.log(\`::set-output name=score::\${overallScore}\`);
+            console.log(\`::set-output name=grade::\${grade}\`);
+            console.log(\`::set-output name=passed::\${passed}\`);
+            console.log(\`::set-output name=maintainability::\${Math.round(maintainabilityIndex)}\`);
+            console.log(\`::set-output name=debt::\${Math.round(technicalDebtMinutes)}\`);
+          "
+
+      - name: Upload code quality artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: code-quality-gate-results
+          path: |
+            eslint-quality-results.json
+            eslint-complexity-results.json
+            complexity-report.json
+            plato-reports/
+            code-quality-results.json
+          retention-days: 30
+
+      - name: Fail on quality gate failure
+        if: steps.quality.outputs.passed == 'false' && needs.quality-gate-configuration.outputs.fail_on_regression == 'true'
+        run: |
+          echo "❌ Code quality gate failed!"
+          echo "Score: ${{ steps.quality.outputs.score }}/100"
+          echo "Grade: ${{ steps.quality.outputs.grade }}"
+          echo "Errors: ${{ steps.quality.outputs.maintainability }}"
+          exit 1
+
+  # Bundle size analysis
+  bundle-size-gates:
+    name: Bundle Size Gates
+    runs-on: ubuntu-latest
+    needs: quality-gate-configuration
+    if: needs.quality-gate-configuration.outputs.should_check_bundle_size == 'true'
+    outputs:
+      bundle_size_mb: ${{ steps.bundle.outputs.size_mb }}
+      bundle_size_passed: ${{ steps.bundle.outputs.passed }}
+      size_increase_pct: ${{ steps.bundle.outputs.increase_pct }}
+      largest_assets: ${{ steps.bundle.outputs.largest_assets }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application with bundle analysis
+        run: |
+          export NODE_ENV="production"
+          export VITE_NODE_ENV="production"
+
+          # Build with analysis
+          npm run build
+
+          # Generate bundle analyzer report
+          npx webpack-bundle-analyzer dist/static/js/*.js \
+            --mode=json \
+            --report=bundle-analysis.json \
+            --default-sizes=parsed || true
+
+      - name: Analyze bundle size
+        id: bundle
+        run: |
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+
+            function getDirectorySize(dirPath) {
+              let totalSize = 0;
+              try {
+                const files = fs.readdirSync(dirPath);
+                files.forEach(file => {
+                  const filePath = path.join(dirPath, file);
+                  const stats = fs.statSync(filePath);
+                  if (stats.isDirectory()) {
+                    totalSize += getDirectorySize(filePath);
+                  } else {
+                    totalSize += stats.size;
+                  }
+                });
+              } catch (e) {
+                // Directory might not exist
+              }
+              return totalSize;
+            }
+
+            // Calculate total bundle size
+            const totalSize = getDirectorySize('dist');
+            const sizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+
+            // Find largest assets
+            let largestAssets = [];
+            try {
+              const files = [];
+              function collectFiles(dir, basePath = '') {
+                try {
+                  const items = fs.readdirSync(dir);
+                  items.forEach(item => {
+                    const itemPath = path.join(dir, item);
+                    const relativePath = path.join(basePath, item);
+                    const stats = fs.statSync(itemPath);
+
+                    if (stats.isDirectory()) {
+                      collectFiles(itemPath, relativePath);
+                    } else {
+                      files.push({
+                        path: relativePath,
+                        size: stats.size,
+                        sizeKB: (stats.size / 1024).toFixed(2)
+                      });
+                    }
+                  });
+                } catch (e) {
+                  // Directory might not exist
+                }
+              }
+
+              collectFiles('dist');
+              largestAssets = files
+                .sort((a, b) => b.size - a.size)
+                .slice(0, 10);
+            } catch (e) {
+              console.error('Could not analyze asset sizes:', e);
+            }
+
+            // Check against limit
+            const limitMB = parseFloat('${{ needs.quality-gate-configuration.outputs.bundle_size_limit }}');
+            const passed = parseFloat(sizeMB) <= limitMB;
+
+            // Calculate size increase compared to baseline (if exists)
+            let increasePct = 0;
+            if (fs.existsSync('baseline-size.txt')) {
+              try {
+                const baselineSize = parseFloat(fs.readFileSync('baseline-size.txt', 'utf8'));
+                increasePct = ((parseFloat(sizeMB) - baselineSize) / baselineSize * 100).toFixed(1);
+              } catch (e) {
+                console.log('Could not read baseline size');
+              }
+            }
+
+            // Save current size as baseline
+            fs.writeFileSync('baseline-size.txt', sizeMB);
+
+            const bundleData = {
+              totalSizeBytes: totalSize,
+              totalSizeMB: parseFloat(sizeMB),
+              limitMB,
+              passed,
+              increasePercentage: parseFloat(increasePct),
+              largestAssets: largestAssets.slice(0, 5),
+              timestamp: new Date().toISOString()
+            };
+
+            fs.writeFileSync('bundle-size-results.json', JSON.stringify(bundleData, null, 2));
+
+            console.log('Bundle Size Gate Results:');
+            console.log(\`Total Bundle Size: \${sizeMB} MB\`);
+            console.log(\`Size Limit: \${limitMB} MB\`);
+            console.log(\`Status: \${passed ? 'PASSED' : 'FAILED'}\`);
+            if (increasePct > 0) {
+              console.log(\`Size Increase: \${increasePct}%\`);
+            }
+            console.log('');
+            console.log('Largest Assets:');
+            largestAssets.slice(0, 5).forEach((asset, index) => {
+              console.log(\`\${index + 1}. \${asset.path} (\${asset.sizeKB} KB)\`);
+            });
+
+            console.log(\`::set-output name=size_mb::\${sizeMB}\`);
+            console.log(\`::set-output name=passed::\${passed}\`);
+            console.log(\`::set-output name=increase_pct::\${increasePct}\`);
+            console.log(\`::set-output name=largest_assets::\${JSON.stringify(largestAssets.slice(0, 5))}\`);
+          "
+
+      - name: Generate bundle optimization recommendations
+        run: |
+          node -e "
+            const bundleData = JSON.parse(require('fs').readFileSync('bundle-size-results.json', 'utf8'));
+            const recommendations = [];
+
+            if (bundleData.totalSizeMB > 3) {
+              recommendations.push('Consider code splitting for better performance');
+            }
+
+            if (bundleData.totalSizeMB > 5) {
+              recommendations.push('Implement lazy loading for heavy components');
+            }
+
+            bundleData.largestAssets.forEach(asset => {
+              if (asset.sizeKB > 500) {
+                recommendations.push(\`Optimize \${asset.path} (\${asset.sizeKB} KB)\`);
+              }
+            });
+
+            if (bundleData.increasePercentage > 10) {
+              recommendations.push(\`Bundle size increased by \${bundleData.increasePercentage}% - investigate changes\`);
+            }
+
+            const report = {
+              recommendations,
+              bundleData,
+              timestamp: new Date().toISOString()
+            };
+
+            require('fs').writeFileSync('bundle-optimization-report.json', JSON.stringify(report, null, 2));
+
+            console.log('Bundle Optimization Recommendations:');
+            recommendations.forEach((rec, index) => {
+              console.log(\`\${index + 1}. \${rec}\`);
+            });
+          "
+
+      - name: Upload bundle size artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bundle-size-gate-results
+          path: |
+            bundle-size-results.json
+            bundle-analysis.json
+            bundle-optimization-report.json
+            baseline-size.txt
+          retention-days: 30
+
+      - name: Fail on bundle size limit
+        if: steps.bundle.outputs.passed == 'false' && needs.quality-gate-configuration.outputs.fail_on_regression == 'true'
+        run: |
+          echo "❌ Bundle size gate failed!"
+          echo "Size: ${{ steps.bundle.outputs.size_mb }} MB (Limit: ${{ needs.quality-gate-configuration.outputs.bundle_size_limit }} MB)"
+          exit 1
+
+  # Accessibility testing
+  accessibility-gates:
+    name: Accessibility Gates
+    runs-on: ubuntu-latest
+    needs: quality-gate-configuration
+    if: needs.quality-gate-configuration.outputs.should_check_accessibility == 'true'
+    outputs:
+      accessibility_score: ${{ steps.accessibility.outputs.score }}
+      accessibility_grade: ${{ steps.accessibility.outputs.grade }}
+      accessibility_passed: ${{ steps.accessibility.outputs.passed }}
+      wcag_compliance: ${{ steps.accessibility.outputs.wcag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install accessibility testing tools
+        run: npm install -g pa11y axe-core
+
+      - name: Build application
+        run: |
+          export NODE_ENV="production"
+          export VITE_NODE_ENV="production"
+          npm run build
+
+      - name: Start application
+        run: |
+          npm run preview &
+          PREVIEW_PID=$!
+          echo "PREVIEW_PID=$PREVIEW_PID" >> $GITHUB_ENV
+
+          # Wait for application to start
+          timeout 60 bash -c 'until curl -f http://localhost:4173; do sleep 2; done'
+
+      - name: Run comprehensive accessibility tests
+        run: |
+          echo "🔍 Running comprehensive accessibility tests..."
+
+          # Test critical pages
+          PAGES=(
+            "http://localhost:4173/"
+            "http://localhost:4173/beauty"
+            "http://localhost:4173/fitness"
+            "http://localhost:4173/booking"
+            "http://localhost:4173/about"
+            "http://localhost:4173/contact"
+          )
+
+          mkdir -p accessibility-results
+
+          for page in "${PAGES[@]}"; do
+            PAGE_NAME=$(echo "$page" | sed 's/http:\/\///g' | sed 's/\//_/g')
+            echo "Testing accessibility for: $page"
+
+            # Run Pa11y with WCAG 2.1 AA standard
+            pa11y --reporter json --standard WCAG2AA --runner axe "$page" > "accessibility-results/pa11y-${PAGE_NAME}.json" || true
+
+            # Run with different standards
+            pa11y --reporter json --standard WCAG2AAA "$page" > "accessibility-results/pa11y-aaa-${PAGE_NAME}.json" || true
+            pa11y --reporter json --standard Section508 "$page" > "accessibility-results/pa11y-508-${PAGE_NAME}.json" || true
+          done
+
+      - name: Analyze accessibility results
+        id: accessibility
+        run: |
+          node -e "
+            const fs = require('fs');
+
+            let totalIssues = 0;
+            let totalErrors = 0;
+            let totalWarnings = 0;
+            let totalNotices = 0;
+            let pagesTested = 0;
+
+            // WCAG compliance tracking
+            let wcagAAIssues = 0;
+            let wcagAAAIssues = 0;
+            let section508Issues = 0;
+
+            try {
+              const files = fs.readdirSync('accessibility-results').filter(f => f.startsWith('pa11y-') && f.includes('-AA.json'));
+
+              files.forEach(file => {
+                try {
+                  const report = JSON.parse(fs.readFileSync(\`accessibility-results/\${file}\`, 'utf8'));
+                  pagesTested++;
+
+                  report.forEach(issue => {
+                    totalIssues++;
+
+                    if (issue.type === 'error') totalErrors++;
+                    else if (issue.type === 'warning') totalWarnings++;
+                    else if (issue.type === 'notice') totalNotices++;
+
+                    // Track WCAG compliance
+                    if (issue.impact === 'critical' || issue.impact === 'serious') {
+                      wcagAAIssues++;
+                    }
+                  });
+                } catch (e) {
+                  console.log(\`Could not parse \${file}\`);
+                }
+              });
+
+              // Analyze WCAG AAA results
+              const aaaFiles = fs.readdirSync('accessibility-results').filter(f => f.includes('-AAA.json'));
+              aaaFiles.forEach(file => {
+                try {
+                  const report = JSON.parse(fs.readFileSync(\`accessibility-results/\${file}\`, 'utf8'));
+                  wcagAAAIssues += report.length;
+                } catch (e) {
+                  console.log(\`Could not parse \${file}\`);
+                }
+              });
+
+              // Analyze Section 508 results
+              const section508Files = fs.readdirSync('accessibility-results').filter(f => f.includes('-508.json'));
+              section508Files.forEach(file => {
+                try {
+                  const report = JSON.parse(fs.readFileSync(\`accessibility-results/\${file}\`, 'utf8'));
+                  section508Issues += report.length;
+                } catch (e) {
+                  console.log(\`Could not parse \${file}\`);
+                }
+              });
+
+            } catch (e) {
+              console.error('Error analyzing accessibility results:', e);
+            }
+
+            const avgIssuesPerPage = pagesTested > 0 ? totalIssues / pagesTested : 0;
+
+            // Calculate accessibility score (100 - (issues * 2), minimum 0)
+            let score = Math.max(0, 100 - (avgIssuesPerPage * 3));
+
+            // Additional penalties for critical issues
+            if (totalErrors > 0) score -= (totalErrors * 5);
+
+            // Determine accessibility grade
+            let grade;
+            if (score >= 95) grade = 'A+';
+            else if (score >= 90) grade = 'A';
+            else if (score >= 85) grade = 'B+';
+            else if (score >= 80) grade = 'B';
+            else if (score >= 75) grade = 'C+';
+            else if (score >= 70) grade = 'C';
+            else if (score >= 65) grade = 'D';
+            else grade = 'F';
+
+            // Determine WCAG compliance level
+            let wcagCompliance = 'AA';
+            if (wcagAAIssues === 0 && wcagAAAIssues === 0) {
+              wcagCompliance = 'AAA';
+            } else if (wcagAAIssues > 5) {
+              wcagCompliance = 'A';
+            }
+
+            // Determine if accessibility gate passed
+            const passed = totalErrors === 0 && avgIssuesPerPage <= 2 && score >= 80;
+
+            const accessibilityData = {
+              scores: {
+                overall: Math.round(score),
+                wcagAA: Math.max(0, 100 - (wcagAAIssues * 2)),
+                wcagAAA: Math.max(0, 100 - (wcagAAAIssues * 2)),
+                section508: Math.max(0, 100 - (section508Issues * 2))
+              },
+              grade,
+              wcagCompliance,
+              issues: {
+                total: totalIssues,
+                errors: totalErrors,
+                warnings: totalWarnings,
+                notices: totalNotices
+              },
+              compliance: {
+                wcagAA: wcagAAIssues,
+                wcagAAA: wcagAAAIssues,
+                section508: section508Issues
+              },
+              pagesTested,
+              avgIssuesPerPage: parseFloat(avgIssuesPerPage.toFixed(1)),
+              passed,
+              timestamp: new Date().toISOString()
+            };
+
+            fs.writeFileSync('accessibility-gate-results.json', JSON.stringify(accessibilityData, null, 2));
+
+            console.log('Accessibility Gate Results:');
+            console.log(\`Overall Score: \${Math.round(score)}/100\`);
+            console.log(\`Grade: \${grade}\`);
+            console.log(\`WCAG Compliance: \${wcagCompliance}\`);
+            console.log(\`Pages Tested: \${pagesTested}\`);
+            console.log(\`Total Issues: \${totalIssues}\`);
+            console.log(\`Errors: \${totalErrors}\`);
+            console.log(\`Warnings: \${totalWarnings}\`);
+            console.log(\`Avg Issues/Page: \${avgIssuesPerPage.toFixed(1)}\`);
+            console.log(\`Status: \${passed ? 'PASSED' : 'FAILED'}\`);
+            console.log('');
+            console.log('WCAG Compliance:');
+            console.log(\`- WCAG AA Issues: \${wcagAAIssues}\`);
+            console.log(\`- WCAG AAA Issues: \${wcagAAAIssues}\`);
+            console.log(\`- Section 508 Issues: \${section508Issues}\`);
+
+            console.log(\`::set-output name=score::\${Math.round(score)}\`);
+            console.log(\`::set-output name=grade::\${grade}\`);
+            console.log(\`::set-output name=passed::\${passed}\`);
+            console.log(\`::set-output name=wcag::\${wcagCompliance}\`);
+          "
+
+      - name: Stop application
+        if: always()
+        run: |
+          if [ -n "$PREVIEW_PID" ]; then
+            kill $PREVIEW_PID || true
+          fi
+
+      - name: Upload accessibility artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: accessibility-gate-results
+          path: |
+            accessibility-results/
+            accessibility-gate-results.json
+          retention-days: 30
+
+      - name: Fail on accessibility gate failure
+        if: steps.accessibility.outputs.passed == 'false' && needs.quality-gate-configuration.outputs.fail_on_regression == 'true'
+        run: |
+          echo "❌ Accessibility gate failed!"
+          echo "Score: ${{ steps.accessibility.outputs.score }}/100"
+          echo "WCAG Compliance: ${{ steps.accessibility.outputs.wcag }}"
+          exit 1
+
+  # SEO analysis
+  seo-gates:
+    name: SEO Gates
+    runs-on: ubuntu-latest
+    needs: quality-gate-configuration
+    if: needs.quality-gate-configuration.outputs.should_check_seo == 'true'
+    outputs:
+      seo_score: ${{ steps.seo.outputs.score }}
+      seo_grade: ${{ steps.seo.outputs.grade }}
+      seo_passed: ${{ steps.seo.outputs.passed }}
+      seo_issues: ${{ steps.seo.outputs.issues }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install SEO analysis tools
+        run: npm install -g @lhci/cli@0.13.x
+
+      - name: Build application
+        run: |
+          export NODE_ENV="production"
+          export VITE_NODE_ENV="production"
+          npm run build
+
+      - name: Start application
+        run: |
+          npm run preview &
+          PREVIEW_PID=$!
+          echo "PREVIEW_PID=$PREVIEW_PID" >> $GITHUB_ENV
+
+          # Wait for application to start
+          timeout 60 bash -c 'until curl -f http://localhost:4173; do sleep 2; done'
+
+      - name: Run SEO analysis with Lighthouse
+        run: |
+          echo "🔍 Running SEO analysis..."
+
+          # Configure Lighthouse for SEO testing
+          cat > .lighthouserc-seo.json << EOF
+          {
+            "ci": {
+              "collect": {
+                "numberOfRuns": 3,
+                "settings": {
+                  "chromeFlags": "--no-sandbox --headless"
+                },
+                "url": [
+                  "http://localhost:4173/",
+                  "http://localhost:4173/beauty",
+                  "http://localhost:4173/fitness",
+                  "http://localhost:4173/about"
+                ]
+              },
+              "assert": {
+                "assertions": {
+                  "categories:seo": ["error", {"minScore": 0.8}],
+                  "meta-description": "error",
+                  "http-status-code": "error",
+                  "font-size": "warn",
+                  "plugins:robots-txt": "warn",
+                  "plugins:sitemap": "warn"
+                }
+              },
+              "upload": {
+                "target": "temporary-public-storage"
+              }
+            }
+          }
+          EOF
+
+          # Run Lighthouse SEO tests
+          lhci autorun --config=.lighthouserc-seo.json
+
+      - name: Analyze SEO elements
+        run: |
+          echo "🔍 Analyzing SEO elements..."
+
+          # Check for critical SEO files
+          SEO_FILES=(
+            "public/robots.txt"
+            "public/sitemap.xml"
+            "public/manifest.json"
+            "src/components/SEO.tsx"
+          )
+
+          for file in "${SEO_FILES[@]}"; do
+            if [ -f "$file" ]; then
+              echo "✅ $file exists"
+            else
+              echo "❌ $file missing"
+            fi
+          done
+
+          # Check for meta tags in main pages
+          grep -r "description" src/pages/ --include="*.tsx" | head -5 || echo "No meta descriptions found"
+
+      - name: Analyze SEO results
+        id: seo
+        run: |
+          node -e "
+            const fs = require('fs');
+
+            let totalSeoScore = 0;
+            let reportCount = 0;
+            let seoIssues = [];
+
+            // Analyze Lighthouse SEO results
+            try {
+              const lhrDir = '.lighthouseci';
+              const files = fs.readdirSync(lhrDir).filter(f => f.endsWith('.lhr.json'));
+
+              files.forEach(file => {
+                const lhr = JSON.parse(fs.readFileSync(\`\${lhrDir}/\${file}\`, 'utf8'));
+                totalSeoScore += lhr.categories.seo.score * 100;
+                reportCount++;
+
+                // Analyze SEO audits
+                const audits = lhr.audits;
+
+                // Check for common SEO issues
+                if (audits['meta-description'] && audits['meta-description'].score < 1) {
+                  seoIssues.push('Missing or inadequate meta descriptions');
+                }
+
+                if (audits['http-status-code'] && audits['http-status-code'].score < 1) {
+                  seoIssues.push('HTTP status code issues');
+                }
+
+                if (audits['robots-txt'] && audits['robots-txt'].score < 1) {
+                  seoIssues.push('Missing or invalid robots.txt');
+                }
+
+                if (audits['sitemap'] && audits['sitemap'].score < 1) {
+                  seoIssues.push('Missing or invalid sitemap');
+                }
+              });
+
+              const avgSeoScore = Math.round(totalSeoScore / reportCount);
+            } catch (e) {
+              console.error('Could not analyze Lighthouse SEO results:', e);
+              var avgSeoScore = 50; // Default score
+            }
+
+            // Check for SEO files
+            const requiredSeoFiles = [
+              'public/robots.txt',
+              'public/sitemap.xml',
+              'public/manifest.json'
+            ];
+
+            let missingFiles = 0;
+            requiredSeoFiles.forEach(file => {
+              if (!fs.existsSync(file)) {
+                missingFiles++;
+                seoIssues.push(\`Missing SEO file: \${file}\`);
+              }
+            });
+
+            // Penalty for missing files
+            avgSeoScore -= (missingFiles * 10);
+            avgSeoScore = Math.max(0, avgSeoScore);
+
+            // Determine SEO grade
+            let grade;
+            if (avgSeoScore >= 90) grade = 'A';
+            else if (avgSeoScore >= 80) grade = 'B';
+            else if (avgSeoScore >= 70) grade = 'C';
+            else if (avgSeoScore >= 60) grade = 'D';
+            else grade = 'F';
+
+            // Determine if SEO gate passed
+            const passed = avgSeoScore >= 70 && missingFiles === 0;
+
+            const seoData = {
+              scores: {
+                overall: avgSeoScore,
+                lighthouse: Math.round(totalSeoScore / Math.max(reportCount, 1))
+              },
+              grade,
+              issues: {
+                total: seoIssues.length,
+                details: seoIssues.slice(0, 10) // Limit to top 10 issues
+              },
+              files: {
+                required: requiredSeoFiles.length,
+                missing: missingFiles
+              },
+              passed,
+              timestamp: new Date().toISOString()
+            };
+
+            fs.writeFileSync('seo-gate-results.json', JSON.stringify(seoData, null, 2));
+
+            console.log('SEO Gate Results:');
+            console.log(\`Overall Score: \${avgSeoScore}/100\`);
+            console.log(\`Grade: \${grade}\`);
+            console.log(\`SEO Issues: \${seoIssues.length}\`);
+            console.log(\`Missing Files: \${missingFiles}\`);
+            console.log(\`Status: \${passed ? 'PASSED' : 'FAILED'}\`);
+
+            if (seoIssues.length > 0) {
+              console.log('');
+              console.log('Top SEO Issues:');
+              seoIssues.slice(0, 5).forEach((issue, index) => {
+                console.log(\`\${index + 1}. \${issue}\`);
+              });
+            }
+
+            console.log(\`::set-output name=score::\${avgSeoScore}\`);
+            console.log(\`::set-output name=grade::\${grade}\`);
+            console.log(\`::set-output name=passed::\${passed}\`);
+            console.log(\`::set-output name=issues::\${seoIssues.length}\`);
+          "
+
+      - name: Stop application
+        if: always()
+        run: |
+          if [ -n "$PREVIEW_PID" ]; then
+            kill $PREVIEW_PID || true
+          fi
+
+      - name: Upload SEO artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: seo-gate-results
+          path: |
+            seo-gate-results.json
+            .lighthouseci/
+          retention-days: 30
+
+      - name: Fail on SEO gate failure
+        if: steps.seo.outputs.passed == 'false' && needs.quality-gate-configuration.outputs.fail_on_regression == 'true'
+        run: |
+          echo "❌ SEO gate failed!"
+          echo "Score: ${{ steps.seo.outputs.score }}/100"
+          echo "Issues: ${{ steps.seo.outputs.issues }}"
+          exit 1
+
+  # Quality gates aggregation and reporting
+  quality-gates-aggregation:
+    name: Quality Gates Aggregation
+    runs-on: ubuntu-latest
+    needs: [quality-gate-configuration, performance-gates, code-quality-gates, bundle-size-gates, accessibility-gates, seo-gates]
+    if: always()
+    outputs:
+      overall_status: ${{ steps.aggregate.outputs.overall_status }}
+      overall_score: ${{ steps.aggregate.outputs.overall_score }}
+      quality_summary: ${{ steps.aggregate.outputs.summary }}
+      recommendations: ${{ steps.aggregate.outputs.recommendations }}
+    steps:
+      - name: Download all quality gate artifacts
+        uses: actions/download-artifact@v4
+        if: always()
+        with:
+          pattern: "*-gate-results"
+          merge-multiple: true
+          path: all-quality-results/
+
+      - name: Aggregate quality gate results
+        id: aggregate
+        run: |
+          node -e "
+            const fs = require('fs');
+
+            let aggregation = {
+              summary: {
+                totalGates: 0,
+                passedGates: 0,
+                failedGates: 0,
+                overallStatus: 'PASSED',
+                overallScore: 100,
+                timestamp: new Date().toISOString()
+              },
+              gates: {},
+              recommendations: [],
+              metrics: {
+                performance: null,
+                quality: null,
+                bundleSize: null,
+                accessibility: null,
+                seo: null
+              }
+            };
+
+            try {
+              // Performance gate
+              if (fs.existsSync('all-quality-results/performance-gate-results.json')) {
+                const performance = JSON.parse(fs.readFileSync('all-quality-results/performance-gate-results.json', 'utf8'));
+                aggregation.gates.performance = {
+                  status: performance.passed ? 'PASSED' : 'FAILED',
+                  score: performance.scores.overall,
+                  grade: performance.grade,
+                  threshold: performance.threshold
+                };
+                aggregation.metrics.performance = performance.scores.overall;
+                aggregation.summary.totalGates++;
+                if (performance.passed) aggregation.summary.passedGates++;
+                else aggregation.summary.failedGates++;
+              }
+
+              // Code quality gate
+              if (fs.existsSync('all-quality-results/code-quality-results.json')) {
+                const quality = JSON.parse(fs.readFileSync('all-quality-results/code-quality-results.json', 'utf8'));
+                aggregation.gates.quality = {
+                  status: quality.passed ? 'PASSED' : 'FAILED',
+                  score: quality.scores.overall,
+                  grade: quality.grade,
+                  maintainability: quality.maintainabilityIndex,
+                  technicalDebt: quality.technicalDebtMinutes
+                };
+                aggregation.metrics.quality = quality.scores.overall;
+                aggregation.summary.totalGates++;
+                if (quality.passed) aggregation.summary.passedGates++;
+                else aggregation.summary.failedGates++;
+              }
+
+              // Bundle size gate
+              if (fs.existsSync('all-quality-results/bundle-size-results.json')) {
+                const bundleSize = JSON.parse(fs.readFileSync('all-quality-results/bundle-size-results.json', 'utf8'));
+                const score = Math.max(0, 100 - ((bundleSize.totalSizeMB / bundleSize.limitMB - 1) * 100));
+                aggregation.gates.bundleSize = {
+                  status: bundleSize.passed ? 'PASSED' : 'FAILED',
+                  score: Math.round(score),
+                  sizeMB: bundleSize.totalSizeMB,
+                  limitMB: bundleSize.limitMB,
+                  increasePercentage: bundleSize.increasePercentage
+                };
+                aggregation.metrics.bundleSize = Math.round(score);
+                aggregation.summary.totalGates++;
+                if (bundleSize.passed) aggregation.summary.passedGates++;
+                else aggregation.summary.failedGates++;
+              }
+
+              // Accessibility gate
+              if (fs.existsSync('all-quality-results/accessibility-gate-results.json')) {
+                const accessibility = JSON.parse(fs.readFileSync('all-quality-results/accessibility-gate-results.json', 'utf8'));
+                aggregation.gates.accessibility = {
+                  status: accessibility.passed ? 'PASSED' : 'FAILED',
+                  score: accessibility.scores.overall,
+                  grade: accessibility.grade,
+                  wcagCompliance: accessibility.wcagCompliance,
+                  issues: accessibility.issues.total
+                };
+                aggregation.metrics.accessibility = accessibility.scores.overall;
+                aggregation.summary.totalGates++;
+                if (accessibility.passed) aggregation.summary.passedGates++;
+                else aggregation.summary.failedGates++;
+              }
+
+              // SEO gate
+              if (fs.existsSync('all-quality-results/seo-gate-results.json')) {
+                const seo = JSON.parse(fs.readFileSync('all-quality-results/seo-gate-results.json', 'utf8'));
+                aggregation.gates.seo = {
+                  status: seo.passed ? 'PASSED' : 'FAILED',
+                  score: seo.scores.overall,
+                  grade: seo.grade,
+                  issues: seo.issues.total
+                };
+                aggregation.metrics.seo = seo.scores.overall;
+                aggregation.summary.totalGates++;
+                if (seo.passed) aggregation.summary.passedGates++;
+                else aggregation.summary.failedGates++;
+              }
+
+              // Calculate overall score
+              let totalScore = 0;
+              let scoreCount = 0;
+              Object.values(aggregation.metrics).forEach(metric => {
+                if (metric !== null) {
+                  totalScore += metric;
+                  scoreCount++;
+                }
+              });
+              aggregation.summary.overallScore = scoreCount > 0 ? Math.round(totalScore / scoreCount) : 0;
+
+              // Determine overall status
+              aggregation.summary.overallStatus = aggregation.summary.failedGates === 0 ? 'PASSED' : 'FAILED';
+
+              // Generate recommendations
+              Object.entries(aggregation.gates).forEach(([name, gate]) => {
+                if (gate.status === 'FAILED') {
+                  switch (name) {
+                    case 'performance':
+                      aggregation.recommendations.push('Optimize Core Web Vitals and reduce load times');
+                      break;
+                    case 'quality':
+                      aggregation.recommendations.push('Improve code maintainability and reduce technical debt');
+                      break;
+                    case 'bundleSize':
+                      aggregation.recommendations.push('Implement code splitting and optimize asset sizes');
+                      break;
+                    case 'accessibility':
+                      aggregation.recommendations.push('Address WCAG compliance issues and improve accessibility');
+                      break;
+                    case 'seo':
+                      aggregation.recommendations.push('Fix SEO issues and ensure proper meta tags');
+                      break;
+                  }
+                }
+              });
+
+              if (aggregation.recommendations.length === 0) {
+                aggregation.recommendations.push('All quality gates passed - maintain current standards');
+              }
+
+            } catch (e) {
+              console.error('Error aggregating quality gate results:', e);
+              aggregation.summary.overallStatus = 'ERROR';
+              aggregation.summary.overallScore = 0;
+            }
+
+            // Write aggregation results
+            fs.writeFileSync('quality-gates-aggregated.json', JSON.stringify(aggregation, null, 2));
+
+            console.log('=== QUALITY GATES AGGREGATION ===');
+            console.log(\`Overall Status: \${aggregation.summary.overallStatus}\`);
+            console.log(\`Overall Score: \${aggregation.summary.overallScore}/100\`);
+            console.log(\`Gates Passed: \${aggregation.summary.passedGates}/\${aggregation.summary.totalGates}\`);
+            console.log('');
+
+            Object.entries(aggregation.gates).forEach(([name, gate]) => {
+              console.log(\`\${name.toUpperCase()}: \${gate.status} (\${gate.score}/100)\`);
+            });
+
+            console.log('');
+            console.log('RECOMMENDATIONS:');
+            aggregation.recommendations.forEach((rec, index) => {
+              console.log(\`\${index + 1}. \${rec}\`);
+            });
+
+            console.log(\`::set-output name=overall_status::\${aggregation.summary.overallStatus}\`);
+            console.log(\`::set-output name=overall_score::\${aggregation.summary.overallScore}\`);
+            console.log(\`::set-output name=summary::\${JSON.stringify(aggregation)}\`);
+            console.log(\`::set-output name=recommendations::\${JSON.stringify(aggregation.recommendations)}\`);
+          "
+
+      - name: Generate comprehensive quality report
+        run: |
+          cat > comprehensive-quality-report.md << EOF
+          # 📊 Comprehensive Quality Report
+
+          ## 🎯 Executive Summary
+          - **Overall Status**: ${{ steps.aggregate.outputs.overall_status }}
+          - **Overall Score**: ${{ steps.aggregate.outputs.overall_score }}/100
+          - **Gates Passed**: $(node -e "console.log(JSON.parse('${{ steps.aggregate.outputs.summary }}').summary.passedGates)")/$(node -e "console.log(JSON.parse('${{ steps.aggregate.outputs.summary }}').summary.totalGates)")
+          - **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          ## 🚪 Quality Gate Results
+
+          ### Performance Gate
+          $(node -e "
+            const data = JSON.parse('${{ steps.aggregate.outputs.summary }}');
+            if (data.gates.performance) {
+              console.log(\`- **Status**: \${data.gates.performance.status}\`);
+              console.log(\`- **Score**: \${data.gates.performance.score}/100\`);
+              console.log(\`- **Grade**: \${data.gates.performance.grade}\`);
+              console.log(\`- **Threshold**: \${data.gates.performance.threshold}\`);
+            } else {
+              console.log('- Not executed');
+            }
+          ")
+
+          ### Code Quality Gate
+          $(node -e "
+            const data = JSON.parse('${{ steps.aggregate.outputs.summary }}');
+            if (data.gates.quality) {
+              console.log(\`- **Status**: \${data.gates.quality.status}\`);
+              console.log(\`- **Score**: \${data.gates.quality.score}/100\`);
+              console.log(\`- **Grade**: \${data.gates.quality.grade}\`);
+              console.log(\`- **Maintainability**: \${data.gates.quality.maintainability}/100\`);
+              console.log(\`- **Technical Debt**: \${data.gates.quality.technicalDebt} minutes\`);
+            } else {
+              console.log('- Not executed');
+            }
+          ")
+
+          ### Bundle Size Gate
+          $(node -e "
+            const data = JSON.parse('${{ steps.aggregate.outputs.summary }}');
+            if (data.gates.bundleSize) {
+              console.log(\`- **Status**: \${data.gates.bundleSize.status}\`);
+              console.log(\`- **Score**: \${data.gates.bundleSize.score}/100\`);
+              console.log(\`- **Size**: \${data.gates.bundleSize.sizeMB} MB\`);
+              console.log(\`- **Limit**: \${data.gates.bundleSize.limitMB} MB\`);
+              console.log(\`- **Increase**: \${data.gates.bundleSize.increasePercentage}%\`);
+            } else {
+              console.log('- Not executed');
+            }
+          ")
+
+          ### Accessibility Gate
+          $(node -e "
+            const data = JSON.parse('${{ steps.aggregate.outputs.summary }}');
+            if (data.gates.accessibility) {
+              console.log(\`- **Status**: \${data.gates.accessibility.status}\`);
+              console.log(\`- **Score**: \${data.gates.accessibility.score}/100\`);
+              console.log(\`- **Grade**: \${data.gates.accessibility.grade}\`);
+              console.log(\`- **WCAG Compliance**: \${data.gates.accessibility.wcagCompliance}\`);
+              console.log(\`- **Issues**: \${data.gates.accessibility.issues}\`);
+            } else {
+              console.log('- Not executed');
+            }
+          ")
+
+          ### SEO Gate
+          $(node -e "
+            const data = JSON.parse('${{ steps.aggregate.outputs.summary }}');
+            if (data.gates.seo) {
+              console.log(\`- **Status**: \${data.gates.seo.status}\`);
+              console.log(\`- **Score**: \${data.gates.seo.score}/100\`);
+              console.log(\`- **Grade**: \${data.gates.seo.grade}\`);
+              console.log(\`- **Issues**: \${data.gates.seo.issues}\`);
+            } else {
+              console.log('- Not executed');
+            }
+          ")
+
+          ## 🎯 Recommendations
+
+          $(node -e "
+            const recommendations = JSON.parse('${{ steps.aggregate.outputs.recommendations }}');
+            recommendations.forEach((rec, index) => {
+              console.log(\`\${index + 1}. \${rec}\`);
+            });
+          ")
+
+          ## 📈 Quality Metrics Trend
+
+          | Metric | Current | Target | Status |
+          |--------|---------|--------|---------|
+          $(node -e "
+            const data = JSON.parse('${{ steps.aggregate.outputs.summary }}');
+            const metrics = [
+              { name: 'Performance', value: data.metrics.performance, target: 80 },
+              { name: 'Code Quality', value: data.metrics.quality, target: 75 },
+              { name: 'Bundle Size', value: data.metrics.bundleSize, target: 80 },
+              { name: 'Accessibility', value: data.metrics.accessibility, target: 85 },
+              { name: 'SEO', value: data.metrics.seo, target: 75 }
+            ];
+
+            metrics.forEach(metric => {
+              if (metric.value !== null) {
+                const status = metric.value >= metric.target ? '✅' : '❌';
+                console.log(\`| \${metric.name} | \${metric.value}/100 | \${metric.target}/100 | \${status} |\`);
+              }
+            });
+          ")
+
+          ## 🔗 Resources
+          - [GitHub Run Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          - [Commit: ${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+          - [Branch: ${{ github.ref_name }}](${{ github.server_url }}/${{ github.repository }}/tree/${{ github.ref_name }})
+
+          EOF
+
+      - name: Upload comprehensive quality artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: comprehensive-quality-report
+          path: |
+            comprehensive-quality-report.md
+            quality-gates-aggregated.json
+            all-quality-results/
+          retention-days: 60
+
+      - name: Comment on PR with quality summary
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const summary = JSON.parse('${{ steps.aggregate.outputs.summary }}');
+            const recommendations = JSON.parse('${{ steps.aggregate.outputs.recommendations }}');
+
+            const statusEmoji = summary.summary.overallStatus === 'PASSED' ? '✅' : '❌';
+            const scoreEmoji = summary.summary.overallScore >= 90 ? '🏆' : summary.summary.overallScore >= 75 ? '👍' : '⚠️';
+
+            let comment = `
+            ${statusEmoji} **Quality Gates: ${summary.summary.overallStatus}**
+
+            **Overall Score**: ${scoreEmoji} ${summary.summary.overallScore}/100
+            **Gates Passed**: ${summary.summary.passedGates}/${summary.summary.totalGates}
+
+            ### 📊 Gate Breakdown:
+            `;
+
+            Object.entries(summary.gates).forEach(([name, gate]) => {
+              const gateEmoji = gate.status === 'PASSED' ? '✅' : '❌';
+              comment += `- **${name.charAt(0).toUpperCase() + name.slice(1)}**: ${gateEmoji} ${gate.score}/100\n`;
+            });
+
+            if (recommendations.length > 0) {
+              comment += `\n### 🎯 Top Recommendations:\n`;
+              recommendations.slice(0, 3).forEach((rec, index) => {
+                comment += `${index + 1}. ${rec}\n`;
+              });
+            }
+
+            comment += `\n[📋 View Full Quality Report](${context.payload.repository.html_url}/actions/runs/${context.runId})`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+
+      - name: Complete quality gates workflow
+        run: |
+          if [[ "${{ steps.aggregate.outputs.overall_status }}" == "PASSED" ]]; then
+            echo "✅ All quality gates passed successfully!"
+            echo "Overall score: ${{ steps.aggregate.outputs.overall_score }}/100"
+            exit 0
+          else
+            echo "❌ Some quality gates failed"
+            echo "Overall score: ${{ steps.aggregate.outputs.overall_score }}/100"
+            echo "Gates passed: $(node -e "console.log(JSON.parse('${{ steps.aggregate.outputs.summary }}').summary.passedGates)")/$(node -e "console.log(JSON.parse('${{ steps.aggregate.outputs.summary }}').summary.totalGates)")"
+            exit 1
+          fi

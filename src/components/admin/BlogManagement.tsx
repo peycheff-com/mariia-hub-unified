@@ -4,7 +4,7 @@ import { Sparkles, Plus, Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import {
   Dialog,
   DialogContent,
@@ -38,7 +38,7 @@ const BlogManagement = () => {
   const [generateOpen, setGenerateOpen] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [topic, setTopic] = useState("");
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   useEffect(() => {
     loadData();
@@ -57,7 +57,7 @@ const BlogManagement = () => {
       if (postsResult.data) setPosts(postsResult.data);
       if (categoriesResult.data) setCategories(categoriesResult.data);
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error loading data",
         description: error.message,
         variant: "destructive",
@@ -69,7 +69,7 @@ const BlogManagement = () => {
 
   const generateArticle = async () => {
     if (!topic.trim()) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Please enter a topic",
         variant: "destructive",
@@ -90,7 +90,7 @@ const BlogManagement = () => {
         throw new Error(data.error);
       }
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Success",
         description: "Article generated successfully!",
       });
@@ -99,7 +99,7 @@ const BlogManagement = () => {
       setTopic("");
       loadData();
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message || "Failed to generate article",
         variant: "destructive",
@@ -117,13 +117,13 @@ const BlogManagement = () => {
 
       if (error) throw error;
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Success",
         description: "Post deleted successfully",
       });
       loadData();
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -156,7 +156,7 @@ const BlogManagement = () => {
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm text-pearl/70">Topic</label>
+                <label className="text-sm text-pearl/70" htmlFor="topic">Topic</label>
                 <Input
                   type="text"
                   value={topic}

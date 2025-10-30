@@ -220,7 +220,7 @@ export const GlossaryManager: React.FC = () => {
     const now = new Date().toISOString();
     return `<?xml version="1.0" encoding="UTF-8"?>
 <tbx version="TBX-Basic">
-  <header>
+  <header role="banner">
     <title>Mariia Hub Translation Glossary</title>
     <description>Company-specific terminology</description>
     <creationTool>Mariia Hub</creationTool>
@@ -583,7 +583,7 @@ export const GlossaryManager: React.FC = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">Source Term</label>
+                <label className="text-sm font-medium mb-2 block" htmlFor="source-term">Source Term</label>
                 <Input
                   value={formData.source_term}
                   onChange={(e) => setFormData(prev => ({ ...prev, source_term: e.target.value }))}
@@ -591,7 +591,7 @@ export const GlossaryManager: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium mb-2 block">Target Term</label>
+                <label className="text-sm font-medium mb-2 block" htmlFor="target-term">Target Term</label>
                 <Input
                   value={formData.target_term}
                   onChange={(e) => setFormData(prev => ({ ...prev, target_term: e.target.value }))}
@@ -602,7 +602,7 @@ export const GlossaryManager: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">Source Language</label>
+                <label className="text-sm font-medium mb-2 block" htmlFor="source-language">Source Language</label>
                 <select
                   value={formData.source_lang}
                   onChange={(e) => setFormData(prev => ({ ...prev, source_lang: e.target.value }))}
@@ -615,7 +615,7 @@ export const GlossaryManager: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label className="text-sm font-medium mb-2 block">Target Language</label>
+                <label className="text-sm font-medium mb-2 block" htmlFor="target-language">Target Language</label>
                 <select
                   value={formData.target_lang}
                   onChange={(e) => setFormData(prev => ({ ...prev, target_lang: e.target.value }))}
@@ -630,7 +630,7 @@ export const GlossaryManager: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Domain</label>
+              <label className="text-sm font-medium mb-2 block" htmlFor="domain">Domain</label>
               <Input
                 value={formData.domain}
                 onChange={(e) => setFormData(prev => ({ ...prev, domain: e.target.value }))}
@@ -639,7 +639,7 @@ export const GlossaryManager: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Definition</label>
+              <label className="text-sm font-medium mb-2 block" htmlFor="definition">Definition</label>
               <Textarea
                 value={formData.definition}
                 onChange={(e) => setFormData(prev => ({ ...prev, definition: e.target.value }))}
@@ -649,7 +649,7 @@ export const GlossaryManager: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Notes</label>
+              <label className="text-sm font-medium mb-2 block" htmlFor="notes">Notes</label>
               <Textarea
                 value={formData.notes}
                 onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}

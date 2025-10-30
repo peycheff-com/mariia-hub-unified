@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { bookingService } from '@/services/booking.service';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
 
 interface RecentActivityProps {
   maxItems?: number;
@@ -68,7 +68,7 @@ interface ActivityItem {
 const RecentActivity: React.FC<RecentActivityProps> = ({ maxItems = 10, className }) => {
   const { t, i18n } = useTranslation();
   const { formatPrice } = useCurrency();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const [filter, setFilter] = useState<'all' | 'bookings' | 'packages' | 'reviews'>('all');
 
   // Mock activity data (in real app, this would come from an activity log table)
@@ -243,12 +243,12 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ maxItems = 10, classNam
     // This would call an API to mark activity as read
     try {
       // await activityService.markAsRead(activityId);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('dashboard.activity.markedAsRead', 'Marked as read'),
         description: t('dashboard.activity.markedAsReadDesc', 'Activity has been marked as read'),
       });
     } catch (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('dashboard.activity.error', 'Error'),
         description: t('dashboard.activity.errorDesc', 'Failed to update activity'),
         variant: 'destructive',

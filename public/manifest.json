@@ -98,6 +98,42 @@
           "sizes": "192x192"
         }
       ]
+    },
+    {
+      "name": "Nearby Services",
+      "short_name": "Nearby",
+      "description": "Find beauty and fitness services near you",
+      "url": "/location?source=pwa-shortcut",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Take Photo",
+      "short_name": "Camera",
+      "description": "Capture photos for profile or services",
+      "url": "/camera?source=pwa-shortcut",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Quick Booking",
+      "short_name": "Quick Book",
+      "description": "Book an appointment in seconds",
+      "url": "/book?source=pwa-shortcut",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ],
   "screenshots": [
@@ -142,8 +178,26 @@
     {
       "action": "/open-file",
       "accept": {
-        "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp"]
+        "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".heic"],
+        "text/*": [".txt", ".csv"],
+        "application/pdf": [".pdf"]
       }
     }
-  ]
+  ],
+  "scope_extensions": [
+    {
+      "origin": "https://mariaborysevych.com"
+    }
+  ],
+  "capture_links": "existing-client-navigate",
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
+  "edge_side_panel": {
+    "preferred_width": 480
+  },
+  "background_sync": true,
+  "periodic_sync": {
+    "min_interval": 3600
+  }
 }

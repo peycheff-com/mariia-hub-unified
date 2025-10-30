@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
 
 import { offlineManager } from '@/lib/offline-manager';
 
@@ -74,12 +74,12 @@ export const useOfflineSync = (options: OfflineSyncOptions = {}) => {
       queryClient.invalidateQueries({ queryKey: ['availability'] });
 
       if (showToast) {
-        toast.success('Data synced successfully');
+        toast aria-live="polite" aria-atomic="true".success('Data synced successfully');
       }
     } catch (error) {
       console.error('Sync failed:', error);
       if (showToast) {
-        toast.error('Failed to sync data');
+        toast aria-live="polite" aria-atomic="true".error('Failed to sync data');
       }
     } finally {
       setIsSyncing(false);
@@ -153,13 +153,13 @@ export const useOfflineSync = (options: OfflineSyncOptions = {}) => {
 
       if (!isOnline) {
         if (showToast) {
-          toast.info('Action queued. Will sync when online.');
+          toast aria-live="polite" aria-atomic="true".info('Action queued. Will sync when online.');
         }
       }
     } catch (error) {
       console.error('Failed to queue action:', error);
       if (showToast) {
-        toast.error('Failed to queue action');
+        toast aria-live="polite" aria-atomic="true".error('Failed to queue action');
       }
     }
   }, [isOnline, showToast]);
@@ -169,12 +169,12 @@ export const useOfflineSync = (options: OfflineSyncOptions = {}) => {
     try {
       await offlineManager.clearCache();
       if (showToast) {
-        toast.success('Offline cache cleared');
+        toast aria-live="polite" aria-atomic="true".success('Offline cache cleared');
       }
     } catch (error) {
       console.error('Failed to clear cache:', error);
       if (showToast) {
-        toast.error('Failed to clear cache');
+        toast aria-live="polite" aria-atomic="true".error('Failed to clear cache');
       }
     }
   }, [showToast]);

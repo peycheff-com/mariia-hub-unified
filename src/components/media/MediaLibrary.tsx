@@ -277,7 +277,7 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
   }
 
   const getAssetIcon = (mimeType: string) => {
-    if (mimeType.startsWith('image/')) return <ImageIcon className="h-4 w-4" />
+    if (mimeType.startsWith('image/')) return <ImageIcon className="h-4 w-4" alt="" />
     if (mimeType.startsWith('video/')) return <Video className="h-4 w-4" />
     return <FileText className="h-4 w-4" />
   }
@@ -413,7 +413,7 @@ export const MediaLibrary: React.FC<MediaLibraryProps> = ({
         </div>
       ) : filteredAssets.length === 0 ? (
         <div className="text-center py-12">
-          <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" alt="Image" />
           <p className="text-muted-foreground">No media found</p>
         </div>
       ) : viewMode === 'grid' ? (

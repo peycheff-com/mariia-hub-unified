@@ -13,7 +13,7 @@ import AvailableSlotsList from "@/components/AvailableSlotsList";
 import BookingSheet from "@/components/booking/BookingSheet";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { useSiteImage } from "@/hooks/useSiteImage";
 
 import mariiaProfile from "@/assets/mariia-profile.jpg";
@@ -24,7 +24,7 @@ const Beauty = () => {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [services, setServices] = useState<any[]>([]);
 
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   useEffect(() => {
     setMode("beauty");
@@ -43,7 +43,7 @@ const Beauty = () => {
       if (error) throw error;
       setServices(data || []);
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Could not load services",
         variant: "destructive",
@@ -70,7 +70,7 @@ const Beauty = () => {
       />
       <Navigation mode="beauty" />
 
-      <main>
+      <main role="main">
         {/* Hero Section - Enhanced with Immersive Layout */}
         <section className="hero-split bg-gradient-to-br from-lip-rose/10 via-transparent to-champagne/5">
           <div className="container-standard">

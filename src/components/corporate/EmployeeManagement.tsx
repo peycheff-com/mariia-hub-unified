@@ -132,7 +132,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 import { cn } from '@/lib/utils';
 
 interface EmployeeManagementProps {
@@ -180,7 +180,7 @@ export const EmployeeManagement: React.FC<EmployeeManagementProps> = ({
   className
 }) => {
   const { employees, loading, createEmployee, updateEmployee, deleteEmployee, bulkUploadEmployees, loadEmployees } = useCorporate();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   // State
   const [searchQuery, setSearchQuery] = useState('');
@@ -274,7 +274,7 @@ export const EmployeeManagement: React.FC<EmployeeManagementProps> = ({
   const handleSaveEmployee = async () => {
     try {
       if (!formData.employee_id || !formData.first_name || !formData.last_name || !formData.email) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: 'Validation Error',
           description: 'Please fill in all required fields',
           variant: 'destructive'
@@ -289,13 +289,13 @@ export const EmployeeManagement: React.FC<EmployeeManagementProps> = ({
 
       if (editingEmployee) {
         await updateEmployee(editingEmployee.id, employeeData);
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: 'Success',
           description: 'Employee updated successfully'
         });
       } else {
         await createEmployee(employeeData);
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: 'Success',
           description: 'Employee created successfully'
         });
@@ -307,7 +307,7 @@ export const EmployeeManagement: React.FC<EmployeeManagementProps> = ({
       resetForm();
       await loadEmployees(corporateAccountId);
     } catch (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to save employee',
         variant: 'destructive'
@@ -321,13 +321,13 @@ export const EmployeeManagement: React.FC<EmployeeManagementProps> = ({
 
     try {
       await deleteEmployee(employeeId);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Success',
         description: 'Employee deleted successfully'
       });
       await loadEmployees(corporateAccountId);
     } catch (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to delete employee',
         variant: 'destructive'
@@ -345,7 +345,7 @@ export const EmployeeManagement: React.FC<EmployeeManagementProps> = ({
           await Promise.all(
             selectedEmployees.map(id => updateEmployee(id, { is_active: true }))
           );
-          toast({
+          toast aria-live="polite" aria-atomic="true"({
             title: 'Success',
             description: `${selectedEmployees.length} employees activated`
           });
@@ -354,7 +354,7 @@ export const EmployeeManagement: React.FC<EmployeeManagementProps> = ({
           await Promise.all(
             selectedEmployees.map(id => updateEmployee(id, { is_active: false }))
           );
-          toast({
+          toast aria-live="polite" aria-atomic="true"({
             title: 'Success',
             description: `${selectedEmployees.length} employees deactivated`
           });
@@ -364,7 +364,7 @@ export const EmployeeManagement: React.FC<EmployeeManagementProps> = ({
             await Promise.all(
               selectedEmployees.map(id => deleteEmployee(id))
             );
-            toast({
+            toast aria-live="polite" aria-atomic="true"({
               title: 'Success',
               description: `${selectedEmployees.length} employees deleted`
             });
@@ -374,7 +374,7 @@ export const EmployeeManagement: React.FC<EmployeeManagementProps> = ({
       setSelectedEmployees([]);
       await loadEmployees(corporateAccountId);
     } catch (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to perform bulk action',
         variant: 'destructive'
@@ -435,7 +435,7 @@ export const EmployeeManagement: React.FC<EmployeeManagementProps> = ({
       };
 
       await bulkUploadEmployees(bulkData);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Success',
         description: `${employees.length} employees uploaded successfully`
       });
@@ -444,7 +444,7 @@ export const EmployeeManagement: React.FC<EmployeeManagementProps> = ({
       setUploadPreview([]);
       await loadEmployees(corporateAccountId);
     } catch (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to upload employees',
         variant: 'destructive'
@@ -1106,9 +1106,9 @@ export const EmployeeManagement: React.FC<EmployeeManagementProps> = ({
                 <Label>Communication Preferences</Label>
                 <div className="space-y-2 mt-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="email_notifications">Email Notifications</Label>
+                    <Label htmlFor="email_notification aria-live="polite" aria-atomic="true"s">Email Notifications</Label>
                     <Switch
-                      id="email_notifications"
+                      id="email_notification aria-live="polite" aria-atomic="true"s"
                       checked={formData.preferences.communication_preferences.email}
                       onCheckedChange={(checked) =>
                         handlePreferenceChange('communication_preferences', 'email', checked)
@@ -1116,9 +1116,9 @@ export const EmployeeManagement: React.FC<EmployeeManagementProps> = ({
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="sms_notifications">SMS Notifications</Label>
+                    <Label htmlFor="sms_notification aria-live="polite" aria-atomic="true"s">SMS Notifications</Label>
                     <Switch
-                      id="sms_notifications"
+                      id="sms_notification aria-live="polite" aria-atomic="true"s"
                       checked={formData.preferences.communication_preferences.sms}
                       onCheckedChange={(checked) =>
                         handlePreferenceChange('communication_preferences', 'sms', checked)
@@ -1126,9 +1126,9 @@ export const EmployeeManagement: React.FC<EmployeeManagementProps> = ({
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="push_notifications">Push Notifications</Label>
+                    <Label htmlFor="push_notification aria-live="polite" aria-atomic="true"s">Push Notifications</Label>
                     <Switch
-                      id="push_notifications"
+                      id="push_notification aria-live="polite" aria-atomic="true"s"
                       checked={formData.preferences.communication_preferences.push}
                       onCheckedChange={(checked) =>
                         handlePreferenceChange('communication_preferences', 'push', checked)
@@ -1364,7 +1364,7 @@ export const EmployeeManagement: React.FC<EmployeeManagementProps> = ({
             <Button onClick={() => {
               // Save permissions logic here
               setShowPermissionsDialog(false);
-              toast({
+              toast aria-live="polite" aria-atomic="true"({
                 title: 'Success',
                 description: 'Permissions updated successfully'
               });

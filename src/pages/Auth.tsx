@@ -5,7 +5,7 @@ import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -15,7 +15,7 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -41,7 +41,7 @@ const Auth = () => {
 
         if (error) throw error;
 
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: t('auth.success'),
           description: t('auth.welcomeBack'),
         });
@@ -60,13 +60,13 @@ const Auth = () => {
 
         if (error) throw error;
 
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: t('auth.checkEmail'),
           description: t('auth.confirmEmail'),
         });
       }
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('auth.error'),
         description: error.message,
         variant: "destructive",

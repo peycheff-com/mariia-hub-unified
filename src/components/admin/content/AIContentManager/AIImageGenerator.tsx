@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
+import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
 import {
   Loader2,
   ImageIcon,
@@ -105,7 +105,7 @@ export const AIImageGenerator = React.memo<AIImageGeneratorProps>(({
 
   const handleGenerateImage = async () => {
     if (!prompt.trim()) {
-      toast.error('Please enter a prompt for image generation');
+      toast aria-live="polite" aria-atomic="true".error('Please enter a prompt for image generation');
       return;
     }
 
@@ -117,11 +117,11 @@ export const AIImageGenerator = React.memo<AIImageGeneratorProps>(({
 
       const mockImageUrl = 'https://picsum.photos/800/600?random=' + Date.now();
 
-      toast.success('Image generated successfully');
+      toast aria-live="polite" aria-atomic="true".success('Image generated successfully');
       onImageGenerated?.(mockImageUrl);
     } catch (error) {
       console.error('Image generation failed:', error);
-      toast.error('Failed to generate image');
+      toast aria-live="polite" aria-atomic="true".error('Failed to generate image');
     } finally {
       setIsGenerating(false);
     }
@@ -157,7 +157,7 @@ export const AIImageGenerator = React.memo<AIImageGeneratorProps>(({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <ImageIcon className="w-5 h-5" />
+          <ImageIcon className="w-5 h-5" alt="Image" />
           {t('admin.ai.contentManager.aiImageGenerator')}
         </CardTitle>
         <CardDescription>

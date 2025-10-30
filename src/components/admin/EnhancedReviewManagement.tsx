@@ -36,7 +36,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { ReviewCard } from "@/components/reviews/ReviewCard";
 
 
@@ -81,7 +81,7 @@ const EnhancedReviewManagement = () => {
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [selectedReviews, setSelectedReviews] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   useEffect(() => {
     loadReviews();
@@ -108,7 +108,7 @@ const EnhancedReviewManagement = () => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -167,13 +167,13 @@ const EnhancedReviewManagement = () => {
       .eq("id", reviewId);
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Success",
         description: !currentStatus ? "Review approved" : "Review unapproved",
       });
@@ -188,13 +188,13 @@ const EnhancedReviewManagement = () => {
       .eq("id", reviewId);
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Success",
         description: !currentStatus ? "Review featured" : "Review unfeatured",
       });
@@ -212,13 +212,13 @@ const EnhancedReviewManagement = () => {
       .eq("id", reviewId);
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Success",
         description: "Review verified successfully",
       });
@@ -250,13 +250,13 @@ const EnhancedReviewManagement = () => {
       .eq("id", selectedReview.id);
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Success",
         description: "Response submitted",
       });
@@ -275,13 +275,13 @@ const EnhancedReviewManagement = () => {
       .eq("id", reviewId);
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Success",
         description: "Review deleted",
       });
@@ -296,13 +296,13 @@ const EnhancedReviewManagement = () => {
       .in("id", selectedReviews);
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Success",
         description: `${selectedReviews.length} reviews approved`,
       });
@@ -326,7 +326,7 @@ const EnhancedReviewManagement = () => {
       .single();
 
     if (syncError) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Failed to start sync process",
         variant: "destructive",
@@ -343,7 +343,7 @@ const EnhancedReviewManagement = () => {
 
       if (error) throw error;
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Sync started",
         description: `Importing reviews from ${platform}...`,
       });
@@ -357,14 +357,14 @@ const EnhancedReviewManagement = () => {
           .single();
 
         if (log?.status === 'success') {
-          toast({
+          toast aria-live="polite" aria-atomic="true"({
             title: "Sync completed",
             description: `Imported ${log.imported_reviews} reviews from ${platform}`,
           });
           loadReviews();
           setIsSyncing(false);
         } else if (log?.status === 'failed') {
-          toast({
+          toast aria-live="polite" aria-atomic="true"({
             title: "Sync failed",
             description: log.error_message || "Unknown error",
             variant: "destructive",
@@ -377,7 +377,7 @@ const EnhancedReviewManagement = () => {
 
       setTimeout(checkStatus, 2000);
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",

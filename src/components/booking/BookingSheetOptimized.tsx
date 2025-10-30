@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useConversionOptimization } from '@/lib/conversion-optimization';
 import { useMetaTracking } from '@/hooks/useMetaTracking';
@@ -29,7 +29,7 @@ export const BookingSheetOptimized = ({
   preselectedService,
   preselectedType
 }: BookingSheetOptimizedProps) => {
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const { trackBookingCompleted, trackCustomConversion } = useMetaTracking();
@@ -104,7 +104,7 @@ export const BookingSheetOptimized = ({
 
     } catch (error) {
       logger.error('Error loading booking data:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error Loading Data',
         description: 'Please refresh and try again.',
         variant: 'destructive',
@@ -229,13 +229,13 @@ export const BookingSheetOptimized = ({
       completion_timestamp: new Date().toISOString(),
     });
 
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: 'Booking Confirmed!',
       description: 'You will receive a confirmation email shortly.',
     });
 
     onClose();
-  }, [bookingData, isDesktop, flowVariation, mobileVariation, trackFunnelStep, trackBookingCompleted, trackCustomConversion, trackEvent, toast, onClose]);
+  }, [bookingData, isDesktop, flowVariation, mobileVariation, trackFunnelStep, trackBookingCompleted, trackCustomConversion, trackEvent, toast aria-live="polite" aria-atomic="true", onClose]);
 
   // Memoized urgency data for trust signals
   const urgencyData = useMemo(() => ({

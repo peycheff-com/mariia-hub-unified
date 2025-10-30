@@ -1,0 +1,1539 @@
+name: Security & Compliance Automation
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run security scans daily at 4 AM UTC
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: 'Type of security scan'
+        required: true
+        default: 'comprehensive'
+        type: choice
+        options:
+        - comprehensive
+        - dependencies
+        - code
+        - infrastructure
+        - secrets
+        - compliance
+      severity_threshold:
+        description: 'Minimum severity level to report'
+        required: true
+        default: 'moderate'
+        type: choice
+        options:
+        - low
+        - moderate
+        - high
+        - critical
+      fail_on_vulnerabilities:
+        description: 'Fail workflow on vulnerabilities'
+        required: false
+        default: true
+        type: boolean
+      generate_report:
+        description: 'Generate detailed security report'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  NODE_VERSION: '20.x'
+  SECURITY_TIMEOUT: '600000' # 10 minutes
+  SCAN_TIMEOUT: '1200000'   # 20 minutes
+
+permissions:
+  contents: read
+  packages: read
+  security-events: write
+  actions: read
+  pull-requests: write
+  issues: write
+  checks: write
+
+jobs:
+  # Security scan configuration
+  security-configuration:
+    name: Security Configuration
+    runs-on: ubuntu-latest
+    outputs:
+      scan_matrix: ${{ steps.config.outputs.scan_matrix }}
+      scan_type: ${{ steps.config.outputs.scan_type }}
+      severity_threshold: ${{ steps.config.outputs.severity_threshold }}
+      fail_on_vulnerabilities: ${{ steps.config.outputs.fail_on_vulnerabilities }}
+      generate_report: ${{ steps.config.outputs.generate_report }}
+      should_scan_dependencies: ${{ steps.config.outputs.should_scan_dependencies }}
+      should_scan_code: ${{ steps.config.outputs.should_scan_code }}
+      should_scan_infrastructure: ${{ steps.config.outputs.should_scan_infrastructure }}
+      should_scan_secrets: ${{ steps.config.outputs.should_scan_secrets }}
+      should_check_compliance: ${{ steps.config.outputs.should_check_compliance }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure security scans
+        id: config
+        run: |
+          SCAN_TYPE="${{ github.event.inputs.scan_type || 'comprehensive' }}"
+          SEVERITY_THRESHOLD="${{ github.event.inputs.severity_threshold || 'moderate' }}"
+          FAIL_ON_VULNS="${{ github.event.inputs.fail_on_vulnerabilities || 'true' }}"
+          GENERATE_REPORT="${{ github.event.inputs.generate_report || 'true' }}"
+
+          # Set scan execution flags
+          case "$SCAN_TYPE" in
+            "comprehensive")
+              SHOULD_SCAN_DEPENDENCIES="true"
+              SHOULD_SCAN_CODE="true"
+              SHOULD_SCAN_INFRASTRUCTURE="true"
+              SHOULD_SCAN_SECRETS="true"
+              SHOULD_CHECK_COMPLIANCE="true"
+              ;;
+            "dependencies")
+              SHOULD_SCAN_DEPENDENCIES="true"
+              SHOULD_SCAN_CODE="false"
+              SHOULD_SCAN_INFRASTRUCTURE="false"
+              SHOULD_SCAN_SECRETS="false"
+              SHOULD_CHECK_COMPLIANCE="false"
+              ;;
+            "code")
+              SHOULD_SCAN_DEPENDENCIES="false"
+              SHOULD_SCAN_CODE="true"
+              SHOULD_SCAN_INFRASTRUCTURE="false"
+              SHOULD_SCAN_SECRETS="true"
+              SHOULD_CHECK_COMPLIANCE="false"
+              ;;
+            "infrastructure")
+              SHOULD_SCAN_DEPENDENCIES="false"
+              SHOULD_SCAN_CODE="false"
+              SHOULD_SCAN_INFRASTRUCTURE="true"
+              SHOULD_SCAN_SECRETS="true"
+              SHOULD_CHECK_COMPLIANCE="true"
+              ;;
+            "secrets")
+              SHOULD_SCAN_DEPENDENCIES="false"
+              SHOULD_SCAN_CODE="false"
+              SHOULD_SCAN_INFRASTRUCTURE="false"
+              SHOULD_SCAN_SECRETS="true"
+              SHOULD_CHECK_COMPLIANCE="false"
+              ;;
+            "compliance")
+              SHOULD_SCAN_DEPENDENCIES="false"
+              SHOULD_SCAN_CODE="false"
+              SHOULD_SCAN_INFRASTRUCTURE="false"
+              SHOULD_SCAN_SECRETS="false"
+              SHOULD_CHECK_COMPLIANCE="true"
+              ;;
+          esac
+
+          # Generate scan matrix
+          SCAN_MATRIX=$(cat << EOF
+          {
+            "scan_type": "$SCAN_TYPE",
+            "severity_threshold": "$SEVERITY_THRESHOLD",
+            "fail_on_vulnerabilities": $FAIL_ON_VULNS,
+            "generate_report": $GENERATE_REPORT,
+            "scans": {
+              "dependencies": $SHOULD_SCAN_DEPENDENCIES,
+              "code": $SHOULD_SCAN_CODE,
+              "infrastructure": $SHOULD_SCAN_INFRASTRUCTURE,
+              "secrets": $SHOULD_SCAN_SECRETS,
+              "compliance": $SHOULD_CHECK_COMPLIANCE
+            }
+          }
+          EOF
+          )
+
+          echo "scan_matrix=$SCAN_MATRIX" >> $GITHUB_OUTPUT
+          echo "scan_type=$SCAN_TYPE" >> $GITHUB_OUTPUT
+          echo "severity_threshold=$SEVERITY_THRESHOLD" >> $GITHUB_OUTPUT
+          echo "fail_on_vulnerabilities=$FAIL_ON_VULNS" >> $GITHUB_OUTPUT
+          echo "generate_report=$GENERATE_REPORT" >> $GITHUB_OUTPUT
+          echo "should_scan_dependencies=$SHOULD_SCAN_DEPENDENCIES" >> $GITHUB_OUTPUT
+          echo "should_scan_code=$SHOULD_SCAN_CODE" >> $GITHUB_OUTPUT
+          echo "should_scan_infrastructure=$SHOULD_SCAN_INFRASTRUCTURE" >> $GITHUB_OUTPUT
+          echo "should_scan_secrets=$SHOULD_SCAN_SECRETS" >> $GITHUB_OUTPUT
+          echo "should_check_compliance=$SHOULD_CHECK_COMPLIANCE" >> $GITHUB_OUTPUT
+
+  # Dependency vulnerability scanning
+  dependency-security-scan:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    needs: security-configuration
+    if: needs.security-configuration.outputs.should_scan_dependencies == 'true'
+    outputs:
+      vulnerability_count: ${{ steps.scan.outputs.vulnerability_count }}
+      critical_vulnerabilities: ${{ steps.scan.outputs.critical_vulnerabilities }}
+      high_vulnerabilities: ${{ steps.scan.outputs.high_vulnerabilities }}
+      security_score: ${{ steps.scan.outputs.security_score }}
+      scan_passed: ${{ steps.scan.outputs.scan_passed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        id: audit
+        run: |
+          echo "🔍 Running npm security audit..."
+          npm audit --audit-level=${{ needs.security-configuration.outputs.severity_threshold }} --json > npm-audit-results.json || true
+
+          # Parse and analyze results
+          node -e "
+            const fs = require('fs');
+            try {
+              const audit = JSON.parse(fs.readFileSync('npm-audit-results.json', 'utf8'));
+              const vulnerabilities = audit.vulnerabilities || {};
+
+              let critical = 0, high = 0, moderate = 0, low = 0, info = 0;
+
+              Object.values(vulnerabilities).forEach(vuln => {
+                switch(vuln.severity) {
+                  case 'critical': critical++; break;
+                  case 'high': high++; break;
+                  case 'moderate': moderate++; break;
+                  case 'low': low++; break;
+                  case 'info': info++; break;
+                }
+              });
+
+              const totalVulns = critical + high + moderate + low + info;
+
+              // Calculate security score
+              let score = 100;
+              score -= (critical * 25);
+              score -= (high * 10);
+              score -= (moderate * 3);
+              score -= (low * 1);
+              score = Math.max(0, score);
+
+              // Determine if scan passed
+              const severityThreshold = '${{ needs.security-configuration.outputs.severity_threshold }}';
+              let scanPassed = true;
+
+              if (severityThreshold === 'critical' && critical > 0) scanPassed = false;
+              else if (severityThreshold === 'high' && (critical > 0 || high > 0)) scanPassed = false;
+              else if (severityThreshold === 'moderate' && (critical > 0 || high > 5 || moderate > 10)) scanPassed = false;
+              else if (severityThreshold === 'low' && totalVulns > 20) scanPassed = false;
+
+              const results = {
+                total: totalVulns,
+                critical,
+                high,
+                moderate,
+                low,
+                info,
+                score: Math.round(score),
+                scanPassed,
+                timestamp: new Date().toISOString()
+              };
+
+              fs.writeFileSync('dependency-scan-results.json', JSON.stringify(results, null, 2));
+
+              console.log('Dependency Security Scan Results:');
+              console.log(\`Critical: \${critical}\`);
+              console.log(\`High: \${high}\`);
+              console.log(\`Moderate: \${moderate}\`);
+              console.log(\`Low: \${low}\`);
+              console.log(\`Info: \${info}\`);
+              console.log(\`Total: \${totalVulns}\`);
+              console.log(\`Security Score: \${results.score}/100\`);
+              console.log(\`Status: \${scanPassed ? 'PASSED' : 'FAILED'}\`);
+
+              console.log(\`::set-output name=vulnerability_count::\${totalVulns}\`);
+              console.log(\`::set-output name=critical_vulnerabilities::\${critical}\`);
+              console.log(\`::set-output name=high_vulnerabilities::\${high}\`);
+              console.log(\`::set-output name=security_score::\${results.score}\`);
+              console.log(\`::set-output name=scan_passed::\${scanPassed}\`);
+            } catch (e) {
+              console.error('Error parsing audit results:', e);
+              console.log(\`::set-output name=vulnerability_count::999\`);
+              console.log(\`::set-output name=security_score::0\`);
+              console.log(\`::set-output name=scan_passed::false\`);
+            }
+          "
+
+      - name: Run Snyk dependency scan
+        if: env.SNYK_TOKEN != ''
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          echo "🔍 Running Snyk dependency scan..."
+          npm install -g snyk
+          snyk test --json > snyk-dependency-results.json || true
+          snyk monitor --org=${{ secrets.SNYK_ORG }} || true
+
+      - name: Run OWASP Dependency Check
+        run: |
+          echo "🔍 Running OWASP Dependency Check..."
+
+          # Download and run OWASP Dependency Check
+          wget https://github.com/jeremylong/DependencyCheck/releases/download/v9.0.9/dependency-check-9.0.9-release.zip
+          unzip dependency-check-9.0.9-release.zip
+
+          # Run the scan
+          ./dependency-check/bin/dependency-check.sh \
+            --project "mariia-hub-unified" \
+            --scan . \
+            --format JSON \
+            --out dependency-check-results || true
+
+      - name: Generate dependency scan report
+        id: scan
+        run: |
+          node -e "
+            const fs = require('fs');
+            try {
+              // Combine all dependency scan results
+              const npmResults = fs.existsSync('npm-audit-results.json') ?
+                JSON.parse(fs.readFileSync('npm-audit-results.json', 'utf8')) : { vulnerabilities: {} };
+
+              const snykResults = fs.existsSync('snyk-dependency-results.json') ?
+                JSON.parse(fs.readFileSync('snyk-dependency-results.json', 'utf8')) : { vulnerabilities: [] };
+
+              // Calculate combined metrics
+              const npmVulns = Object.keys(npmResults.vulnerabilities || {}).length;
+              const snykVulns = snykResults.vulnerabilities ? snykResults.vulnerabilities.length : 0;
+              const totalVulns = Math.max(npmVulns, snykVulns);
+
+              const audit = JSON.parse(fs.readFileSync('npm-audit-results.json', 'utf8'));
+              const vulnerabilities = audit.vulnerabilities || {};
+
+              let critical = 0, high = 0;
+              Object.values(vulnerabilities).forEach(vuln => {
+                if (vuln.severity === 'critical') critical++;
+                else if (vuln.severity === 'high') high++;
+              });
+
+              const failOnVulns = '${{ needs.security-configuration.outputs.fail_on_vulnerabilities }}' === 'true';
+              const severityThreshold = '${{ needs.security-configuration.outputs.severity_threshold }}';
+
+              let scanPassed = true;
+              if (failOnVulns) {
+                if (severityThreshold === 'critical' && critical > 0) scanPassed = false;
+                else if (severityThreshold === 'high' && (critical > 0 || high > 0)) scanPassed = false;
+                else if (severityThreshold === 'moderate' && totalVulns > 15) scanPassed = false;
+                else if (severityThreshold === 'low' && totalVulns > 25) scanPassed = false;
+              }
+
+              console.log(\`::set-output name=vulnerability_count::\${totalVulns}\`);
+              console.log(\`::set-output name=critical_vulnerabilities::\${critical}\`);
+              console.log(\`::set-output name=high_vulnerabilities::\${high}\`);
+              console.log(\`::set-output name=security_score::\${100 - (critical * 25) - (high * 10)}\`);
+              console.log(\`::set-output name=scan_passed::\${scanPassed}\`);
+            } catch (e) {
+              console.error('Error generating dependency scan report:', e);
+              console.log(\`::set-output name=scan_passed::false\`);
+            }
+          "
+
+      - name: Upload dependency scan artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-security-scan-results
+          path: |
+            npm-audit-results.json
+            snyk-dependency-results.json
+            dependency-check-results.json
+            dependency-scan-results.json
+          retention-days: 30
+
+      - name: Fail on vulnerabilities if required
+        if: steps.scan.outputs.scan_passed == 'false' && needs.security-configuration.outputs.fail_on_vulnerabilities == 'true'
+        run: |
+          echo "❌ Dependency security scan failed based on threshold"
+          echo "Critical vulnerabilities: ${{ steps.scan.outputs.critical_vulnerabilities }}"
+          echo "High vulnerabilities: ${{ steps.scan.outputs.high_vulnerabilities }}"
+          exit 1
+
+  # Static Application Security Testing (SAST)
+  code-security-scan:
+    name: Code Security Scan (SAST)
+    runs-on: ubuntu-latest
+    needs: security-configuration
+    if: needs.security-configuration.outputs.should_scan_code == 'true'
+    outputs:
+      code_issues_count: ${{ steps.scan.outputs.issues_count }}
+      high_risk_issues: ${{ steps.scan.outputs.high_risk_issues }}
+      medium_risk_issues: ${{ steps.scan.outputs.medium_risk_issues }}
+      code_security_score: ${{ steps.scan.outputs.security_score }}
+      code_scan_passed: ${{ steps.scan.outputs.scan_passed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run CodeQL Analysis
+        if: github.event_name != 'pull_request'
+        uses: github/codeql-action/init@v2
+        with:
+          languages: typescript, javascript
+
+      - name: Autobuild
+        if: github.event_name != 'pull_request'
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Perform CodeQL Analysis
+        if: github.event_name != 'pull_request'
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:typescript"
+
+      - name: Run Semgrep SAST scan
+        run: |
+          echo "🔍 Running Semgrep SAST scan..."
+
+          # Install Semgrep
+          pip install semgrep
+
+          # Run Semgrep with security rules
+          semgrep --config=auto --json --output=semgrep-results.json . || true
+          semgrep --config=p/security-audit --json --output=semgrep-security-results.json . || true
+
+      - name: Run ESLint security rules
+        run: |
+          echo "🔍 Running ESLint security scan..."
+
+          # Run ESLint with security plugin
+          npx eslint . --ext .ts,.tsx,.js,.jsx \
+            --plugin security \
+            --config '{"extends": ["plugin:security/recommended"]}' \
+            --format=json > eslint-security-results.json || true
+
+      - name: Run SonarQube security scan
+        if: env.SONAR_TOKEN != ''
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          echo "🔍 Running SonarQube security scan..."
+
+          # Install and run SonarScanner
+          npm install -g sonarqube-scanner
+
+          sonar-scanner \
+            -Dsonar.projectKey=mariia-hub-unified \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=${SONAR_HOST_URL} \
+            -Dsonar.login=${SONAR_TOKEN} \
+            -Dsonar.typescript.lcov.reportPaths=coverage/lcov.info || true
+
+      - name: Run Bandit for Python (if applicable)
+        run: |
+          echo "🔍 Running Bandit security scan for Python files..."
+
+          # Install Bandit
+          pip install bandit
+
+          # Find and scan Python files
+          find . -name "*.py" -type f | head -10 > python-files.txt || true
+
+          if [ -s python-files.txt ]; then
+            bandit -r -f json -o bandit-results.json $(cat python-files.txt) || true
+          fi
+
+      - name: Analyze code security results
+        id: scan
+        run: |
+          node -e "
+            const fs = require('fs');
+
+            let totalIssues = 0;
+            let highRiskIssues = 0;
+            let mediumRiskIssues = 0;
+            let lowRiskIssues = 0;
+
+            // Analyze Semgrep results
+            if (fs.existsSync('semgrep-security-results.json')) {
+              try {
+                const semgrep = JSON.parse(fs.readFileSync('semgrep-security-results.json', 'utf8'));
+                semgrep.results?.forEach(result => {
+                  totalIssues++;
+                  const severity = result.metadata?.severity || 'INFO';
+                  if (severity === 'ERROR' || severity === 'HIGH') highRiskIssues++;
+                  else if (severity === 'WARNING' || severity === 'MEDIUM') mediumRiskIssues++;
+                  else lowRiskIssues++;
+                });
+              } catch (e) {
+                console.log('Could not parse Semgrep results');
+              }
+            }
+
+            // Analyze ESLint security results
+            if (fs.existsSync('eslint-security-results.json')) {
+              try {
+                const eslint = JSON.parse(fs.readFileSync('eslint-security-results.json', 'utf8'));
+                eslint.forEach(file => {
+                  file.messages?.forEach(msg => {
+                    if (msg.ruleId && msg.ruleId.includes('security')) {
+                      totalIssues++;
+                      if (msg.severity === 2) highRiskIssues++;
+                      else if (msg.severity === 1) mediumRiskIssues++;
+                    }
+                  });
+                });
+              } catch (e) {
+                console.log('Could not parse ESLint security results');
+              }
+            }
+
+            // Calculate security score
+            let score = 100;
+            score -= (highRiskIssues * 15);
+            score -= (mediumRiskIssues * 5);
+            score -= (lowRiskIssues * 1);
+            score = Math.max(0, score);
+
+            // Determine if scan passed
+            const failOnVulns = '${{ needs.security-configuration.outputs.fail_on_vulnerabilities }}' === 'true';
+            const severityThreshold = '${{ needs.security-configuration.outputs.severity_threshold }}';
+
+            let scanPassed = true;
+            if (failOnVulns) {
+              if (severityThreshold === 'critical' && highRiskIssues > 0) scanPassed = false;
+              else if (severityThreshold === 'high' && highRiskIssues > 2) scanPassed = false;
+              else if (severityThreshold === 'moderate' && (highRiskIssues > 0 || mediumRiskIssues > 5)) scanPassed = false;
+              else if (severityThreshold === 'low' && totalIssues > 10) scanPassed = false;
+            }
+
+            const results = {
+              totalIssues,
+              highRiskIssues,
+              mediumRiskIssues,
+              lowRiskIssues,
+              score: Math.round(score),
+              scanPassed,
+              timestamp: new Date().toISOString()
+            };
+
+            fs.writeFileSync('code-security-scan-results.json', JSON.stringify(results, null, 2));
+
+            console.log('Code Security Scan Results:');
+            console.log(\`High Risk Issues: \${highRiskIssues}\`);
+            console.log(\`Medium Risk Issues: \${mediumRiskIssues}\`);
+            console.log(\`Low Risk Issues: \${lowRiskIssues}\`);
+            console.log(\`Total Issues: \${totalIssues}\`);
+            console.log(\`Security Score: \${results.score}/100\`);
+            console.log(\`Status: \${scanPassed ? 'PASSED' : 'FAILED'}\`);
+
+            console.log(\`::set-output name=issues_count::\${totalIssues}\`);
+            console.log(\`::set-output name=high_risk_issues::\${highRiskIssues}\`);
+            console.log(\`::set-output name=medium_risk_issues::\${mediumRiskIssues}\`);
+            console.log(\`::set-output name=security_score::\${results.score}\`);
+            console.log(\`::set-output name=scan_passed::\${scanPassed}\`);
+          "
+
+      - name: Upload code security scan artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: code-security-scan-results
+          path: |
+            semgrep-results.json
+            semgrep-security-results.json
+            eslint-security-results.json
+            bandit-results.json
+            code-security-scan-results.json
+          retention-days: 30
+
+      - name: Fail on security issues if required
+        if: steps.scan.outputs.scan_passed == 'false' && needs.security-configuration.outputs.fail_on_vulnerabilities == 'true'
+        run: |
+          echo "❌ Code security scan failed based on threshold"
+          echo "High risk issues: ${{ steps.scan.outputs.high_risk_issues }}"
+          echo "Medium risk issues: ${{ steps.scan.outputs.medium_risk_issues }}"
+          exit 1
+
+  # Infrastructure security scanning
+  infrastructure-security-scan:
+    name: Infrastructure Security Scan
+    runs-on: ubuntu-latest
+    needs: security-configuration
+    if: needs.security-configuration.outputs.should_scan_infrastructure == 'true'
+    outputs:
+      infra_issues_count: ${{ steps.scan.outputs.issues_count }}
+      critical_infra_issues: ${{ steps.scan.outputs.critical_issues }}
+      infra_security_score: ${{ steps.scan.outputs.security_score }}
+      infra_scan_passed: ${{ steps.scan.outputs.scan_passed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup tools
+        run: |
+          # Install security scanning tools
+          pip install tfsec checkov
+          npm install -g @audit-ci/cli
+
+      - name: Scan Docker files
+        run: |
+          echo "🔍 Scanning Docker configuration..."
+
+          # Find Docker files
+          find . -name "Dockerfile*" -o -name "*.dockerfile" > docker-files.txt || true
+
+          if [ -s docker-files.txt ]; then
+            echo "Found Docker files:"
+            cat docker-files.txt
+
+            # Run Dockerfile linting
+            npm install -g hadolint
+            while read -r dockerfile; do
+              hadolint "$dockerfile" --format=json > "hadolint-${dockerfile//\//_}.json" || true
+            done < docker-files.txt
+          fi
+
+      - name: Scan Kubernetes manifests
+        run: |
+          echo "🔍 Scanning Kubernetes manifests..."
+
+          # Find Kubernetes files
+          find . -name "*.yaml" -o -name "*.yml" | grep -E "(k8s|kubernetes|deployment)" > k8s-files.txt || true
+
+          if [ -s k8s-files.txt ]; then
+            echo "Found Kubernetes files:"
+            cat k8s-files.txt
+
+            # Run kube-score
+            docker run --rm -v "$(pwd):/project" zegl/kube-score score \
+              --exit-one-on-warning --output-format ci $(cat k8s-files.txt) > kube-score-results.txt || true
+          fi
+
+      - name: Scan Terraform (if applicable)
+        run: |
+          echo "🔍 Scanning Terraform configuration..."
+
+          # Find Terraform files
+          find . -name "*.tf" -o -name "*.tfvars" > terraform-files.txt || true
+
+          if [ -s terraform-files.txt ]; then
+            echo "Found Terraform files:"
+            cat terraform-files.txt
+
+            # Run tfsec
+            tfsec . --format=json --out=tfsec-results.json || true
+
+            # Run checkov
+            checkov -d . --framework terraform --output json > checkov-results.json || true
+          fi
+
+      - name: Scan CloudFormation (if applicable)
+        run: |
+          echo "🔍 Scanning CloudFormation templates..."
+
+          # Find CloudFormation files
+          find . -name "*.template" -o -name "*.cf.yaml" -o -name "*.cf.yml" > cf-files.txt || true
+
+          if [ -s cf-files.txt ]; then
+            echo "Found CloudFormation files:"
+            cat cf-files.txt
+
+            # Run checkov for CloudFormation
+            checkov -d . --framework cloudformation --output json > checkov-cf-results.json || true
+          fi
+
+      - name: Scan GitHub Actions workflows
+        run: |
+          echo "🔍 Scanning GitHub Actions workflows..."
+
+          # Find workflow files
+          find .github/workflows -name "*.yml" -o -name "*.yaml" > workflow-files.txt || true
+
+          if [ -s workflow-files.txt ]; then
+            echo "Found workflow files:"
+            cat workflow-files.txt
+
+            # Run actionlint
+            docker run --rm -v "$(pwd):/repo" ryuheee/actions/gh-actionlint:latest /repo || true
+          fi
+
+      - name: Analyze infrastructure security results
+        id: scan
+        run: |
+          node -e "
+            const fs = require('fs');
+
+            let totalIssues = 0;
+            let criticalIssues = 0;
+            let highIssues = 0;
+            let mediumIssues = 0;
+            let lowIssues = 0;
+
+            // Analyze tfsec results
+            if (fs.existsSync('tfsec-results.json')) {
+              try {
+                const tfsec = JSON.parse(fs.readFileSync('tfsec-results.json', 'utf8'));
+                tfsec.results?.forEach(result => {
+                  totalIssues++;
+                  const severity = result.severity || 'LOW';
+                  if (severity === 'CRITICAL') criticalIssues++;
+                  else if (severity === 'HIGH') highIssues++;
+                  else if (severity === 'MEDIUM') mediumIssues++;
+                  else lowIssues++;
+                });
+              } catch (e) {
+                console.log('Could not parse tfsec results');
+              }
+            }
+
+            // Analyze checkov results
+            if (fs.existsSync('checkov-results.json')) {
+              try {
+                const checkov = JSON.parse(fs.readFileSync('checkov-results.json', 'utf8'));
+                Object.values(checkov.results?.failed_checks || {}).forEach(checks => {
+                  checks.forEach(check => {
+                    totalIssues++;
+                    const severity = check.severity || 'LOW';
+                    if (severity === 'CRITICAL' || severity === 'HIGH') criticalIssues++;
+                    else if (severity === 'MEDIUM') mediumIssues++;
+                    else lowIssues++;
+                  });
+                });
+              } catch (e) {
+                console.log('Could not parse checkov results');
+              }
+            }
+
+            // Calculate security score
+            let score = 100;
+            score -= (criticalIssues * 20);
+            score -= (highIssues * 10);
+            score -= (mediumIssues * 5);
+            score -= (lowIssues * 2);
+            score = Math.max(0, score);
+
+            // Determine if scan passed
+            const failOnVulns = '${{ needs.security-configuration.outputs.fail_on_vulnerabilities }}' === 'true';
+            const severityThreshold = '${{ needs.security-configuration.outputs.severity_threshold }}';
+
+            let scanPassed = true;
+            if (failOnVulns) {
+              if (severityThreshold === 'critical' && criticalIssues > 0) scanPassed = false;
+              else if (severityThreshold === 'high' && (criticalIssues > 0 || highIssues > 2)) scanPassed = false;
+              else if (severityThreshold === 'moderate' && (criticalIssues > 0 || highIssues > 0 || mediumIssues > 5)) scanPassed = false;
+              else if (severityThreshold === 'low' && totalIssues > 10) scanPassed = false;
+            }
+
+            const results = {
+              totalIssues,
+              criticalIssues,
+              highIssues,
+              mediumIssues,
+              lowIssues,
+              score: Math.round(score),
+              scanPassed,
+              timestamp: new Date().toISOString()
+            };
+
+            fs.writeFileSync('infrastructure-security-scan-results.json', JSON.stringify(results, null, 2));
+
+            console.log('Infrastructure Security Scan Results:');
+            console.log(\`Critical Issues: \${criticalIssues}\`);
+            console.log(\`High Issues: \${highIssues}\`);
+            console.log(\`Medium Issues: \${mediumIssues}\`);
+            console.log(\`Low Issues: \${lowIssues}\`);
+            console.log(\`Total Issues: \${totalIssues}\`);
+            console.log(\`Security Score: \${results.score}/100\`);
+            console.log(\`Status: \${scanPassed ? 'PASSED' : 'FAILED'}\`);
+
+            console.log(\`::set-output name=issues_count::\${totalIssues}\`);
+            console.log(\`::set-output name=critical_issues::\${criticalIssues}\`);
+            console.log(\`::set-output name=security_score::\${results.score}\`);
+            console.log(\`::set-output name=scan_passed::\${scanPassed}\`);
+          "
+
+      - name: Upload infrastructure security scan artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: infrastructure-security-scan-results
+          path: |
+            tfsec-results.json
+            checkov-results.json
+            checkov-cf-results.json
+            hadolint-*.json
+            kube-score-results.txt
+            infrastructure-security-scan-results.json
+          retention-days: 30
+
+      - name: Fail on infrastructure issues if required
+        if: steps.scan.outputs.scan_passed == 'false' && needs.security-configuration.outputs.fail_on_vulnerabilities == 'true'
+        run: |
+          echo "❌ Infrastructure security scan failed based on threshold"
+          echo "Critical issues: ${{ steps.scan.outputs.critical_issues }}"
+          exit 1
+
+  # Secrets detection
+  secrets-detection-scan:
+    name: Secrets Detection Scan
+    runs-on: ubuntu-latest
+    needs: security-configuration
+    if: needs.security-configuration.outputs.should_scan_secrets == 'true'
+    outputs:
+      secrets_found: ${{ steps.scan.outputs.secrets_found }}
+      high_severity_secrets: ${{ steps.scan.outputs.high_severity_secrets }}
+      secrets_scan_passed: ${{ steps.scan.outputs.scan_passed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better secret detection
+
+      - name: Setup tools
+        run: |
+          # Install secret scanning tools
+          pip install detect-secrets
+          npm install -g git-secrets
+
+      - name: Run detect-secrets
+        run: |
+          echo "🔍 Running detect-secrets scan..."
+
+          # Initialize detect-secrets
+          detect-secrets scan --baseline .secrets.baseline || true
+
+          # Run the scan
+          detect-secrets scan --baseline .secrets.baseline --all-files > detect-secrets-results.json || true
+
+      - name: Run gitleaks
+        run: |
+          echo "🔍 Running gitleaks scan..."
+
+          # Download and run gitleaks
+          wget https://github.com/zricethezav/gitleaks/releases/download/v8.18.2/gitleaks_8.18.2_linux_x64.tar.gz
+          tar -xzf gitleaks_8.18.2_linux_x64.tar.gz
+
+          # Run gitleaks
+          ./gitleaks detect --source . --report-path gitleaks-results.json --report-format json || true
+
+      - name: Run truffleHog
+        run: |
+          echo "🔍 Running truffleHog scan..."
+
+          # Install truffleHog
+          pip install truffleHog
+
+          # Run truffleHog
+          trufflehog --json --output trufflehog-results.json . || true
+
+      - name: Custom secret pattern detection
+        run: |
+          echo "🔍 Running custom secret pattern detection..."
+
+          # Create custom patterns file
+          cat > custom-patterns.txt << EOF
+          # API Keys
+          (?i)(api[_-]?key|apikey)[\"'=:\\s]+([a-zA-Z0-9_-]{20,})
+
+          # Database URLs
+          (?i)(database[_-]?url|db[_-]?url)[\"'=:\\s]+([a-zA-Z0-9_\\-\\/.:@]+)
+
+          # Private keys
+          -----BEGIN (RSA |OPENSSH |DSA |EC |PGP )?PRIVATE KEY-----
+
+          # Passwords in configuration
+          (?i)(password|passwd|pwd)[\"'=:\\s]+([^\\s\"']{6,})
+
+          # JWT tokens
+          eyJ[a-zA-Z0-9_-]*\\.eyJ[a-zA-Z0-9_-]*\\.[a-zA-Z0-9_-]*
+
+          # AWS credentials
+          AKIA[0-9A-Z]{16}
+
+          # GitHub tokens
+          ghp_[a-zA-Z0-9]{36}
+
+          # Supabase keys
+          eyJ[a-zA-Z0-9_-]{86,}
+          EOF
+
+          # Scan with custom patterns
+          grep -r -f custom-patterns.txt --exclude-dir=node_modules --exclude-dir=.git . > custom-secrets-results.txt || true
+
+      - name: Analyze secrets detection results
+        id: scan
+        run: |
+          node -e "
+            const fs = require('fs');
+
+            let totalSecrets = 0;
+            let highSeveritySecrets = 0;
+            let mediumSeveritySecrets = 0;
+            let lowSeveritySecrets = 0;
+
+            // Analyze detect-secrets results
+            if (fs.existsSync('detect-secrets-results.json')) {
+              try {
+                const detectSecrets = JSON.parse(fs.readFileSync('detect-secrets-results.json', 'utf8'));
+                Object.values(detectSecrets.results || {}).forEach(result => {
+                  if (result && result.length > 0) {
+                    totalSecrets += result.length;
+                    result.forEach(secret => {
+                      if (secret.type === 'High Entropy') highSeveritySecrets++;
+                      else if (secret.type === 'Medium Entropy') mediumSeveritySecrets++;
+                      else lowSeveritySecrets++;
+                    });
+                  }
+                });
+              } catch (e) {
+                console.log('Could not parse detect-secrets results');
+              }
+            }
+
+            // Analyze gitleaks results
+            if (fs.existsSync('gitleaks-results.json')) {
+              try {
+                const gitleaks = JSON.parse(fs.readFileSync('gitleaks-results.json', 'utf8'));
+                gitleaks.forEach(leak => {
+                  totalSecrets++;
+                  if (leak.severity === 'CRITICAL' || leak.severity === 'HIGH') highSeveritySecrets++;
+                  else if (leak.severity === 'MEDIUM') mediumSeveritySecrets++;
+                  else lowSeveritySecrets++;
+                });
+              } catch (e) {
+                console.log('Could not parse gitleaks results');
+              }
+            }
+
+            // Analyze truffleHog results
+            if (fs.existsSync('trufflehog-results.json')) {
+              try {
+                const trufflehog = JSON.parse(fs.readFileSync('trufflehog-results.json', 'utf8'));
+                trufflehog.forEach(secret => {
+                  totalSecrets++;
+                  if (secret.reason && secret.reason.includes('High')) highSeveritySecrets++;
+                  else if (secret.reason && secret.reason.includes('Medium')) mediumSeveritySecrets++;
+                  else lowSeveritySecrets++;
+                });
+              } catch (e) {
+                console.log('Could not parse truffleHog results');
+              }
+            }
+
+            // Check custom secrets results
+            if (fs.existsSync('custom-secrets-results.txt')) {
+              const customSecrets = fs.readFileSync('custom-secrets-results.txt', 'utf8').trim().split('\n').filter(line => line.trim());
+              totalSecrets += customSecrets.length;
+              highSeveritySecrets += customSecrets.length; // Custom patterns are usually high priority
+            }
+
+            // Determine if scan passed
+            // Any detected secrets should fail the scan
+            const scanPassed = totalSecrets === 0;
+
+            const results = {
+              totalSecrets,
+              highSeveritySecrets,
+              mediumSeveritySecrets,
+              lowSeveritySecrets,
+              scanPassed,
+              timestamp: new Date().toISOString()
+            };
+
+            fs.writeFileSync('secrets-detection-results.json', JSON.stringify(results, null, 2));
+
+            console.log('Secrets Detection Results:');
+            console.log(\`Total Secrets Found: \${totalSecrets}\`);
+            console.log(\`High Severity: \${highSeveritySecrets}\`);
+            console.log(\`Medium Severity: \${mediumSeveritySecrets}\`);
+            console.log(\`Low Severity: \${lowSeveritySecrets}\`);
+            console.log(\`Status: \${scanPassed ? 'PASSED' : 'FAILED'}\`);
+
+            console.log(\`::set-output name=secrets_found::\${totalSecrets}\`);
+            console.log(\`::set-output name=high_severity_secrets::\${highSeveritySecrets}\`);
+            console.log(\`::set-output name=scan_passed::\${scanPassed}\`);
+          "
+
+      - name: Upload secrets detection artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: secrets-detection-results
+          path: |
+            detect-secrets-results.json
+            gitleaks-results.json
+            trufflehog-results.json
+            custom-secrets-results.txt
+            secrets-detection-results.json
+          retention-days: 30
+
+      - name: Fail on secrets detection
+        if: steps.scan.outputs.scan_passed == 'false' && needs.security-configuration.outputs.fail_on_vulnerabilities == 'true'
+        run: |
+          echo "❌ Secrets detection scan found potential secrets"
+          echo "High severity secrets: ${{ steps.scan.outputs.high_severity_secrets }}"
+          echo "This requires immediate attention!"
+          exit 1
+
+  # Compliance checking
+  compliance-check:
+    name: Compliance Check
+    runs-on: ubuntu-latest
+    needs: security-configuration
+    if: needs.security-configuration.outputs.should_check_compliance == 'true'
+    outputs:
+      compliance_score: ${{ steps.compliance.outputs.compliance_score }}
+      compliance_passed: ${{ steps.compliance.outputs.compliance_passed }}
+      compliance_issues: ${{ steps.compliance.outputs.compliance_issues }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup tools
+        run: |
+          # Install compliance checking tools
+          pip install compliance-as-code
+          npm install -g license-checker
+
+      - name: Check license compliance
+        run: |
+          echo "🔍 Checking license compliance..."
+
+          # Run license checker
+          npx license-checker --json > license-compliance-results.json || true
+
+          # Check for forbidden licenses
+          node -e "
+            const fs = require('fs');
+            try {
+              const licenses = JSON.parse(fs.readFileSync('license-compliance-results.json', 'utf8'));
+              const forbiddenLicenses = ['GPL-2.0', 'GPL-3.0', 'AGPL-1.0', 'AGPL-3.0'];
+
+              let forbiddenCount = 0;
+              let permissiveCount = 0;
+              let unknownCount = 0;
+
+              Object.entries(licenses).forEach(([pkg, info]) => {
+                if (forbiddenLicenses.includes(info.licenses)) {
+                  forbiddenCount++;
+                  console.log(\`FORBIDDEN LICENSE: \${pkg} - \${info.licenses}\`);
+                } else if (info.licenses && info.licenses !== 'Unknown') {
+                  permissiveCount++;
+                } else {
+                  unknownCount++;
+                }
+              });
+
+              const complianceScore = forbiddenCount === 0 ? 100 : Math.max(0, 100 - (forbiddenCount * 25));
+              const compliancePassed = forbiddenCount === 0;
+
+              const results = {
+                totalPackages: Object.keys(licenses).length,
+                forbiddenLicenses: forbiddenCount,
+                permissiveLicenses: permissiveCount,
+                unknownLicenses: unknownCount,
+                complianceScore: complianceScore,
+                compliancePassed: compliancePassed,
+                timestamp: new Date().toISOString()
+              };
+
+              fs.writeFileSync('license-compliance-analysis.json', JSON.stringify(results, null, 2));
+
+              console.log('License Compliance Results:');
+              console.log(\`Total Packages: \${results.totalPackages}\`);
+              console.log(\`Forbidden Licenses: \${forbiddenCount}\`);
+              console.log(\`Permissive Licenses: \${permissiveCount}\`);
+              console.log(\`Unknown Licenses: \${unknownCount}\`);
+              console.log(\`Compliance Score: \${complianceScore}/100\`);
+              console.log(\`Status: \${compliancePassed ? 'PASSED' : 'FAILED'}\`);
+            } catch (e) {
+              console.error('Error analyzing license compliance:', e);
+            }
+          "
+
+      - name: Check GDPR compliance
+        run: |
+          echo "🔍 Checking GDPR compliance..."
+
+          # Check for GDPR-related files and configurations
+          if [ -f "src/pages/GDPRCompliance.tsx" ]; then
+            echo "✅ GDPR compliance page found"
+          else
+            echo "⚠️ GDPR compliance page not found"
+          fi
+
+          # Check for privacy policy
+          if [ -f "public/privacy-policy.md" ] || [ -f "docs/privacy-policy.md" ]; then
+            echo "✅ Privacy policy found"
+          else
+            echo "⚠️ Privacy policy not found"
+          fi
+
+          # Check for cookie consent implementation
+          if grep -r "cookie" src/ --include="*.ts" --include="*.tsx" | grep -i "consent" > /dev/null; then
+            echo "✅ Cookie consent implementation found"
+          else
+            echo "⚠️ Cookie consent implementation not found"
+          fi
+
+      - name: Check accessibility compliance (WCAG)
+        run: |
+          echo "🔍 Checking accessibility compliance..."
+
+          # Check for accessibility configuration
+          if [ -f ".accessibilityrc" ] || [ -f "axe.config.js" ]; then
+            echo "✅ Accessibility configuration found"
+          else
+            echo "⚠️ Accessibility configuration not found"
+          fi
+
+          # Check for accessibility testing
+          if grep -r "axe" package.json > /dev/null; then
+            echo "✅ Accessibility testing tools found"
+          else
+            echo "⚠️ Accessibility testing tools not found"
+          fi
+
+      - name: Check security headers configuration
+        run: |
+          echo "🔍 Checking security headers configuration..."
+
+          # Look for security headers in code
+          SECURITY_HEADERS=("content-security-policy" "x-frame-options" "x-content-type-options" "x-xss-protection" "strict-transport-security")
+
+          for header in "${SECURITY_HEADERS[@]}"; do
+            if grep -r "$header" src/ --include="*.ts" --include="*.tsx" > /dev/null; then
+              echo "✅ $header implementation found"
+            else
+              echo "⚠️ $header implementation not found"
+            fi
+          done
+
+      - name: Analyze overall compliance
+        id: compliance
+        run: |
+          node -e "
+            const fs = require('fs');
+
+            let complianceScore = 100;
+            let complianceIssues = [];
+
+            // Analyze license compliance
+            if (fs.existsSync('license-compliance-analysis.json')) {
+              try {
+                const licenseResults = JSON.parse(fs.readFileSync('license-compliance-analysis.json', 'utf8'));
+                if (!licenseResults.compliancePassed) {
+                  complianceScore -= 30;
+                  complianceIssues.push(\`Forbidden licenses detected: \${licenseResults.forbiddenLicenses}\`);
+                }
+              } catch (e) {
+                console.log('Could not analyze license compliance');
+              }
+            }
+
+            // Check for required compliance files
+            const requiredFiles = [
+              'src/pages/GDPRCompliance.tsx',
+              'public/privacy-policy.md',
+              'docs/SECURITY_POLICIES_AND_PROCEDURES.md'
+            ];
+
+            requiredFiles.forEach(file => {
+              if (!fs.existsSync(file)) {
+                complianceScore -= 10;
+                complianceIssues.push(\`Missing required compliance file: \${file}\`);
+              }
+            });
+
+            // Determine overall compliance status
+            const compliancePassed = complianceScore >= 70;
+
+            const results = {
+              complianceScore: Math.max(0, complianceScore),
+              compliancePassed,
+              complianceIssues,
+              timestamp: new Date().toISOString()
+            };
+
+            fs.writeFileSync('compliance-check-results.json', JSON.stringify(results, null, 2));
+
+            console.log('Compliance Check Results:');
+            console.log(\`Compliance Score: \${results.complianceScore}/100\`);
+            console.log(\`Status: \${compliancePassed ? 'PASSED' : 'FAILED'}\`);
+            if (results.complianceIssues.length > 0) {
+              console.log('Issues:');
+              results.complianceIssues.forEach(issue => console.log(\`- \${issue}\`));
+            }
+
+            console.log(\`::set-output name=compliance_score::\${results.complianceScore}\`);
+            console.log(\`::set-output name=compliance_passed::\${compliancePassed}\`);
+            console.log(\`::set-output name=compliance_issues::\${results.complianceIssues.length}\`);
+          "
+
+      - name: Upload compliance check artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: compliance-check-results
+          path: |
+            license-compliance-results.json
+            license-compliance-analysis.json
+            compliance-check-results.json
+          retention-days: 30
+
+      - name: Fail on compliance issues
+        if: steps.compliance.outputs.compliance_passed == 'false' && needs.security-configuration.outputs.fail_on_vulnerabilities == 'true'
+        run: |
+          echo "❌ Compliance check failed"
+          echo "Compliance issues: ${{ steps.compliance.outputs.compliance_issues }}"
+          exit 1
+
+  # Security report generation
+  security-report-generation:
+    name: Security Report Generation
+    runs-on: ubuntu-latest
+    needs: [security-configuration, dependency-security-scan, code-security-scan, infrastructure-security-scan, secrets-detection-scan, compliance-check]
+    if: always() && needs.security-configuration.outputs.generate_report == 'true'
+    steps:
+      - name: Download all security scan artifacts
+        uses: actions/download-artifact@v4
+        if: always()
+        with:
+          pattern: "*-security-scan-results"
+          merge-multiple: true
+          path: security-scan-results/
+
+      - name: Generate comprehensive security report
+        run: |
+          cat > comprehensive-security-report.md << EOF
+          # 🔒 Comprehensive Security Report
+
+          ## 📊 Executive Summary
+          - **Report Generated**: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          - **Scan Type**: ${{ needs.security-configuration.outputs.scan_type }}
+          - **Severity Threshold**: ${{ needs.security-configuration.outputs.severity_threshold }}
+          - **Repository**: ${{ github.repository }}
+          - **Commit**: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+          - **Branch**: ${{ github.ref_name }}
+
+          ## 🎯 Security Scan Results
+
+          ### Dependency Security Scan
+          $(node -e "
+            if (require('fs').existsSync('security-scan-results/dependency-scan-results.json')) {
+              const results = JSON.parse(require('fs').readFileSync('security-scan-results/dependency-scan-results.json', 'utf8'));
+              console.log(\`- **Status**: \${results.scanPassed ? '✅ PASSED' : '❌ FAILED'}\`);
+              console.log(\`- **Security Score**: \${results.score}/100\`);
+              console.log(\`- **Vulnerabilities Found**: \${results.total}\`);
+              console.log(\`- **Critical**: \${results.critical}\`);
+              console.log(\`- **High**: \${results.high}\`);
+              console.log(\`- **Medium**: \${results.moderate}\`);
+              console.log(\`- **Low**: \${results.low}\`);
+            } else {
+              console.log('- Not executed');
+            }
+          ")
+
+          ### Code Security Scan (SAST)
+          $(node -e "
+            if (require('fs').existsSync('security-scan-results/code-security-scan-results.json')) {
+              const results = JSON.parse(require('fs').readFileSync('security-scan-results/code-security-scan-results.json', 'utf8'));
+              console.log(\`- **Status**: \${results.scanPassed ? '✅ PASSED' : '❌ FAILED'}\`);
+              console.log(\`- **Security Score**: \${results.score}/100\`);
+              console.log(\`- **Total Issues**: \${results.totalIssues}\`);
+              console.log(\`- **High Risk**: \${results.highRiskIssues}\`);
+              console.log(\`- **Medium Risk**: \${results.mediumRiskIssues}\`);
+              console.log(\`- **Low Risk**: \${results.lowRiskIssues}\`);
+            } else {
+              console.log('- Not executed');
+            }
+          ")
+
+          ### Infrastructure Security Scan
+          $(node -e "
+            if (require('fs').existsSync('security-scan-results/infrastructure-security-scan-results.json')) {
+              const results = JSON.parse(require('fs').readFileSync('security-scan-results/infrastructure-security-scan-results.json', 'utf8'));
+              console.log(\`- **Status**: \${results.scanPassed ? '✅ PASSED' : '❌ FAILED'}\`);
+              console.log(\`- **Security Score**: \${results.score}/100\`);
+              console.log(\`- **Total Issues**: \${results.totalIssues}\`);
+              console.log(\`- **Critical**: \${results.criticalIssues}\`);
+              console.log(\`- **High**: \${results.highIssues}\`);
+              console.log(\`- **Medium**: \${results.mediumIssues}\`);
+              console.log(\`- **Low**: \${results.lowIssues}\`);
+            } else {
+              console.log('- Not executed');
+            }
+          ")
+
+          ### Secrets Detection
+          $(node -e "
+            if (require('fs').existsSync('security-scan-results/secrets-detection-results.json')) {
+              const results = JSON.parse(require('fs').readFileSync('security-scan-results/secrets-detection-results.json', 'utf8'));
+              console.log(\`- **Status**: \${results.scanPassed ? '✅ PASSED' : '❌ FAILED'}\`);
+              console.log(\`- **Secrets Found**: \${results.totalSecrets}\`);
+              console.log(\`- **High Severity**: \${results.highSeveritySecrets}\`);
+              console.log(\`- **Medium Severity**: \${results.mediumSeveritySecrets}\`);
+              console.log(\`- **Low Severity**: \${results.lowSeveritySecrets}\`);
+            } else {
+              console.log('- Not executed');
+            }
+          ")
+
+          ### Compliance Check
+          $(node -e "
+            if (require('fs').existsSync('security-scan-results/compliance-check-results.json')) {
+              const results = JSON.parse(require('fs').readFileSync('security-scan-results/compliance-check-results.json', 'utf8'));
+              console.log(\`- **Status**: \${results.compliancePassed ? '✅ PASSED' : '❌ FAILED'}\`);
+              console.log(\`- **Compliance Score**: \${results.complianceScore}/100\`);
+              console.log(\`- **Compliance Issues**: \${results.complianceIssues}\`);
+            } else {
+              console.log('- Not executed');
+            }
+          ")
+
+          ## 📈 Overall Security Posture
+
+          $(node -e "
+            let totalScore = 0;
+            let scanCount = 0;
+            let overallPassed = true;
+
+            const scans = [
+              { name: 'Dependencies', file: 'security-scan-results/dependency-scan-results.json', scoreKey: 'score', passedKey: 'scanPassed' },
+              { name: 'Code', file: 'security-scan-results/code-security-scan-results.json', scoreKey: 'score', passedKey: 'scanPassed' },
+              { name: 'Infrastructure', file: 'security-scan-results/infrastructure-security-scan-results.json', scoreKey: 'score', passedKey: 'scanPassed' },
+              { name: 'Compliance', file: 'security-scan-results/compliance-check-results.json', scoreKey: 'complianceScore', passedKey: 'compliancePassed' }
+            ];
+
+            scans.forEach(scan => {
+              if (require('fs').existsSync(scan.file)) {
+                try {
+                  const results = JSON.parse(require('fs').readFileSync(scan.file, 'utf8'));
+                  totalScore += results[scan.scoreKey];
+                  scanCount++;
+                  if (!results[scan.passedKey]) overallPassed = false;
+                } catch (e) {
+                  console.log(\`Could not read \${scan.name} results\`);
+                }
+              }
+            });
+
+            const averageScore = scanCount > 0 ? Math.round(totalScore / scanCount) : 0;
+
+            console.log(\`- **Overall Security Score**: \${averageScore}/100\`);
+            console.log(\`- **Overall Status**: \${overallPassed ? '✅ PASSED' : '❌ FAILED'}\`);
+            console.log(\`- **Scans Executed**: \${scanCount}/4\`);
+          ")
+
+          ## 🚨 Immediate Actions Required
+
+          $(node -e "
+            const actions = [];
+
+            // Check for critical issues
+            if (require('fs').existsSync('security-scan-results/dependency-scan-results.json')) {
+              const results = JSON.parse(require('fs').readFileSync('security-scan-results/dependency-scan-results.json', 'utf8'));
+              if (results.critical > 0) {
+                actions.push(\`- Update \${results.critical} critical dependencies immediately\`);
+              }
+              if (results.high > 0) {
+                actions.push(\`- Update \${results.high} high-severity dependencies\`);
+              }
+            }
+
+            if (require('fs').existsSync('security-scan-results/secrets-detection-results.json')) {
+              const results = JSON.parse(require('fs').readFileSync('security-scan-results/secrets-detection-results.json', 'utf8'));
+              if (results.totalSecrets > 0) {
+                actions.push(\`- Remove \${results.totalSecrets} detected secrets immediately\`);
+              }
+            }
+
+            if (require('fs').existsSync('security-scan-results/code-security-scan-results.json')) {
+              const results = JSON.parse(require('fs').readFileSync('security-scan-results/code-security-scan-results.json', 'utf8'));
+              if (results.highRiskIssues > 0) {
+                actions.push(\`- Address \${results.highRiskIssues} high-risk code security issues\`);
+              }
+            }
+
+            if (actions.length === 0) {
+              console.log('✅ No immediate actions required');
+            } else {
+              actions.forEach(action => console.log(action));
+            }
+          ")
+
+          ## 📋 Recommendations
+
+          ### Security Best Practices
+          - [ ] Regularly update dependencies to latest secure versions
+          - [ ] Implement automated security scanning in CI/CD pipeline
+          - [ ] Use dependency vulnerability management tools
+          - [ ] Regular security code reviews
+          - [ ] Implement security headers and CSP policies
+          - [ ] Enable security monitoring and alerting
+
+          ### Compliance Recommendations
+          - [ ] Maintain up-to-date privacy policy
+          - [ ] Implement proper GDPR compliance measures
+          - [ ] Regular accessibility audits
+          - [ ] Document security policies and procedures
+          - [ ] Implement data retention policies
+
+          ## 🔗 Resources
+          - [GitHub Security Advisories](${{ github.server_url }}/${{ github.repository }}/security/advisories)
+          - [Security Scan Results](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          - [OWASP Security Guidelines](https://owasp.org/)
+          - [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework)
+
+          EOF
+
+      - name: Upload comprehensive security report
+        uses: actions/upload-artifact@v4
+        with:
+          name: comprehensive-security-report
+          path: |
+            comprehensive-security-report.md
+            security-scan-results/
+          retention-days: 90
+
+      - name: Comment on PR with security summary
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const dependencyResults = require('fs').existsSync('security-scan-results/dependency-scan-results.json') ?
+              JSON.parse(require('fs').readFileSync('security-scan-results/dependency-scan-results.json', 'utf8')) : null;
+
+            const codeResults = require('fs').existsSync('security-scan-results/code-security-scan-results.json') ?
+              JSON.parse(require('fs').readFileSync('security-scan-results/code-security-scan-results.json', 'utf8')) : null;
+
+            const secretsResults = require('fs').existsSync('security-scan-results/secrets-detection-results.json') ?
+              JSON.parse(require('fs').readFileSync('security-scan-results/secrets-detection-results.json', 'utf8')) : null;
+
+            let comment = `
+            ## 🔒 Security Scan Results
+
+            `;
+
+            if (dependencyResults) {
+              comment += `
+              ### Dependencies: ${dependencyResults.scanPassed ? '✅' : '❌'}
+              - Security Score: ${dependencyResults.score}/100
+              - Vulnerabilities: ${dependencyResults.total} (Critical: ${dependencyResults.critical}, High: ${dependencyResults.high})
+              `;
+            }
+
+            if (codeResults) {
+              comment += `
+              ### Code Security: ${codeResults.scanPassed ? '✅' : '❌'}
+              - Security Score: ${codeResults.score}/100
+              - Issues: ${codeResults.totalIssues} (High: ${codeResults.highRiskIssues}, Medium: ${codeResults.mediumRiskIssues})
+              `;
+            }
+
+            if (secretsResults) {
+              comment += `
+              ### Secrets Detection: ${secretsResults.scanPassed ? '✅' : '❌'}
+              - Secrets Found: ${secretsResults.totalSecrets}
+              `;
+            }
+
+            comment += `
+
+            [📋 View Full Security Report](${context.payload.repository.html_url}/actions/runs/${context.runId})
+            `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+
+      - name: Send security alert on critical issues
+        if: |
+          (needs.dependency-security-scan.outputs.critical_vulnerabilities > 0) ||
+          (needs.code-security-scan.outputs.high_risk_issues > 5) ||
+          (needs.secrets-detection-scan.outputs.secrets_found > 0)
+        run: |
+          echo "🚨 CRITICAL SECURITY ISSUES DETECTED"
+          echo "This requires immediate attention from the security team!"
+
+          # Here you would typically send alerts to:
+          # - Slack channel
+          # - Email distribution list
+          # - Security incident response system
+          # - PagerDuty or similar alerting system
+
+  # Security workflow completion
+  security-workflow-completion:
+    name: Security Workflow Completion
+    runs-on: ubuntu-latest
+    needs: [security-configuration, dependency-security-scan, code-security-scan, infrastructure-security-scan, secrets-detection-scan, compliance-check]
+    if: always()
+    steps:
+      - name: Determine overall security status
+        id: status
+        run: |
+          # Determine if any critical security scans failed
+          DEPENDENCY_PASSED="${{ needs.dependency-security-scan.result == 'success' || needs.dependency-security-scan.result == 'skipped' }}"
+          CODE_PASSED="${{ needs.code-security-scan.result == 'success' || needs.code-security-scan.result == 'skipped' }}"
+          INFRA_PASSED="${{ needs.infrastructure-security-scan.result == 'success' || needs.infrastructure-security-scan.result == 'skipped' }}"
+          SECRETS_PASSED="${{ needs.secrets-detection-scan.result == 'success' || needs.secrets-detection-scan.result == 'skipped' }}"
+          COMPLIANCE_PASSED="${{ needs.compliance-check.result == 'success' || needs.compliance-check.result == 'skipped' }}"
+
+          if [[ "$DEPENDENCY_PASSED" == "true" && "$CODE_PASSED" == "true" && "$INFRA_PASSED" == "true" && "$SECRETS_PASSED" == "true" && "$COMPLIANCE_PASSED" == "true" ]]; then
+            echo "overall_status=PASSED" >> $GITHUB_OUTPUT
+            echo "status_emoji=✅" >> $GITHUB_OUTPUT
+            echo "status_message=All security scans passed successfully!" >> $GITHUB_OUTPUT
+          else
+            echo "overall_status=FAILED" >> $GITHUB_OUTPUT
+            echo "status_emoji=❌" >> $GITHUB_OUTPUT
+            echo "status_message=Some security scans failed. Please review the results." >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate workflow summary
+        run: |
+          cat > security-workflow-summary.md << EOF
+          # ${{ steps.status.outputs.status_emoji }} Security Workflow Summary
+
+          **Overall Status**: ${{ steps.status.outputs.overall_status }}
+          **Scan Type**: ${{ needs.security-configuration.outputs.scan_type }}
+          **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          ## Scan Results:
+          - **Dependencies**: ${{ needs.dependency-security-scan.result }}
+          - **Code Security**: ${{ needs.code-security-scan.result }}
+          - **Infrastructure**: ${{ needs.infrastructure-security-scan.result }}
+          - **Secrets Detection**: ${{ needs.secrets-detection-scan.result }}
+          - **Compliance**: ${{ needs.compliance-check.result }}
+
+          ${{ steps.status.outputs.status_message }}
+
+          [View detailed results](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          EOF
+
+      - name: Complete security workflow
+        run: |
+          echo "${{ steps.status.outputs.status_emoji }} Security workflow completed: ${{ steps.status.outputs.overall_status }}"
+          echo "${{ steps.status.outputs.status_message }}"
+
+          if [[ "${{ steps.status.outputs.overall_status }}" == "FAILED" ]]; then
+            echo "Please review the security scan results and address any issues."
+            exit 1
+          else
+            echo "✅ Security workflow completed successfully!"
+            exit 0
+          fi

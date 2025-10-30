@@ -31,7 +31,7 @@ export function WaitlistOption({ onWaitlistJoined, onCancel }: WaitlistOptionPro
       start: '09:00',
       end: '17:00',
     },
-    notificationPreferences: {
+    notification aria-live="polite" aria-atomic="true"Preferences: {
       email: true,
       sms: false,
       push: true,
@@ -234,37 +234,37 @@ export function WaitlistOption({ onWaitlistJoined, onCancel }: WaitlistOptionPro
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="notify-email"
-                  checked={formData.notificationPreferences.email}
+                  checked={formData.notification aria-live="polite" aria-atomic="true"Preferences.email}
                   onCheckedChange={(checked) =>
                     setFormData({
                       ...formData,
-                      notificationPreferences: {
-                        ...formData.notificationPreferences,
+                      notification aria-live="polite" aria-atomic="true"Preferences: {
+                        ...formData.notification aria-live="polite" aria-atomic="true"Preferences,
                         email: checked as boolean,
                       },
                     })
                   }
                 />
                 <Label htmlFor="notify-email" className="text-sm">
-                  Email notifications
+                  Email notification aria-live="polite" aria-atomic="true"s
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="notify-sms"
-                  checked={formData.notificationPreferences.sms}
+                  checked={formData.notification aria-live="polite" aria-atomic="true"Preferences.sms}
                   onCheckedChange={(checked) =>
                     setFormData({
                       ...formData,
-                      notificationPreferences: {
-                        ...formData.notificationPreferences,
+                      notification aria-live="polite" aria-atomic="true"Preferences: {
+                        ...formData.notification aria-live="polite" aria-atomic="true"Preferences,
                         sms: checked as boolean,
                       },
                     })
                   }
                 />
                 <Label htmlFor="notify-sms" className="text-sm">
-                  SMS notifications
+                  SMS notification aria-live="polite" aria-atomic="true"s
                 </Label>
               </div>
             </div>
@@ -289,7 +289,7 @@ export function WaitlistOption({ onWaitlistJoined, onCancel }: WaitlistOptionPro
               Waitlist Benefits
             </h4>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Priority notification when spots become available</li>
+              <li>• Priority notification aria-live="polite" aria-atomic="true" when spots become available</li>
               <li>• 15-minute priority window to book</li>
               <li>• Automatic consideration for cancellations</li>
               <li>• No obligation to book if contacted</li>
@@ -323,7 +323,7 @@ export function WaitlistOption({ onWaitlistJoined, onCancel }: WaitlistOptionPro
             <div className="text-xs text-amber-800">
               <p className="font-medium mb-1">How Waitlist Works:</p>
               <ol className="list-decimal list-inside space-y-1">
-                <li>You'll receive a notification when a spot becomes available</li>
+                <li>You'll receive a notification aria-live="polite" aria-atomic="true" when a spot becomes available</li>
                 <li>You'll have 15 minutes to claim the spot</li>
                 <li>If you don't respond, the spot goes to the next person</li>
                 <li>You can remove yourself from the waitlist at any time</li>

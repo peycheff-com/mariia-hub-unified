@@ -27,7 +27,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 
@@ -79,7 +79,7 @@ const AIContentReview = () => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("queue");
   const [qualityMetrics, setQualityMetrics] = useState<QualityMetrics | null>(null);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   // Load content queue on mount
   useEffect(() => {
@@ -123,7 +123,7 @@ const AIContentReview = () => {
       setContentQueue(formattedData);
     } catch (error) {
       logger.error('Error loading content queue:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Failed to load content queue",
         variant: "destructive"
@@ -199,12 +199,12 @@ const AIContentReview = () => {
 
       if (updateError) throw updateError;
 
-      // Send notification if needed
+      // Send notification aria-live="polite" aria-atomic="true" if needed
       if (action === 'request_revision') {
         await sendRevisionRequest(selectedContent, reviewAction);
       }
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Success",
         description: `Content ${action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'sent for revision'}`
       });
@@ -217,7 +217,7 @@ const AIContentReview = () => {
 
     } catch (error) {
       logger.error('Error submitting review:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Failed to submit review",
         variant: "destructive"
@@ -228,7 +228,7 @@ const AIContentReview = () => {
   };
 
   const sendRevisionRequest = async (content: ContentForReview, review: ReviewAction) => {
-    // Send email or notification to content author
+    // Send email or notification aria-live="polite" aria-atomic="true" to content author
     logger.info('Sending revision request for content:', content.id, 'Review:', review);
   };
 

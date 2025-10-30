@@ -129,7 +129,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 import { cn } from '@/lib/utils';
 
 
@@ -179,7 +179,7 @@ export const BudgetTracking: React.FC<BudgetTrackingProps> = ({
   className
 }) => {
   const { budgets, employees, loading, createBudget, updateBudget, loadBudgets } = useCorporate();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   // State
   const [selectedPeriod, setSelectedPeriod] = useState(format(new Date(), 'yyyy-MM'));
@@ -281,7 +281,7 @@ export const BudgetTracking: React.FC<BudgetTrackingProps> = ({
   const handleCreateBudget = async () => {
     try {
       if (!budgetFormData.total_allocated || budgetFormData.total_allocated <= 0) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: 'Validation Error',
           description: 'Please enter a valid budget amount',
           variant: 'destructive'
@@ -290,7 +290,7 @@ export const BudgetTracking: React.FC<BudgetTrackingProps> = ({
       }
 
       await createBudget(budgetFormData);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Success',
         description: 'Budget created successfully'
       });
@@ -304,7 +304,7 @@ export const BudgetTracking: React.FC<BudgetTrackingProps> = ({
       });
       await loadBudgets(corporateAccountId);
     } catch (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to create budget',
         variant: 'destructive'
@@ -325,21 +325,21 @@ export const BudgetTracking: React.FC<BudgetTrackingProps> = ({
       };
 
       // Call API to generate report
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Generating Report',
         description: 'Your report is being generated...'
       });
 
       // Simulate report generation
       setTimeout(() => {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: 'Report Ready',
           description: 'Your budget report has been generated successfully'
         });
         setShowReportDialog(false);
       }, 2000);
     } catch (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to generate report',
         variant: 'destructive'
@@ -921,7 +921,7 @@ export const BudgetTracking: React.FC<BudgetTrackingProps> = ({
             </Button>
             <Button onClick={() => {
               // Add transaction logic here
-              toast({
+              toast aria-live="polite" aria-atomic="true"({
                 title: 'Success',
                 description: 'Transaction added successfully'
               });

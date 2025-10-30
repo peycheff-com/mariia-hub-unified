@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Trophy, Star, Gift, Users } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -25,7 +25,7 @@ const LOYALTY_TIERS = {
 const LoyaltyManagement = () => {
   const [stats, setStats] = useState<LoyaltyStats[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   useEffect(() => {
     loadLoyaltyStats();
@@ -82,7 +82,7 @@ const LoyaltyManagement = () => {
       statsArray.sort((a, b) => b.totalSpent - a.totalSpent);
       setStats(statsArray);
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error loading loyalty stats",
         description: error.message,
         variant: "destructive",

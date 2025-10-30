@@ -13,6 +13,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 import { enhancedStripeService, EnhancedStripeService , StripePaymentIntent, StripeCustomer } from '../enhanced-stripe-service';
+import { testAPIKeys } from '@/test/test-credentials';
 
 // Mock dependencies
 vi.mock('@/integrations/supabase/client', () => ({
@@ -99,7 +100,7 @@ describe('EnhancedStripeService', () => {
       const { apiGateway } = await import('../secure-api-gateway');
 
       (credentialManager.getCredentials as any).mockResolvedValue({
-        apiKey: 'sk_test_123',
+        apiKey: testAPIKeys.stripe,
         webhookSecret: 'whsec_123',
       });
 
@@ -130,7 +131,7 @@ describe('EnhancedStripeService', () => {
       const { apiGateway } = await import('../secure-api-gateway');
 
       (credentialManager.getCredentials as any).mockResolvedValue({
-        apiKey: 'sk_test_123',
+        apiKey: testAPIKeys.stripe,
       });
 
       (apiGateway.request as any).mockResolvedValue({ success: false });
@@ -148,7 +149,7 @@ describe('EnhancedStripeService', () => {
       const { apiGateway } = await import('../secure-api-gateway');
 
       (credentialManager.getCredentials as any).mockResolvedValue({
-        apiKey: 'sk_test_123',
+        apiKey: testAPIKeys.stripe,
       });
 
       (apiGateway.request as any).mockResolvedValue({ success: true });

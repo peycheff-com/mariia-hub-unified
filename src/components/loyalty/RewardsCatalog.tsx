@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Gift, Coins, Clock, Tag, ShoppingCart, Star, Zap, Crown, Ticket } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,7 +43,7 @@ export function RewardsCatalog({ className }: RewardsCatalogProps) {
 
   const handleRedeemReward = async (reward: Reward) => {
     if (!customerLoyalty || customerLoyalty.current_points < reward.points_cost) {
-      toast.error('Insufficient points');
+      toast aria-live="polite" aria-atomic="true".error('Insufficient points');
       return;
     }
 
@@ -51,9 +51,9 @@ export function RewardsCatalog({ className }: RewardsCatalogProps) {
     try {
       await redeemReward(reward.id, reward.points_cost);
       setSelectedReward(null);
-      toast.success('Reward redeemed successfully!');
+      toast aria-live="polite" aria-atomic="true".success('Reward redeemed successfully!');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to redeem reward');
+      toast aria-live="polite" aria-atomic="true".error(error.message || 'Failed to redeem reward');
     } finally {
       setIsRedeeming(false);
     }

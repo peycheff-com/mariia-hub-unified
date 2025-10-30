@@ -34,7 +34,7 @@ import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import { useToast } from '@/hooks/use-toast'
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"'
 import { useMessaging } from '@/hooks/useMessaging'
 import { cn } from '@/lib/utils'
 
@@ -61,7 +61,7 @@ interface TemplateTestForm {
 
 export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ className }) => {
   const { t } = useTranslation()
-  const { toast } = useToast()
+  const { toast aria-live="polite" aria-atomic="true" } = useToast()
   const {
     templates,
     createTemplate,
@@ -131,7 +131,7 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ className })
   // Handle form submission
   const handleCreateTemplate = async () => {
     if (!formData.name || !formData.template_content) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('error', 'Error'),
         description: t('fill_required_fields', 'Please fill in all required fields'),
         variant: 'destructive'
@@ -154,7 +154,7 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ className })
         is_active: true
       })
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('success', 'Success'),
         description: t('template_created', 'Template created successfully')
       })
@@ -168,7 +168,7 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ className })
   // Handle template update
   const handleUpdateTemplate = async () => {
     if (!editingTemplate?.id || !formData.name || !formData.template_content) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('error', 'Error'),
         description: t('fill_required_fields', 'Please fill in all required fields'),
         variant: 'destructive'
@@ -192,7 +192,7 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ className })
         is_active: true
       })
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('success', 'Success'),
         description: t('template_updated', 'Template updated successfully')
       })
@@ -251,7 +251,7 @@ export const TemplatesManager: React.FC<TemplatesManagerProps> = ({ className })
 
     try {
       await createTemplate(duplicatedData)
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('success', 'Success'),
         description: t('template_duplicated', 'Template duplicated successfully')
       })

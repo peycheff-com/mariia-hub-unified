@@ -1,4 +1,4 @@
-name: E2E Tests - Critical User Journeys
+name: Comprehensive E2E Testing Suite
 
 on:
   push:
@@ -10,28 +10,41 @@ on:
     - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
-      test_suite:
-        description: 'Test suite to run'
-        required: false
+      test_type:
+        description: 'Type of E2E tests to run'
+        required: true
         default: 'all'
         type: choice
         options:
-          - all
-          - booking
-          - packages
-          - users
-          - admin
-          - critical-only
+        - all
+        - critical
+        - booking-flow
+        - visual-regression
+        - accessibility
+        - performance
+        - cross-browser
+        - mobile-tablet
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+        - development
       browser:
         description: 'Browser to test'
         required: false
         default: 'all'
         type: choice
         options:
-          - all
-          - chromium
-          - firefox
-          - webkit
+        - all
+        - chromium
+        - firefox
+        - webkit
+        - mobile-chrome
+        - mobile-safari
 
 env:
   NODE_VERSION: '18'

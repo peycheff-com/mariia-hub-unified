@@ -6,12 +6,12 @@ import { SEO } from "@/components/SEO";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import MobileFooter from "@/components/MobileFooter";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 
 
 const GiftCards = () => {
   const { i18n } = useTranslation();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const [selectedAmount, setSelectedAmount] = useState("200");
   const [customAmount, setCustomAmount] = useState("");
   const [formData, setFormData] = useState({
@@ -89,7 +89,7 @@ const GiftCards = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: i18n.language === 'pl' ? "Zamówienie Przyjęte" : i18n.language === 'en' ? "Order Received" : "Order Received",
       description: i18n.language === 'pl'
         ? "Przetwarzamy Twoje zamówienie. Voucher zostanie wysłany wkrótce."

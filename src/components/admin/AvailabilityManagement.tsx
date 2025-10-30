@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAvailability, AvailabilitySlot, Booking } from '@/hooks/useAvailability';
 import EmptyState from '@/components/EmptyState';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 
 import UnifiedAvailabilityCalendar from './UnifiedAvailabilityCalendar';
 import AvailabilityMonthCalendar from './AvailabilityMonthCalendar';
@@ -39,7 +39,7 @@ const AvailabilityManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<FilterType>({});
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const itemsPerPage = 10;
 
   const activeAvailability = activeTab === 'beauty' ? beautyAvailability : fitnessAvailability;
@@ -93,15 +93,15 @@ const AvailabilityManagement = () => {
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
-    toast({ title: 'Success', description: 'Bookings exported to CSV' });
+    toast aria-live="polite" aria-atomic="true"({ title: 'Success', description: 'Bookings exported to CSV' });
   };
 
   const updateBookingStatus = async (bookingId: string, newStatus: string) => {
     const { error } = await (supabase as any).from('bookings').update({ status: newStatus }).eq('id', bookingId);
     if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast aria-live="polite" aria-atomic="true"({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Success', description: 'Booking status updated' });
+      toast aria-live="polite" aria-atomic="true"({ title: 'Success', description: 'Booking status updated' });
       activeAvailability.refreshData();
     }
   };
@@ -109,9 +109,9 @@ const AvailabilityManagement = () => {
   const saveAdminNotes = async (bookingId: string) => {
     const { error } = await (supabase as any).from('bookings').update({ admin_notes: adminNotes }).eq('id', bookingId);
     if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast aria-live="polite" aria-atomic="true"({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Success', description: 'Notes saved' });
+      toast aria-live="polite" aria-atomic="true"({ title: 'Success', description: 'Notes saved' });
       setEditingNotes(null);
       setAdminNotes('');
       activeAvailability.refreshData();
@@ -121,9 +121,9 @@ const AvailabilityManagement = () => {
   const handleDeleteSlot = async (slotId: string) => {
     const { error } = await supabase.from('availability_slots').delete().eq('id', slotId);
     if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast aria-live="polite" aria-atomic="true"({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Success', description: 'Slot deleted' });
+      toast aria-live="polite" aria-atomic="true"({ title: 'Success', description: 'Slot deleted' });
     }
   };
 

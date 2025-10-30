@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { useBooking } from "@/contexts/BookingContext";
 import BookingSheet from "@/components/booking/BookingSheet";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -10,7 +10,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 const BookingWizard = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const { selectedServiceId, serviceType } = useBooking();
   
   const [loading, setLoading] = useState(true);
@@ -46,7 +46,7 @@ const BookingWizard = () => {
       setServices(data || []);
     } catch (error: any) {
       setLoadError('Could not load services.');
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Could not load services. Please try again.",
         variant: "destructive",

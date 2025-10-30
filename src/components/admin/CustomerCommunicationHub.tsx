@@ -109,7 +109,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -160,7 +160,7 @@ interface CommunicationHubProps {
 }
 
 export function CustomerCommunicationHub({ className }: CommunicationHubProps) {
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedChannel, setSelectedChannel] = useState("all");
@@ -380,7 +380,7 @@ export function CustomerCommunicationHub({ className }: CommunicationHubProps) {
     setReplyText("");
     setIsLoading(false);
 
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: "Message sent",
       description: "Your reply has been sent successfully",
     });

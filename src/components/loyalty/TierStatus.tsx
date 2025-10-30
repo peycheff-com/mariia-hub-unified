@@ -1,12 +1,147 @@
-import React from 'react';
-import { Trophy, Lock, Star, Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import { Crown, Star, Shield, Gem, Sparkles, ChevronRight, Info, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useLoyaltyContext } from '@/contexts/LoyaltyContext';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { useLoyalty } from '@/hooks/useLoyalty';
 import { Skeleton } from '@/components/ui/skeleton';
+
+interface TierConfig {
+  name: string;
+  level: number;
+  icon: React.ReactNode;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  description: string;
+  benefits: string[];
+  requirements: {
+    minSpend: number;
+    minVisits: number;
+    minPoints: number;
+  };
+}
+
+const tierConfigs: Record<string, TierConfig> = {
+  Bronze: {
+    name: 'Bronze',
+    level: 1,
+    icon: <Shield className="h-6 w-6" />,
+    color: '#CD7F32',
+    bgColor: 'bg-gradient-to-br from-amber-50 to-orange-50',
+    borderColor: 'border-amber-200',
+    description: 'Start your luxury journey with exclusive member benefits',
+    benefits: [
+      'Welcome points on first visit',
+      'Birthday gift',
+      '5% member discount',
+      'Exclusive member events',
+      'Points earning on all purchases',
+    ],
+    requirements: {
+      minSpend: 0,
+      minVisits: 0,
+      minPoints: 0,
+    },
+  },
+  Silver: {
+    name: 'Silver',
+    level: 2,
+    icon: <Star className="h-6 w-6" />,
+    color: '#C0C0C0',
+    bgColor: 'bg-gradient-to-br from-gray-50 to-slate-50',
+    borderColor: 'border-gray-300',
+    description: 'Enhanced rewards and priority service',
+    benefits: [
+      'Enhanced points earning (20% bonus)',
+      'Priority support',
+      'Seasonal exclusive offers',
+      'Free consultation',
+      'Early access to promotions',
+      'Priority booking (48 hours)',
+    ],
+    requirements: {
+      minSpend: 500,
+      minVisits: 5,
+      minPoints: 500,
+    },
+  },
+  Gold: {
+    name: 'Gold',
+    level: 3,
+    icon: <Crown className="h-6 w-6" />,
+    color: '#FFD700',
+    bgColor: 'bg-gradient-to-br from-yellow-50 to-amber-50',
+    borderColor: 'border-yellow-300',
+    description: 'Premium experience with VIP treatment',
+    benefits: [
+      'Exclusive events and workshops',
+      'Free monthly treatment',
+      'Personalized recommendations',
+      'VIP booking priority (24 hours)',
+      'Complimentary upgrades',
+      'Partner discounts (15% off)',
+      'Dedicated support specialist',
+    ],
+    requirements: {
+      minSpend: 1500,
+      minVisits: 15,
+      minPoints: 1500,
+    },
+  },
+  Platinum: {
+    name: 'Platinum',
+    level: 4,
+    icon: <Gem className="h-6 w-6" />,
+    color: '#E5E4E2',
+    bgColor: 'bg-gradient-to-br from-slate-50 to-gray-50',
+    borderColor: 'border-slate-300',
+    description: 'Elite status with concierge service',
+    benefits: [
+      'Personal concierge service',
+      'Exclusive products access',
+      'Quarterly VIP events',
+      'Custom treatment plans',
+      'Unlimited priority booking',
+      'White-glove service',
+      'Complimentary enhancements',
+      'First access to new services',
+    ],
+    requirements: {
+      minSpend: 5000,
+      minVisits: 50,
+      minPoints: 5000,
+    },
+  },
+  Diamond: {
+    name: 'Diamond',
+    level: 5,
+    icon: <Sparkles className="h-6 w-6" />,
+    color: '#B9F2FF',
+    bgColor: 'bg-gradient-to-br from-blue-50 to-cyan-50',
+    borderColor: 'border-blue-200',
+    description: 'Ultimate luxury and exclusive experiences',
+    benefits: [
+      'Custom luxury experiences',
+      'First access to innovations',
+      'Personalized service creation',
+      'Exclusive Diamond events',
+      'Lifetime recognition',
+      'Custom rewards program',
+      'Unlimited complimentary treatments',
+      'Personal luxury coordinator',
+    ],
+    requirements: {
+      minSpend: 15000,
+      minVisits: 100,
+      minPoints: 15000,
+    },
+  },
+};
 
 interface TierStatusProps {
   className?: string;
@@ -14,15 +149,14 @@ interface TierStatusProps {
 }
 
 export function TierStatus({ className, showAllTiers = true }: TierStatusProps) {
-  const {
-    currentTier,
-    nextTier,
-    progressToNextTier,
-    customerLoyalty,
-    tiers,
-    isTierExpiringSoon,
-    isLoadingLoyalty
-  } = useLoyalty();
+  const { state } = useLoyaltyContext();
+  const [selectedTier, setSelectedTier] = useState<string | null>(null);
+  const [showBenefits, setShowBenefits] = useState(false);
+
+  const currentTier = state.member?.tier;
+  const currentTierConfig = currentTier ? tierConfigs[currentTier.name] : tierConfigs.Bronze;
+  const tierProgress = state.stats?.tierProgress || 0;
+  const pointsToNextTier = state.stats?.pointsToNextTier || 0;
 
   if (isLoadingLoyalty) {
     return (

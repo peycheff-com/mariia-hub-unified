@@ -32,7 +32,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 
 interface BulkOperation {
   id: string;
@@ -61,7 +61,7 @@ const BulkOperations = () => {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [operationType, setOperationType] = useState<'import' | 'export' | 'update'>('import');
   const [targetType, setTargetType] = useState<string>('services');
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   const [operationConfig, setOperationConfig] = useState({
     headers: true,
@@ -113,7 +113,7 @@ const BulkOperations = () => {
       if (error) throw error;
       setOperations(data || []);
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: error.message,
         variant: 'destructive'
@@ -128,7 +128,7 @@ const BulkOperations = () => {
     if (file) {
       const allowedTypes = ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/json'];
       if (!allowedTypes.includes(file.type)) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: 'Error',
           description: 'Please upload a CSV, Excel, or JSON file',
           variant: 'destructive'
@@ -141,7 +141,7 @@ const BulkOperations = () => {
 
   const handleStartOperation = async () => {
     if (operationType === 'import' && !uploadFile) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Please select a file to import',
         variant: 'destructive'
@@ -173,7 +173,7 @@ const BulkOperations = () => {
 
       if (error) throw error;
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Success',
         description: 'Bulk operation created successfully'
       });
@@ -185,7 +185,7 @@ const BulkOperations = () => {
       // Start processing (in real implementation, this would trigger a background job)
       processOperation(data.id);
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: error.message,
         variant: 'destructive'
@@ -230,14 +230,14 @@ const BulkOperations = () => {
 
       if (error) throw error;
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Success',
         description: 'Operation cancelled'
       });
 
       loadOperations();
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: error.message,
         variant: 'destructive'
@@ -258,14 +258,14 @@ const BulkOperations = () => {
 
       if (error) throw error;
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Success',
         description: 'Operation deleted'
       });
 
       loadOperations();
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: error.message,
         variant: 'destructive'
@@ -288,12 +288,12 @@ const BulkOperations = () => {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Success',
         description: 'Template downloaded successfully'
       });
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: error.message,
         variant: 'destructive'

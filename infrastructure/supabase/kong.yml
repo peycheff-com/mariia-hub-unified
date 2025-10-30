@@ -1,0 +1,271 @@
+_format_version: "3.0"
+_transform: true
+
+# Kong API Gateway Configuration for Supabase
+# This configuration defines the routing and middleware for Supabase services
+
+services:
+  # Main API service
+  - name: supabase-api
+    url: http://supabase-rest:3000
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "http://localhost:8080"
+            - "https://mariaborysevych.com"
+            - "https://staging.mariaborysevych.com"
+            - "https://*.vercel.app"
+          methods:
+            - GET
+            - POST
+            - PUT
+            - DELETE
+            - OPTIONS
+          headers:
+            - Accept
+            - Accept-Version
+            - Content-Length
+            - Content-MD5
+            - Content-Type
+            - Date
+            - X-Auth-Token
+            - Authorization
+            - X-Client-Info
+            - X-Request-ID
+            - apikey
+          exposed_headers:
+            - X-Total-Count
+          credentials: true
+          max_age: 86400
+
+  # Auth service
+  - name: supabase-auth
+    url: http://supabase-auth:9999
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "http://localhost:8080"
+            - "https://mariaborysevych.com"
+            - "https://staging.mariaborysevych.com"
+            - "https://*.vercel.app"
+          methods:
+            - GET
+            - POST
+            - PUT
+            - DELETE
+            - OPTIONS
+          headers:
+            - Accept
+            - Accept-Version
+            - Content-Length
+            - Content-MD5
+            - Content-Type
+            - Date
+            - X-Auth-Token
+            - Authorization
+            - X-Client-Info
+          credentials: true
+          max_age: 86400
+
+  # Storage service
+  - name: supabase-storage
+    url: http://supabase-storage:5000
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "http://localhost:8080"
+            - "https://mariaborysevych.com"
+            - "https://staging.mariaborysevych.com"
+            - "https://*.vercel.app"
+          methods:
+            - GET
+            - POST
+            - PUT
+            - DELETE
+            - OPTIONS
+            - PATCH
+          headers:
+            - Accept
+            - Accept-Version
+            - Content-Length
+            - Content-MD5
+            - Content-Type
+            - Date
+            - X-Auth-Token
+            - Authorization
+            - X-Client-Info
+            - X-Request-ID
+            - apikey
+            - X-Upload-ID
+          credentials: true
+          max_age: 86400
+
+  # Realtime service
+  - name: supabase-realtime
+    url: http://supabase-realtime:3000
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "http://localhost:8080"
+            - "https://mariaborysevych.com"
+            - "https://staging.mariaborysevych.com"
+            - "https://*.vercel.app"
+          methods:
+            - GET
+            - POST
+            - OPTIONS
+          headers:
+            - Accept
+            - Accept-Version
+            - Content-Length
+            - Content-MD5
+            - Content-Type
+            - Date
+            - X-Auth-Token
+            - Authorization
+            - X-Client-Info
+            - X-Request-ID
+            - apikey
+          credentials: true
+          max_age: 86400
+
+routes:
+  # REST API routes
+  - name: rest-v1-routes
+    service: supabase-api
+    paths:
+      - "/rest/v1"
+    strip_path: false
+    methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - PATCH
+      - OPTIONS
+
+  # Auth routes
+  - name: auth-v1-routes
+    service: supabase-auth
+    paths:
+      - "/auth/v1"
+    strip_path: false
+    methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+
+  # Storage routes
+  - name: storage-v1-routes
+    service: supabase-storage
+    paths:
+      - "/storage/v1"
+    strip_path: false
+    methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - PATCH
+      - OPTIONS
+
+  # Realtime routes
+  - name: realtime-v1-routes
+    service: supabase-realtime
+    paths:
+      - "/realtime/v1"
+    strip_path: false
+    methods:
+      - GET
+      - POST
+      - OPTIONS
+
+  # Health check routes
+  - name: health-routes
+    service: supabase-api
+    paths:
+      - "/health"
+      - "/rest/v1/"
+    strip_path: false
+    methods:
+      - GET
+
+# Rate limiting plugins for security
+plugins:
+  # Global rate limiting
+  - name: rate-limiting
+    service: supabase-api
+    config:
+      minute: 1000
+      hour: 10000
+      policy: local
+      fault_tolerant: true
+
+  - name: rate-limiting
+    service: supabase-auth
+    config:
+      minute: 100
+      hour: 1000
+      policy: local
+      fault_tolerant: true
+
+  - name: rate-limiting
+    service: supabase-storage
+    config:
+      minute: 500
+      hour: 5000
+      policy: local
+      fault_tolerant: true
+
+  # Request size limiting
+  - name: request-size-limiting
+    service: supabase-storage
+    config:
+      allowed_payload_size: 50 # 50MB for file uploads
+
+  # IP restrictions (optional - for development)
+  - name: ip-restriction
+    config:
+      allow:
+        - 0.0.0.0/0
+      deny:
+        - 192.168.0.0/16
+
+  # JWT authentication
+  - name: jwt
+    config:
+      secret_is_base64: false
+      secret_is_claim: false
+      secret_claim: "iss"
+      algorithm: "HS256"
+      key_claim_name: "iss"
+      value_to_match: "supabase"
+
+# Consumers for different access patterns
+consumers:
+  - username: anon
+    plugins:
+      - name: jwt
+        config:
+          key_claim_name: "role"
+          value_to_match: "anon"
+
+  - username: authenticated
+    plugins:
+      - name: jwt
+        config:
+          key_claim_name: "role"
+          value_to_match: "authenticated"
+
+  - username: service_role
+    plugins:
+      - name: jwt
+        config:
+          key_claim_name: "role"
+          value_to_match: "service_role"

@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMetaCAPI } from '@/components/tracking/MetaCAPIProvider';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 import { logger } from '@/lib/logger';
 
 interface TrackableContactFormProps {
@@ -38,7 +38,7 @@ export const TrackableContactForm: React.FC<TrackableContactFormProps> = ({
   onSubmit
 }) => {
   const { trackContactForm, trackCustomConversion, trackLeadGeneration } = useMetaCAPI();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<ContactFormData>({
     name: '',
@@ -84,7 +84,7 @@ export const TrackableContactForm: React.FC<TrackableContactFormProps> = ({
     try {
       // Validate form
       if (!formData.name || !formData.email || !formData.subject || !formData.message) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: 'Error',
           description: 'Please fill in all required fields',
           variant: 'destructive',
@@ -139,7 +139,7 @@ export const TrackableContactForm: React.FC<TrackableContactFormProps> = ({
         success_timestamp: new Date().toISOString(),
       });
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Success!',
         description: 'Your message has been sent successfully. We\'ll get back to you soon!',
       });
@@ -164,7 +164,7 @@ export const TrackableContactForm: React.FC<TrackableContactFormProps> = ({
         error_timestamp: new Date().toISOString(),
       });
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to send your message. Please try again.',
         variant: 'destructive',

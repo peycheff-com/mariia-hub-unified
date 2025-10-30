@@ -27,7 +27,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 import { ContentManagement } from '@/types/content';
 import { blogService } from '@/services/blog.service';
 import { cn } from '@/lib/utils';
@@ -60,7 +60,7 @@ export const ContentManagementDashboard: React.FC<ContentManagementDashboardProp
   className
 }) => {
   const { t } = useTranslation();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   // State
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -112,7 +112,7 @@ export const ContentManagementDashboard: React.FC<ContentManagementDashboardProp
       setRecentContent(posts.slice(0, 5));
     } catch (error) {
       console.error('Error loading dashboard data:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('admin.dashboard.loadFailed'),
         description: t('admin.dashboard.loadFailedDesc'),
         variant: 'destructive'
@@ -124,7 +124,7 @@ export const ContentManagementDashboard: React.FC<ContentManagementDashboardProp
 
   // Handle content generated
   const handleContentGenerated = (content: any, type: string) => {
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: t('admin.dashboard.contentGenerated'),
       description: t('admin.dashboard.contentGeneratedDesc')
     });
@@ -133,7 +133,7 @@ export const ContentManagementDashboard: React.FC<ContentManagementDashboardProp
 
   // Handle content saved
   const handleContentSaved = (content: any, type: string) => {
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: t('admin.dashboard.contentSaved'),
       description: t('admin.dashboard.contentSavedDesc')
     });
@@ -395,7 +395,7 @@ export const ContentManagementDashboard: React.FC<ContentManagementDashboardProp
           <SEOOptimizer
             contentId={contentId}
             onOptimized={(analysis, suggestions) => {
-              toast({
+              toast aria-live="polite" aria-atomic="true"({
                 title: t('admin.seo.optimized'),
                 description: t('admin.seo.optimizedDesc')
               });
@@ -408,7 +408,7 @@ export const ContentManagementDashboard: React.FC<ContentManagementDashboardProp
           <TranslationWorkflow
             contentId={contentId}
             onTranslated={(content, language) => {
-              toast({
+              toast aria-live="polite" aria-atomic="true"({
                 title: t('admin.translation.completed'),
                 description: t('admin.translation.completedDesc')
               });
@@ -421,7 +421,7 @@ export const ContentManagementDashboard: React.FC<ContentManagementDashboardProp
           <ContentScheduler
             contentId={contentId}
             onScheduled={(schedule) => {
-              toast({
+              toast aria-live="polite" aria-atomic="true"({
                 title: t('admin.scheduler.scheduled'),
                 description: t('admin.scheduler.scheduledDesc')
               });

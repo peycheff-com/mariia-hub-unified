@@ -38,7 +38,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { logger } from "@/lib/logger";
 import {
   getAIContentService,
@@ -58,7 +58,7 @@ const EnhancedAIContentGenerator = () => {
   const [selectedContent, setSelectedContent] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editingContent, setEditingContent] = useState("");
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   // Blog Post State
   const [blogTopic, setBlogTopic] = useState("");
@@ -161,7 +161,7 @@ const EnhancedAIContentGenerator = () => {
   // Generate Blog Post
   const generateBlogPost = async () => {
     if (!blogTopic.trim()) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Please enter a topic",
         variant: "destructive",
@@ -191,7 +191,7 @@ const EnhancedAIContentGenerator = () => {
         setGeneratedContent(result.content);
         setContentHistory(prev => [result.content!, ...prev.slice(0, 9)]);
 
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Success",
           description: `Blog post generated with quality score: ${result.content.qualityScore}/100`,
         });
@@ -200,7 +200,7 @@ const EnhancedAIContentGenerator = () => {
       }
     } catch (error: any) {
       logger.error("Error generating blog post:", error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message || "Failed to generate blog post",
         variant: "destructive",
@@ -213,7 +213,7 @@ const EnhancedAIContentGenerator = () => {
   // Generate Service Description
   const generateServiceDescription = async () => {
     if (!serviceName.trim()) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Please enter a service name",
         variant: "destructive",
@@ -246,7 +246,7 @@ const EnhancedAIContentGenerator = () => {
         setGeneratedContent(result.content);
         setContentHistory(prev => [result.content!, ...prev.slice(0, 9)]);
 
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Success",
           description: `Service description generated with ${result.content.variations?.length || 1} variation(s)`,
         });
@@ -255,7 +255,7 @@ const EnhancedAIContentGenerator = () => {
       }
     } catch (error: any) {
       logger.error("Error generating service description:", error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message || "Failed to generate service description",
         variant: "destructive",
@@ -268,7 +268,7 @@ const EnhancedAIContentGenerator = () => {
   // Improve Content
   const improveContent = async () => {
     if (!improvementContent.trim()) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Please enter content to improve",
         variant: "destructive",
@@ -292,7 +292,7 @@ const EnhancedAIContentGenerator = () => {
       if (result.success && result.content) {
         setGeneratedContent(result.content);
 
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Success",
           description: `Content improved with SEO score: ${result.content.seoScore}/100`,
         });
@@ -301,7 +301,7 @@ const EnhancedAIContentGenerator = () => {
       }
     } catch (error: any) {
       logger.error("Error improving content:", error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message || "Failed to improve content",
         variant: "destructive",
@@ -314,7 +314,7 @@ const EnhancedAIContentGenerator = () => {
   // Generate Content Ideas
   const generateContentIdeas = async () => {
     if (!ideasCategory.trim()) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Please enter a category",
         variant: "destructive",
@@ -333,7 +333,7 @@ const EnhancedAIContentGenerator = () => {
       if (result.success && result.content) {
         setGeneratedContent(result.content);
 
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Success",
           description: `Generated ${ideasCount[0]} content ideas`,
         });
@@ -342,7 +342,7 @@ const EnhancedAIContentGenerator = () => {
       }
     } catch (error: any) {
       logger.error("Error generating ideas:", error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message || "Failed to generate ideas",
         variant: "destructive",
@@ -380,7 +380,7 @@ const EnhancedAIContentGenerator = () => {
         if (error) throw error;
       }
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Success",
         description: `Content saved as ${status}`,
       });
@@ -389,7 +389,7 @@ const EnhancedAIContentGenerator = () => {
       setGeneratedContent(null);
     } catch (error: any) {
       logger.error("Error saving content:", error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message || "Failed to save content",
         variant: "destructive",
@@ -402,7 +402,7 @@ const EnhancedAIContentGenerator = () => {
   // Copy to clipboard
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: "Copied",
       description: "Content copied to clipboard",
     });

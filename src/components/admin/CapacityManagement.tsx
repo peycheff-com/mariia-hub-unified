@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Clock, Users, Settings, TrendingUp, AlertCircle, Save, Edit2, Check, X } from 'lucide-react';
 import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
-import { toast } from 'sonner';
+import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -85,7 +85,7 @@ export const CapacityManagement = () => {
         );
 
         if (error) {
-          toast.error('Failed to load capacity data');
+          toast aria-live="polite" aria-atomic="true".error('Failed to load capacity data');
           return;
         }
 
@@ -93,7 +93,7 @@ export const CapacityManagement = () => {
         const allSlots = data || [];
         setSlots(allSlots);
       } catch (error) {
-        toast.error('Failed to load capacity data');
+        toast aria-live="polite" aria-atomic="true".error('Failed to load capacity data');
       } finally {
         setLoading(false);
       }
@@ -133,12 +133,12 @@ export const CapacityManagement = () => {
       );
 
       if (error) {
-        toast.error('Failed to update capacity');
+        toast aria-live="polite" aria-atomic="true".error('Failed to update capacity');
         return;
       }
 
       if (success) {
-        toast.success('Capacity updated successfully');
+        toast aria-live="polite" aria-atomic="true".success('Capacity updated successfully');
         setEditingSlot(null);
         // Reload slots
         const dateStr = format(selectedDate, 'yyyy-MM-dd');
@@ -149,7 +149,7 @@ export const CapacityManagement = () => {
         if (data) setSlots(data);
       }
     } catch (error) {
-      toast.error('Failed to update capacity');
+      toast aria-live="polite" aria-atomic="true".error('Failed to update capacity');
     }
   };
 
@@ -168,11 +168,11 @@ export const CapacityManagement = () => {
       );
 
       if (error) {
-        toast.error('Failed to update capacity');
+        toast aria-live="polite" aria-atomic="true".error('Failed to update capacity');
         return;
       }
 
-      toast.success(`Updated ${updatedCount} slots successfully`);
+      toast aria-live="polite" aria-atomic="true".success(`Updated ${updatedCount} slots successfully`);
       setBulkUpdateOpen(false);
       // Reload slots
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
@@ -182,7 +182,7 @@ export const CapacityManagement = () => {
       );
       if (data) setSlots(data);
     } catch (error) {
-      toast.error('Failed to update capacity');
+      toast aria-live="polite" aria-atomic="true".error('Failed to update capacity');
     }
   };
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
+import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
 import { format, addDays, addWeeks, addMonths, isAfter, isBefore, startOfMonth, endOfMonth } from 'date-fns';
 import { pl, enUS, ru, uk } from 'date-fns/locale';
 import {
@@ -432,11 +432,11 @@ export function BlogAutomator({ className }: BlogAutomatorProps) {
       if (error) throw error;
 
       setGeneratedPosts([...generatedPosts, newPost]);
-      toast.success(t('admin.ai.blogAutomator.postGenerated'));
+      toast aria-live="polite" aria-atomic="true".success(t('admin.ai.blogAutomator.postGenerated'));
       queryClient.invalidateQueries({ queryKey: ['blog-posts'] });
     } catch (error) {
       console.error('Error generating blog post:', error);
-      toast.error(t('admin.ai.blogAutomator.generationError'));
+      toast aria-live="polite" aria-atomic="true".error(t('admin.ai.blogAutomator.generationError'));
     } finally {
       setIsGenerating(false);
     }
@@ -477,11 +477,11 @@ export function BlogAutomator({ className }: BlogAutomatorProps) {
 
       if (error) throw error;
 
-      toast.success(t('admin.ai.blogAutomator.postScheduled'));
+      toast aria-live="polite" aria-atomic="true".success(t('admin.ai.blogAutomator.postScheduled'));
       queryClient.invalidateQueries({ queryKey: ['blog-posts', 'scheduled-blog-posts'] });
     } catch (error) {
       console.error('Error scheduling post:', error);
-      toast.error(t('admin.ai.blogAutomator.scheduleError'));
+      toast aria-live="polite" aria-atomic="true".error(t('admin.ai.blogAutomator.scheduleError'));
     }
   };
 
@@ -498,7 +498,7 @@ export function BlogAutomator({ className }: BlogAutomatorProps) {
     }
 
     setIsGenerating(false);
-    toast.success(t('admin.ai.blogAutomator.multiplePostsGenerated'));
+    toast aria-live="polite" aria-atomic="true".success(t('admin.ai.blogAutomator.multiplePostsGenerated'));
   };
 
   const updateSettings = async (newSettings: Partial<BlogAutomatorSettings>) => {
@@ -517,10 +517,10 @@ export function BlogAutomator({ className }: BlogAutomatorProps) {
 
       if (error) throw error;
 
-      toast.success(t('admin.ai.blogAutomator.settingsUpdated'));
+      toast aria-live="polite" aria-atomic="true".success(t('admin.ai.blogAutomator.settingsUpdated'));
     } catch (error) {
       console.error('Error updating settings:', error);
-      toast.error(t('admin.ai.blogAutomator.settingsError'));
+      toast aria-live="polite" aria-atomic="true".error(t('admin.ai.blogAutomator.settingsError'));
     }
   };
 

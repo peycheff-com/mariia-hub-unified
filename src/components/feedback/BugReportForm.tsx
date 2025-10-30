@@ -26,7 +26,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 import { cn } from '@/lib/utils';
 
 import { FeedbackForm } from './FeedbackForm';
@@ -95,7 +95,7 @@ export const BugReportForm: React.FC<BugReportFormProps> = ({
   autoFillContext,
   className,
 }) => {
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [screenshots, setScreenshots] = useState<File[]>([]);
@@ -136,7 +136,7 @@ export const BugReportForm: React.FC<BugReportFormProps> = ({
     event.preventDefault();
 
     if (!formData.title.trim() || !formData.description.trim()) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Validation Error',
         description: 'Please provide a title and description for the bug report',
         variant: 'destructive',
@@ -192,7 +192,7 @@ ${formData.browserInfo || 'Not provided'}
       };
 
       setSubmitted(true);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Bug Report Submitted',
         description: 'Thank you for helping us improve our service. We\'ll investigate this issue.',
       });
@@ -204,7 +204,7 @@ ${formData.browserInfo || 'Not provided'}
       }, 2000);
 
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: error.message || 'Failed to submit bug report',
         variant: 'destructive',

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { toast } from '@/hooks/use-toast'
+import { toast aria-live="polite" aria-atomic="true" } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { supabase } from '@/integrations/supabase/client'
 import { c2paService, C2PAVerificationResult, C2PAManifest } from '@/services/c2paService'
@@ -67,7 +67,7 @@ export const VerifyContentPage: React.FC = () => {
       await performVerification()
     } catch (error) {
       logger.error('Failed to load asset:', error)
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to load media asset',
         variant: 'destructive'
@@ -97,7 +97,7 @@ export const VerifyContentPage: React.FC = () => {
 
   const copyShareUrl = () => {
     navigator.clipboard.writeText(shareUrl)
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: 'Copied',
       description: 'Verification URL copied to clipboard'
     })

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Wifi, WifiOff, RefreshCw, AlertCircle } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
 
 import { offlineManager } from '@/lib/offline-manager';
 import { Button } from '@/components/ui/button';
@@ -54,11 +54,11 @@ export const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({ className = 
       setSyncing(false);
 
       if (successful > 0) {
-        toast.success(`Synced ${successful} item${successful > 1 ? 's' : ''}`);
+        toast aria-live="polite" aria-atomic="true".success(`Synced ${successful} item${successful > 1 ? 's' : ''}`);
       }
 
       if (failed > 0) {
-        toast.error(`${failed} item${failed > 1 ? 's' : ''} failed to sync`);
+        toast aria-live="polite" aria-atomic="true".error(`${failed} item${failed > 1 ? 's' : ''} failed to sync`);
       }
 
       setTimeout(() => setShowSyncStatus(false), 3000);
@@ -80,7 +80,7 @@ export const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({ className = 
     try {
       await offlineManager.syncWhenOnline();
     } catch (error) {
-      toast.error('Sync failed. Please try again.');
+      toast aria-live="polite" aria-atomic="true".error('Sync failed. Please try again.');
       setSyncing(false);
     }
   };

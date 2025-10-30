@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { FileText, Save } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,7 +29,7 @@ const ServiceContentManagement = () => {
   const [selectedServiceId, setSelectedServiceId] = useState("");
   const [content, setContent] = useState<ServiceContent | null>(null);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   const [formData, setFormData] = useState({
     preparation_instructions: "",
@@ -87,7 +87,7 @@ const ServiceContentManagement = () => {
 
   const handleSave = async () => {
     if (!selectedServiceId) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Please select a service",
         variant: "destructive",
       });
@@ -113,13 +113,13 @@ const ServiceContentManagement = () => {
         .eq("id", content.id);
 
       if (error) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Error updating content",
           description: error.message,
           variant: "destructive",
         });
       } else {
-        toast({ title: "Content updated successfully" });
+        toast aria-live="polite" aria-atomic="true"({ title: "Content updated successfully" });
         loadContent();
       }
     } else {
@@ -128,13 +128,13 @@ const ServiceContentManagement = () => {
         .insert([contentData]);
 
       if (error) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Error creating content",
           description: error.message,
           variant: "destructive",
         });
       } else {
-        toast({ title: "Content created successfully" });
+        toast aria-live="polite" aria-atomic="true"({ title: "Content created successfully" });
         loadContent();
       }
     }

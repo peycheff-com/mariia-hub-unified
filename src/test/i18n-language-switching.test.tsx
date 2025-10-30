@@ -29,7 +29,18 @@ vi.mock('@/i18n/config', () => {
       nav: { beauty: 'Beauty', fitness: 'Fitness' },
       hero: { title1: 'Transform Your Beauty' }
     }),
-    addResourceBundle: vi.fn()
+    addResourceBundle: vi.fn(),
+    // Add getFixedT method to fix the test failures
+    getFixedT: vi.fn().mockImplementation((lng: string, ns?: string) => {
+      return (key: string) => {
+        const translations = {
+          'nav.beauty': 'Beauty',
+          'nav.fitness': 'Fitness',
+          'hero.title1': 'Transform Your Beauty'
+        };
+        return translations[key] || key;
+      };
+    })
   };
   return { default: mockI18n };
 });

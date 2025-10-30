@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react'
 import { Paperclip, Send, Mic, MicOff, Smile, X } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast aria-live="polite" aria-atomic="true" } from 'sonner'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
@@ -110,13 +110,13 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
     // Check file sizes
     const oversizedFiles = files.filter(file => file.size > maxFileSize * 1024 * 1024)
     if (oversizedFiles.length > 0) {
-      toast.error(t('file_too_large', 'Some files are too large. Maximum size is {{maxSize}}MB.', { maxSize }))
+      toast aria-live="polite" aria-atomic="true".error(t('file_too_large', 'Some files are too large. Maximum size is {{maxSize}}MB.', { maxSize }))
       return
     }
 
     // Check total attachments limit
     if (attachments.length + files.length > 5) {
-      toast.error(t('too_many_attachments', 'Maximum 5 attachments allowed'))
+      toast aria-live="polite" aria-atomic="true".error(t('too_many_attachments', 'Maximum 5 attachments allowed'))
       return
     }
 
@@ -160,7 +160,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
       setIsRecording(true)
     } catch (error) {
       console.error('Error starting recording:', error)
-      toast.error(t('microphone_error', 'Could not access microphone'))
+      toast aria-live="polite" aria-atomic="true".error(t('microphone_error', 'Could not access microphone'))
     }
   }, [])
 
@@ -187,7 +187,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
       }
     } catch (error) {
       console.error('Error sending message:', error)
-      toast.error(t('send_error', 'Failed to send message'))
+      toast aria-live="polite" aria-atomic="true".error(t('send_error', 'Failed to send message'))
     } finally {
       setIsSending(false)
     }

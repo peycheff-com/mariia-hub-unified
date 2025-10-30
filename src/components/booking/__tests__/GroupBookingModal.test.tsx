@@ -6,9 +6,9 @@ import { Service } from '@/types/booking';
 import { GroupBookingModal, GroupBookingData } from '../GroupBookingModal';
 
 // Mock dependencies
-vi.mock('@/components/ui/use-toast', () => ({
+vi.mock('@/components/ui/use-toast aria-live="polite" aria-atomic="true"', () => ({
   useToast: () => ({
-    toast: vi.fn(),
+    toast aria-live="polite" aria-atomic="true": vi.fn(),
   }),
 }));
 
@@ -302,7 +302,7 @@ describe('GroupBookingModal', () => {
       expect(screen.getByText('10')).toBeInTheDocument();
     });
 
-    // Check for discount notification
+    // Check for discount notification aria-live="polite" aria-atomic="true"
     expect(screen.getByText(/Your group qualifies for a 15% discount!/)).toBeInTheDocument();
   });
 

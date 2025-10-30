@@ -137,18 +137,23 @@ const Navigation = memo(({ mode: propMode }: { mode?: "beauty" | "fitness" }) =>
   };
 
   return (
-    <nav id="navigation" className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 safe-area-inset-top ${
-      isScrolled
-        ? 'glass-card backdrop-blur-xl border-b border-champagne/20 shadow-luxury'
-        : 'bg-transparent'
-    }`}>
+    <nav
+      id="navigation"
+      role="navigation"
+      aria-label="Main navigation"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 safe-area-inset-top ${
+        isScrolled
+          ? 'glass-card backdrop-blur-xl border-b border-champagne/20 shadow-luxury'
+          : 'bg-transparent'
+      }`}
+    >
       <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
         <div className="flex items-center justify-between h-20">
-          <Link to="/" className="flex items-center gap-3 group touch-manipulation">
+          <Link to="/" className="flex items-center gap-3 group touch-manipulation" aria-label="Mariia Borysevych - Home">
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden glass-accent border border-champagne/20 group-hover:border-champagne/50 group-hover:shadow-luxury transition-all duration-300 flex-shrink-0">
               <img
                 src={logo}
-                alt="BM Beauty"
+                alt="Mariia Borysevych Beauty & Fitness Logo"
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
               />
             </div>
@@ -173,9 +178,10 @@ const Navigation = memo(({ mode: propMode }: { mode?: "beauty" | "fitness" }) =>
                   key={item.name}
                   to={item.href}
                   className={cn(
-                    "text-sm transition-colors relative group py-2 px-3 -mx-3 rounded-lg hover:bg-champagne/10 touch-manipulation",
+                    "text-sm transition-colors relative group py-2 px-3 -mx-3 rounded-lg hover:bg-champagne/10 touch-manipulation focus-visible",
                     isActive ? "text-champagne font-medium" : "text-pearl/90 hover:text-pearl"
                   )}
+                  aria-current={isActive ? "page" : undefined}
                 >
                   {item.name}
                   <span className={cn(
@@ -187,7 +193,8 @@ const Navigation = memo(({ mode: propMode }: { mode?: "beauty" | "fitness" }) =>
                 <button
                   key={item.name}
                   onClick={(e) => handleNavClick(item, e)}
-                  className="text-sm text-pearl/90 hover:text-pearl transition-colors relative group py-2 px-3 -mx-3 rounded-lg hover:bg-champagne/10 touch-manipulation"
+                  className="text-sm text-pearl/90 hover:text-pearl transition-colors relative group py-2 px-3 -mx-3 rounded-lg hover:bg-champagne/10 touch-manipulation focus-visible"
+                  aria-label={`Navigate to ${item.name} section`}
                 >
                   {item.name}
                   <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-champagne group-hover:w-full transition-all duration-300" />
@@ -217,7 +224,11 @@ const Navigation = memo(({ mode: propMode }: { mode?: "beauty" | "fitness" }) =>
 
         {/* Enhanced Mobile Menu */}
         {isOpen && (
-          <div className="md:hidden glass-card border-t border-champagne/20 animate-fade-in max-h-[85vh] overflow-y-auto">
+          <div
+            className="md:hidden glass-card border-t border-champagne/20 animate-fade-in max-h-[85vh] overflow-y-auto"
+            role="navigation"
+            aria-label="Mobile navigation menu"
+          >
             <div className="py-6 space-y-6">
               {/* Enhanced Mode Selector Mobile */}
               {contextMode && (

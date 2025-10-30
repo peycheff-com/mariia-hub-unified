@@ -1,6 +1,6 @@
 import { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
 import { logger } from '@/lib/logger';
 
 // Types for booking state
@@ -215,7 +215,7 @@ export const ExpandedBookingProvider: React.FC<ExpandedBookingProviderProps> = (
   autoSave = true
 }) => {
   const [state, dispatch] = useReducer(bookingReducer, initialState);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   // Load saved progress on mount
   useEffect(() => {
@@ -229,7 +229,7 @@ export const ExpandedBookingProvider: React.FC<ExpandedBookingProviderProps> = (
       });
 
       if (saved.savedAt) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: 'Booking progress restored',
           description: 'Your previous booking progress has been restored.',
         });
@@ -344,7 +344,7 @@ export const ExpandedBookingProvider: React.FC<ExpandedBookingProviderProps> = (
 
   const saveProgress = () => {
     saveToStorage(state);
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: 'Progress saved',
       description: 'Your booking progress has been saved.',
     });

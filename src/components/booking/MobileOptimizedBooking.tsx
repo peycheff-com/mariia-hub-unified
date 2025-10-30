@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
 import { useConversionOptimization } from '@/lib/conversion-optimization';
 import { Service } from '@/types/booking';
 
@@ -24,7 +24,7 @@ export const MobileOptimizedBooking = ({
   onComplete,
   onClose
 }: MobileOptimizedBookingProps) => {
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const { t } = useTranslation();
   const { trackFunnelStep, trackEvent, getVariation } = useConversionOptimization();
 
@@ -168,7 +168,7 @@ export const MobileOptimizedBooking = ({
 
   const handleSubmit = async () => {
     if (!selectedService || !selectedSlot || !bookingDetails.name || !bookingDetails.email) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Missing Information',
         description: 'Please complete all required fields.',
         variant: 'destructive',
@@ -221,14 +221,14 @@ export const MobileOptimizedBooking = ({
 
       onComplete(bookingResult);
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Booking Confirmed!',
         description: 'Check your email for confirmation.',
       });
 
     } catch (error) {
       console.error('Booking error:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Booking Failed',
         description: 'Please try again.',
         variant: 'destructive',

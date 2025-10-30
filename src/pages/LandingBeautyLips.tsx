@@ -11,14 +11,14 @@ import Footer from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import BookingSheet from "@/components/booking/BookingSheet";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 
 const LandingBeautyLips = () => {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language as 'en' | 'pl' | 'ua';
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [services, setServices] = useState<any[]>([]);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   useEffect(() => {
     loadServices();
@@ -36,7 +36,7 @@ const LandingBeautyLips = () => {
       if (error) throw error;
       setServices(data || []);
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Could not load services",
         variant: "destructive",

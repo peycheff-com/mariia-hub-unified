@@ -3,7 +3,7 @@ import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { Loader2, AlertCircle, CreditCard } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { logger } from '@/lib/logger';
 
@@ -28,7 +28,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isApplePaySupported, setIsApplePaySupported] = useState(false);
   const [isGooglePaySupported, setIsGooglePaySupported] = useState(false);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   // Check for wallet support on mount
   useEffect(() => {
@@ -143,7 +143,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
           timestamp: new Date().toISOString(),
         });
 
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: 'Payment failed',
           description: errorMessage,
           variant: 'destructive',
@@ -159,7 +159,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         });
 
         onSuccess(paymentIntent.id);
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: 'Payment successful',
           description: 'Your payment has been processed successfully',
         });
@@ -178,7 +178,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         timestamp: new Date().toISOString(),
       });
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Payment error',
         description: errorMessage,
         variant: 'destructive',

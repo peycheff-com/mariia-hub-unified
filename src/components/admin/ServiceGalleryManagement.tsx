@@ -3,7 +3,7 @@ import { Plus, Trash2, Star, Image as ImageIcon, Sparkles } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,7 +38,7 @@ const ServiceGalleryManagement = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   const [formData, setFormData] = useState({
     service_id: "",
@@ -73,7 +73,7 @@ const ServiceGalleryManagement = () => {
     e.preventDefault();
 
     if (!formData.image_url) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Please upload an image",
         variant: "destructive",
       });
@@ -93,13 +93,13 @@ const ServiceGalleryManagement = () => {
       }]);
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error adding image",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast({ title: "Image added successfully" });
+      toast aria-live="polite" aria-atomic="true"({ title: "Image added successfully" });
       setDialogOpen(false);
       loadData();
       resetForm();
@@ -109,12 +109,12 @@ const ServiceGalleryManagement = () => {
   const generateWithAI = async () => {
     try {
       if (!formData.service_id) {
-        toast({ title: 'Select a service first', variant: 'destructive' });
+        toast aria-live="polite" aria-atomic="true"({ title: 'Select a service first', variant: 'destructive' });
         return;
       }
       const svc = services.find(s => s.id === formData.service_id);
       const prompt = `Luxury gallery image for ${svc?.title}. Photorealistic, clean composition matching cocoa/champagne palette. Square crop (1:1). No text or logos.`;
-      toast({ title: 'Generating image…', description: svc?.title });
+      toast aria-live="polite" aria-atomic="true"({ title: 'Generating image…', description: svc?.title });
       const { data, error } = await (supabase as any).functions.invoke('generate-image', { body: { prompt } });
       if (error || !data?.imageUrl) throw new Error(error?.message || 'Failed to generate');
 
@@ -128,12 +128,12 @@ const ServiceGalleryManagement = () => {
       const maxOrder = Math.max(...images.filter(i => i.service_id === formData.service_id).map(i => i.display_order), -1);
       const { error: ins } = await supabase.from('service_gallery').insert([{ service_id: formData.service_id, image_url: publicUrl, caption: formData.caption || null, is_featured: false, display_order: maxOrder + 1 }]);
       if (ins) throw ins;
-      toast({ title: 'Image generated & added' });
+      toast aria-live="polite" aria-atomic="true"({ title: 'Image generated & added' });
       setDialogOpen(false);
       resetForm();
       loadData();
     } catch (e: any) {
-      toast({ title: 'AI generation failed', description: e?.message || 'Please try again', variant: 'destructive' });
+      toast aria-live="polite" aria-atomic="true"({ title: 'AI generation failed', description: e?.message || 'Please try again', variant: 'destructive' });
     }
   };
 
@@ -155,13 +155,13 @@ const ServiceGalleryManagement = () => {
       .eq("id", id);
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error deleting image",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast({ title: "Image deleted" });
+      toast aria-live="polite" aria-atomic="true"({ title: "Image deleted" });
       loadData();
     }
   };
@@ -173,7 +173,7 @@ const ServiceGalleryManagement = () => {
       .eq("id", id);
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error updating image",
         description: error.message,
         variant: "destructive",
@@ -359,7 +359,7 @@ const ServiceGalleryManagement = () => {
 
       {images.length === 0 && (
         <div className="text-center py-12">
-          <ImageIcon className="w-12 h-12 text-pearl/30 mx-auto mb-4" />
+          <ImageIcon className="w-12 h-12 text-pearl/30 mx-auto mb-4" alt="Service gallery image" />
           <p className="text-pearl/60">No gallery images yet</p>
         </div>
       )}

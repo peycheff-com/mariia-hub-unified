@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -63,7 +63,7 @@ const SocialPostsManagement = () => {
     caption: "",
     posted_at: new Date().toISOString().split("T")[0],
   });
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   useEffect(() => {
     loadPosts();
@@ -76,7 +76,7 @@ const SocialPostsManagement = () => {
       .order("posted_at", { ascending: false });
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -95,13 +95,13 @@ const SocialPostsManagement = () => {
       .insert([formData]);
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Success",
         description: "Social post added successfully",
       });
@@ -124,7 +124,7 @@ const SocialPostsManagement = () => {
       .eq("id", postId);
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -143,13 +143,13 @@ const SocialPostsManagement = () => {
       .eq("id", postId);
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Success",
         description: "Post deleted successfully",
       });
@@ -189,7 +189,7 @@ const SocialPostsManagement = () => {
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm text-pearl/70">Platform</label>
+                <label className="text-sm text-pearl/70" htmlFor="platform">Platform</label>
                 <Select
                   value={formData.platform}
                   onValueChange={(value) => setFormData({ ...formData, platform: value })}
@@ -205,7 +205,7 @@ const SocialPostsManagement = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm text-pearl/70">Post URL *</label>
+                <label className="text-sm text-pearl/70" htmlFor="post-url">Post URL *</label>
                 <Input
                   value={formData.post_url}
                   onChange={(e) => setFormData({ ...formData, post_url: e.target.value })}
@@ -216,7 +216,7 @@ const SocialPostsManagement = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm text-pearl/70">Image URL</label>
+                <label className="text-sm text-pearl/70" htmlFor="image-url">Image URL</label>
                 <Input
                   value={formData.image_url}
                   onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
@@ -227,7 +227,7 @@ const SocialPostsManagement = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm text-pearl/70">Caption</label>
+                <label className="text-sm text-pearl/70" htmlFor="caption">Caption</label>
                 <Textarea
                   value={formData.caption}
                   onChange={(e) => setFormData({ ...formData, caption: e.target.value })}
@@ -237,7 +237,7 @@ const SocialPostsManagement = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm text-pearl/70">Posted Date *</label>
+                <label className="text-sm text-pearl/70" htmlFor="posted-date">Posted Date *</label>
                 <Input
                   type="date"
                   value={formData.posted_at}
@@ -290,7 +290,7 @@ const SocialPostsManagement = () => {
               <CardContent className="space-y-3">
                 {post.image_url ? (
                   <div className="relative w-full h-32 bg-charcoal/50 rounded-lg overflow-hidden">
-                    <ImageWithFallback src={post.image_url} />
+                    <ImageWithFallback src={post.image_url} alt="Image" />
                   </div>
                 ) : null}
                 {post.caption && (

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 
 interface ProviderData {
   id: string;
@@ -38,7 +38,7 @@ export function ProviderPerformance({ dateRange }: ProviderPerformanceProps) {
   const [sortBy, setSortBy] = useState<'bookings' | 'revenue' | 'rating' | 'utilization'>('bookings');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   useEffect(() => {
     fetchProviderData();
@@ -163,7 +163,7 @@ export function ProviderPerformance({ dateRange }: ProviderPerformanceProps) {
       setProviderData(dataArray);
     } catch (error) {
       console.error('Error fetching provider data:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to fetch provider performance data',
         variant: 'destructive',

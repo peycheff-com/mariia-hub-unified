@@ -42,7 +42,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Calendar } from '@/components/ui/calendar';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 import {
   ContentSchedule,
   ContentManagement,
@@ -82,7 +82,7 @@ export const ContentScheduler: React.FC<ContentSchedulerProps> = ({
   className
 }) => {
   const { t, i18n } = useTranslation();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   // State
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -194,7 +194,7 @@ export const ContentScheduler: React.FC<ContentSchedulerProps> = ({
   // Create schedule event
   const createScheduleEvent = useCallback(async () => {
     if (!selectedContent) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('admin.scheduler.noContent'),
         description: t('admin.scheduler.noContentDesc'),
         variant: 'destructive'
@@ -250,13 +250,13 @@ export const ContentScheduler: React.FC<ContentSchedulerProps> = ({
       setEditingEvent(null);
       setSelectedContent(null);
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('admin.scheduler.scheduled'),
         description: t('admin.scheduler.scheduledDesc')
       });
     } catch (error) {
       console.error('Error scheduling content:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('admin.scheduler.scheduleFailed'),
         description: t('admin.scheduler.scheduleFailedDesc'),
         variant: 'destructive'
@@ -273,7 +273,7 @@ export const ContentScheduler: React.FC<ContentSchedulerProps> = ({
     timezone,
     editingEvent,
     onScheduled,
-    toast,
+    toast aria-live="polite" aria-atomic="true",
     t
   ]);
 
@@ -281,14 +281,14 @@ export const ContentScheduler: React.FC<ContentSchedulerProps> = ({
   const deleteScheduleEvent = useCallback(async (eventId: string) => {
     try {
       setScheduleEvents(prev => prev.filter(e => e.id !== eventId));
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('admin.scheduler.deleted'),
         description: t('admin.scheduler.deletedDesc')
       });
     } catch (error) {
       console.error('Error deleting event:', error);
     }
-  }, [toast, t]);
+  }, [toast aria-live="polite" aria-atomic="true", t]);
 
   // Get events for date
   const getEventsForDate = useCallback((date: Date) => {

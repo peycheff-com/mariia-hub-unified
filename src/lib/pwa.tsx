@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { toast } from '@/components/ui/use-toast';
+import { toast aria-live="polite" aria-atomic="true" } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
 
 // PWA types
 export interface PushSubscriptionData {
@@ -82,7 +82,7 @@ export class PWAUtils {
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               // New version available
-              toast({
+              toast aria-live="polite" aria-atomic="true"({
                 title: 'Update Available',
                 description: 'A new version is available. Refresh to update.',
                 action: {
@@ -165,7 +165,7 @@ export class PWAUtils {
     });
   }
 
-  // Request notification permission
+  // Request notification aria-live="polite" aria-atomic="true" permission
   static async requestNotificationPermission(): Promise<NotificationPermission> {
     if (!('Notification' in window)) return 'denied';
 
@@ -173,13 +173,13 @@ export class PWAUtils {
     return permission;
   }
 
-  // Check notification permission
+  // Check notification aria-live="polite" aria-atomic="true" permission
   static getNotificationPermission(): NotificationPermission {
     if (!('Notification' in window)) return 'denied';
     return Notification.permission;
   }
 
-  // Subscribe to push notifications
+  // Subscribe to push notification aria-live="polite" aria-atomic="true"s
   static async subscribeToPushNotifications(
     serverPublicKey: string
   ): Promise<PushSubscription | null> {
@@ -199,7 +199,7 @@ export class PWAUtils {
     }
   }
 
-  // Unsubscribe from push notifications
+  // Unsubscribe from push notification aria-live="polite" aria-atomic="true"s
   static async unsubscribeFromPushNotifications(): Promise<void> {
     if (!this.swRegistration) return;
 
@@ -207,18 +207,18 @@ export class PWAUtils {
       const subscription = await this.swRegistration.pushManager.getSubscription();
       if (subscription) {
         await subscription.unsubscribe();
-        console.log('Unsubscribed from push notifications');
+        console.log('Unsubscribed from push notification aria-live="polite" aria-atomic="true"s');
       }
     } catch (error) {
       console.error('Unsubscribe failed:', error);
     }
   }
 
-  // Show local notification
+  // Show local notification aria-live="polite" aria-atomic="true"
   static showNotification(options: NotificationOptions): Notification | null {
     if (this.getNotificationPermission() !== 'granted') return null;
 
-    const notification = new Notification(options.title, {
+    const notification aria-live="polite" aria-atomic="true" = new Notification(options.title, {
       body: options.body,
       icon: options.icon || '/icon-192x192.png',
       badge: options.badge || '/badge-72x72.png',
@@ -233,16 +233,16 @@ export class PWAUtils {
       actions: options.actions,
     });
 
-    notification.onclick = (event) => {
+    notification aria-live="polite" aria-atomic="true".onclick = (event) => {
       event.preventDefault();
-      notification.close();
+      notification aria-live="polite" aria-atomic="true".close();
       window.focus();
     };
 
-    return notification;
+    return notification aria-live="polite" aria-atomic="true";
   }
 
-  // Schedule notification
+  // Schedule notification aria-live="polite" aria-atomic="true"
   static scheduleNotification(
     options: NotificationOptions,
     delay: number
@@ -337,7 +337,7 @@ export class PWAUtils {
     }
   }
 
-  // Register for push notifications with enhanced features
+  // Register for push notification aria-live="polite" aria-atomic="true"s with enhanced features
   static async registerForPushNotifications(vapidPublicKey: string): Promise<boolean> {
     if (!this.swRegistration) return false;
 
@@ -354,12 +354,12 @@ export class PWAUtils {
         body: JSON.stringify(subscription),
       });
 
-      // Enable background sync for push notifications
+      // Enable background sync for push notification aria-live="polite" aria-atomic="true"s
       await this.triggerBackgroundSync('push-subscription-sync', subscription);
 
       return true;
     } catch (error) {
-      console.error('Push notification registration failed:', error);
+      console.error('Push notification aria-live="polite" aria-atomic="true" registration failed:', error);
       return false;
     }
   }
@@ -470,7 +470,7 @@ export class PWAUtils {
 export function usePWA() {
   const { t } = useTranslation();
   const [installStatus, setInstallStatus] = useState(PWAUtils.getInstallStatus());
-  const [notificationPermission, setNotificationPermission] = useState(PWAUtils.getNotificationPermission());
+  const [notification aria-live="polite" aria-atomic="true"Permission, setNotificationPermission] = useState(PWAUtils.getNotificationPermission());
 
   // Register service worker
   useEffect(() => {
@@ -518,14 +518,14 @@ export function usePWA() {
     setInstallStatus(prev => ({ ...prev, canInstall: false }));
   }, []);
 
-  // Request notification permission
+  // Request notification aria-live="polite" aria-atomic="true" permission
   const requestNotificationPermission = useCallback(async () => {
     const permission = await PWAUtils.requestNotificationPermission();
     setNotificationPermission(permission);
     return permission;
   }, []);
 
-  // Show notification
+  // Show notification aria-live="polite" aria-atomic="true"
   const showNotification = useCallback((options: NotificationOptions) => {
     return PWAUtils.showNotification({
       ...options,
@@ -540,7 +540,7 @@ export function usePWA() {
 
   return {
     installStatus,
-    notificationPermission,
+    notification aria-live="polite" aria-atomic="true"Permission,
     handleInstall,
     requestNotificationPermission,
     showNotification,

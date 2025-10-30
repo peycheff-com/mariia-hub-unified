@@ -1,0 +1,222 @@
+{
+  "admin/admin-analytics.jpg": {
+    "original": "assets/admin/admin-analytics.jpg",
+    "optimized": "assets/optimized/admin/admin-analytics.jpg",
+    "webp": "assets/optimized/admin/admin-analytics.webp"
+  },
+  "admin/admin-calendar.jpg": {
+    "original": "assets/admin/admin-calendar.jpg",
+    "optimized": "assets/optimized/admin/admin-calendar.jpg",
+    "webp": "assets/optimized/admin/admin-calendar.webp"
+  },
+  "admin/admin-clients.jpg": {
+    "original": "assets/admin/admin-clients.jpg",
+    "optimized": "assets/optimized/admin/admin-clients.jpg",
+    "webp": "assets/optimized/admin/admin-clients.webp"
+  },
+  "admin/admin-dashboard.jpg": {
+    "original": "assets/admin/admin-dashboard.jpg",
+    "optimized": "assets/optimized/admin/admin-dashboard.jpg",
+    "webp": "assets/optimized/admin/admin-dashboard.webp"
+  },
+  "booking/booking-consultation.jpg": {
+    "original": "assets/booking/booking-consultation.jpg",
+    "optimized": "assets/optimized/booking/booking-consultation.jpg",
+    "webp": "assets/optimized/booking/booking-consultation.webp"
+  },
+  "booking/booking-preparation.jpg": {
+    "original": "assets/booking/booking-preparation.jpg",
+    "optimized": "assets/optimized/booking/booking-preparation.jpg",
+    "webp": "assets/optimized/booking/booking-preparation.webp"
+  },
+  "booking/booking-success.jpg": {
+    "original": "assets/booking/booking-success.jpg",
+    "optimized": "assets/optimized/booking/booking-success.jpg",
+    "webp": "assets/optimized/booking/booking-success.webp"
+  },
+  "hero/hero-beauty-luxury.jpg": {
+    "original": "assets/hero/hero-beauty-luxury.jpg",
+    "optimized": "assets/optimized/hero/hero-beauty-luxury.jpg",
+    "webp": "assets/optimized/hero/hero-beauty-luxury.webp"
+  },
+  "hero/hero-fitness-luxury.jpg": {
+    "original": "assets/hero/hero-fitness-luxury.jpg",
+    "optimized": "assets/optimized/hero/hero-fitness-luxury.jpg",
+    "webp": "assets/optimized/hero/hero-fitness-luxury.webp"
+  },
+  "hero/hero-lifestyle-luxury.jpg": {
+    "original": "assets/hero/hero-lifestyle-luxury.jpg",
+    "optimized": "assets/optimized/hero/hero-lifestyle-luxury.jpg",
+    "webp": "assets/optimized/hero/hero-lifestyle-luxury.webp"
+  },
+  "marketing/banner-promotion.jpg": {
+    "original": "assets/marketing/banner-promotion.jpg",
+    "optimized": "assets/optimized/marketing/banner-promotion.jpg",
+    "webp": "assets/optimized/marketing/banner-promotion.webp"
+  },
+  "marketing/social-facebook-cover.jpg": {
+    "original": "assets/marketing/social-facebook-cover.jpg",
+    "optimized": "assets/optimized/marketing/social-facebook-cover.jpg",
+    "webp": "assets/optimized/marketing/social-facebook-cover.webp"
+  },
+  "marketing/social-instagram-square.jpg": {
+    "original": "assets/marketing/social-instagram-square.jpg",
+    "optimized": "assets/optimized/marketing/social-instagram-square.jpg",
+    "webp": "assets/optimized/marketing/social-instagram-square.webp"
+  },
+  "marketing/social-instagram-story.jpg": {
+    "original": "assets/marketing/social-instagram-story.jpg",
+    "optimized": "assets/optimized/marketing/social-instagram-story.jpg",
+    "webp": "assets/optimized/marketing/social-instagram-story.webp"
+  },
+  "optimized/admin/admin-analytics.jpg": {
+    "original": "assets/optimized/admin/admin-analytics.jpg",
+    "optimized": "assets/optimized/optimized/admin/admin-analytics.jpg",
+    "webp": "assets/optimized/optimized/admin/admin-analytics.webp"
+  },
+  "optimized/admin/admin-calendar.jpg": {
+    "original": "assets/optimized/admin/admin-calendar.jpg",
+    "optimized": "assets/optimized/optimized/admin/admin-calendar.jpg",
+    "webp": "assets/optimized/optimized/admin/admin-calendar.webp"
+  },
+  "optimized/admin/admin-clients.jpg": {
+    "original": "assets/optimized/admin/admin-clients.jpg",
+    "optimized": "assets/optimized/optimized/admin/admin-clients.jpg",
+    "webp": "assets/optimized/optimized/admin/admin-clients.webp"
+  },
+  "optimized/admin/admin-dashboard.jpg": {
+    "original": "assets/optimized/admin/admin-dashboard.jpg",
+    "optimized": "assets/optimized/optimized/admin/admin-dashboard.jpg",
+    "webp": "assets/optimized/optimized/admin/admin-dashboard.webp"
+  },
+  "optimized/booking/booking-consultation.jpg": {
+    "original": "assets/optimized/booking/booking-consultation.jpg",
+    "optimized": "assets/optimized/optimized/booking/booking-consultation.jpg",
+    "webp": "assets/optimized/optimized/booking/booking-consultation.webp"
+  },
+  "optimized/booking/booking-preparation.jpg": {
+    "original": "assets/optimized/booking/booking-preparation.jpg",
+    "optimized": "assets/optimized/optimized/booking/booking-preparation.jpg",
+    "webp": "assets/optimized/optimized/booking/booking-preparation.webp"
+  },
+  "optimized/booking/booking-success.jpg": {
+    "original": "assets/optimized/booking/booking-success.jpg",
+    "optimized": "assets/optimized/optimized/booking/booking-success.jpg",
+    "webp": "assets/optimized/optimized/booking/booking-success.webp"
+  },
+  "optimized/hero/hero-beauty-luxury.jpg": {
+    "original": "assets/optimized/hero/hero-beauty-luxury.jpg",
+    "optimized": "assets/optimized/optimized/hero/hero-beauty-luxury.jpg",
+    "webp": "assets/optimized/optimized/hero/hero-beauty-luxury.webp"
+  },
+  "optimized/hero/hero-fitness-luxury.jpg": {
+    "original": "assets/optimized/hero/hero-fitness-luxury.jpg",
+    "optimized": "assets/optimized/optimized/hero/hero-fitness-luxury.jpg",
+    "webp": "assets/optimized/optimized/hero/hero-fitness-luxury.webp"
+  },
+  "optimized/hero/hero-lifestyle-luxury.jpg": {
+    "original": "assets/optimized/hero/hero-lifestyle-luxury.jpg",
+    "optimized": "assets/optimized/optimized/hero/hero-lifestyle-luxury.jpg",
+    "webp": "assets/optimized/optimized/hero/hero-lifestyle-luxury.webp"
+  },
+  "optimized/marketing/banner-promotion.jpg": {
+    "original": "assets/optimized/marketing/banner-promotion.jpg",
+    "optimized": "assets/optimized/optimized/marketing/banner-promotion.jpg",
+    "webp": "assets/optimized/optimized/marketing/banner-promotion.webp"
+  },
+  "optimized/marketing/social-facebook-cover.jpg": {
+    "original": "assets/optimized/marketing/social-facebook-cover.jpg",
+    "optimized": "assets/optimized/optimized/marketing/social-facebook-cover.jpg",
+    "webp": "assets/optimized/optimized/marketing/social-facebook-cover.webp"
+  },
+  "optimized/marketing/social-instagram-square.jpg": {
+    "original": "assets/optimized/marketing/social-instagram-square.jpg",
+    "optimized": "assets/optimized/optimized/marketing/social-instagram-square.jpg",
+    "webp": "assets/optimized/optimized/marketing/social-instagram-square.webp"
+  },
+  "optimized/marketing/social-instagram-story.jpg": {
+    "original": "assets/optimized/marketing/social-instagram-story.jpg",
+    "optimized": "assets/optimized/optimized/marketing/social-instagram-story.jpg",
+    "webp": "assets/optimized/optimized/marketing/social-instagram-story.webp"
+  },
+  "optimized/services/beauty/beauty-brow-lamination.jpg": {
+    "original": "assets/optimized/services/beauty/beauty-brow-lamination.jpg",
+    "optimized": "assets/optimized/optimized/services/beauty/beauty-brow-lamination.jpg",
+    "webp": "assets/optimized/optimized/services/beauty/beauty-brow-lamination.webp"
+  },
+  "optimized/services/beauty/beauty-lashes.jpg": {
+    "original": "assets/optimized/services/beauty/beauty-lashes.jpg",
+    "optimized": "assets/optimized/optimized/services/beauty/beauty-lashes.jpg",
+    "webp": "assets/optimized/optimized/services/beauty/beauty-lashes.webp"
+  },
+  "optimized/services/beauty/beauty-pmu-brows.jpg": {
+    "original": "assets/optimized/services/beauty/beauty-pmu-brows.jpg",
+    "optimized": "assets/optimized/optimized/services/beauty/beauty-pmu-brows.jpg",
+    "webp": "assets/optimized/optimized/services/beauty/beauty-pmu-brows.webp"
+  },
+  "optimized/services/beauty/beauty-pmu-lips.jpg": {
+    "original": "assets/optimized/services/beauty/beauty-pmu-lips.jpg",
+    "optimized": "assets/optimized/optimized/services/beauty/beauty-pmu-lips.jpg",
+    "webp": "assets/optimized/optimized/services/beauty/beauty-pmu-lips.webp"
+  },
+  "optimized/services/fitness/fitness-glutes.jpg": {
+    "original": "assets/optimized/services/fitness/fitness-glutes.jpg",
+    "optimized": "assets/optimized/optimized/services/fitness/fitness-glutes.jpg",
+    "webp": "assets/optimized/optimized/services/fitness/fitness-glutes.webp"
+  },
+  "optimized/services/fitness/fitness-group.jpg": {
+    "original": "assets/optimized/services/fitness/fitness-group.jpg",
+    "optimized": "assets/optimized/optimized/services/fitness/fitness-group.jpg",
+    "webp": "assets/optimized/optimized/services/fitness/fitness-group.webp"
+  },
+  "optimized/services/fitness/fitness-personal.jpg": {
+    "original": "assets/optimized/services/fitness/fitness-personal.jpg",
+    "optimized": "assets/optimized/optimized/services/fitness/fitness-personal.jpg",
+    "webp": "assets/optimized/optimized/services/fitness/fitness-personal.webp"
+  },
+  "optimized/services/fitness/fitness-starter.jpg": {
+    "original": "assets/optimized/services/fitness/fitness-starter.jpg",
+    "optimized": "assets/optimized/optimized/services/fitness/fitness-starter.jpg",
+    "webp": "assets/optimized/optimized/services/fitness/fitness-starter.webp"
+  },
+  "services/beauty/beauty-brow-lamination.jpg": {
+    "original": "assets/services/beauty/beauty-brow-lamination.jpg",
+    "optimized": "assets/optimized/services/beauty/beauty-brow-lamination.jpg",
+    "webp": "assets/optimized/services/beauty/beauty-brow-lamination.webp"
+  },
+  "services/beauty/beauty-lashes.jpg": {
+    "original": "assets/services/beauty/beauty-lashes.jpg",
+    "optimized": "assets/optimized/services/beauty/beauty-lashes.jpg",
+    "webp": "assets/optimized/services/beauty/beauty-lashes.webp"
+  },
+  "services/beauty/beauty-pmu-brows.jpg": {
+    "original": "assets/services/beauty/beauty-pmu-brows.jpg",
+    "optimized": "assets/optimized/services/beauty/beauty-pmu-brows.jpg",
+    "webp": "assets/optimized/services/beauty/beauty-pmu-brows.webp"
+  },
+  "services/beauty/beauty-pmu-lips.jpg": {
+    "original": "assets/services/beauty/beauty-pmu-lips.jpg",
+    "optimized": "assets/optimized/services/beauty/beauty-pmu-lips.jpg",
+    "webp": "assets/optimized/services/beauty/beauty-pmu-lips.webp"
+  },
+  "services/fitness/fitness-glutes.jpg": {
+    "original": "assets/services/fitness/fitness-glutes.jpg",
+    "optimized": "assets/optimized/services/fitness/fitness-glutes.jpg",
+    "webp": "assets/optimized/services/fitness/fitness-glutes.webp"
+  },
+  "services/fitness/fitness-group.jpg": {
+    "original": "assets/services/fitness/fitness-group.jpg",
+    "optimized": "assets/optimized/services/fitness/fitness-group.jpg",
+    "webp": "assets/optimized/services/fitness/fitness-group.webp"
+  },
+  "services/fitness/fitness-personal.jpg": {
+    "original": "assets/services/fitness/fitness-personal.jpg",
+    "optimized": "assets/optimized/services/fitness/fitness-personal.jpg",
+    "webp": "assets/optimized/services/fitness/fitness-personal.webp"
+  },
+  "services/fitness/fitness-starter.jpg": {
+    "original": "assets/services/fitness/fitness-starter.jpg",
+    "optimized": "assets/optimized/services/fitness/fitness-starter.jpg",
+    "webp": "assets/optimized/services/fitness/fitness-starter.webp"
+  }
+}

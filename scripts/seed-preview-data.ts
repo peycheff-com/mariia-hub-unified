@@ -9,6 +9,7 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { config } from 'dotenv';
+import { getTestCredentials } from '../src/test/test-credentials';
 
 // Load environment variables
 config({ path: '.env' });
@@ -141,9 +142,10 @@ class PreviewDatabaseSeeder {
     const clientIds: string[] = [];
 
     for (const client of testClients) {
+      const credentials = getTestCredentials();
       const { data: authData } = await this.supabase.auth.admin.createUser({
         email: client.email,
-        password: 'preview123',
+        password: credentials.previewUser.password,
         email_confirm: true
       });
 

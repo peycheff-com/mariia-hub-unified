@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 
 interface BeforeAfter {
   id: string;
@@ -17,7 +17,7 @@ const BeforeAfterSlider = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [items, setItems] = useState<BeforeAfter[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   useEffect(() => {
     const fetchGalleryImages = async () => {
@@ -45,7 +45,7 @@ const BeforeAfterSlider = () => {
           setItems([]);
         }
       } catch (_error) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Error",
           description: "Could not load gallery images",
           variant: "destructive",
@@ -56,7 +56,7 @@ const BeforeAfterSlider = () => {
     };
 
     fetchGalleryImages();
-  }, [toast]);
+  }, [toast aria-live="polite" aria-atomic="true"]);
 
   const next = () => {
     setCurrentIndex((prev) => (prev + 1) % items.length);

@@ -1,0 +1,70 @@
+{
+  "name": "environment-management-scripts",
+  "version": "1.0.0",
+  "description": "Advanced environment management and provisioning automation scripts",
+  "scripts": {
+    "environment:start": "node scripts/environment/environment-manager.js start",
+    "environment:create": "node scripts/environment/environment-manager.js create",
+    "environment:list": "node scripts/environment/environment-manager.js list",
+    "environment:delete": "node scripts/environment/environment-manager.js delete",
+    "environment:health": "node scripts/environment/environment-manager.js health",
+
+    "config:create": "node scripts/environment/config-manager.js create",
+    "config:list": "node scripts/environment/config-manager.js list",
+    "config:validate": "node scripts/environment/config-manager.js validate",
+    "config:history": "node scripts/environment/config-manager.js history",
+    "config:rollback": "node scripts/environment/config-manager.js rollback",
+
+    "optimizer:start": "node scripts/environment/resource-optimizer.js start",
+    "optimizer:optimize": "node scripts/environment/resource-optimizer.js optimize",
+    "optimizer:analyze": "node scripts/environment/resource-optimizer.js analyze",
+    "optimizer:metrics": "node scripts/environment/resource-optimizer.js metrics",
+    "optimizer:cleanup": "node scripts/environment/resource-optimizer.js cleanup",
+
+    "monitor:start": "node scripts/environment/health-monitor.js start",
+    "monitor:check": "node scripts/environment/health-monitor.js check",
+    "monitor:status": "node scripts/environment/health-monitor.js status",
+    "monitor:alerts": "node scripts/environment/health-monitor.js alerts",
+    "monitor:report": "node scripts/environment/health-monitor.js report",
+
+    "test:start": "node scripts/environment/test-automation.js start",
+    "test:smoke": "node scripts/environment/test-automation.js test smoke",
+    "test:integration": "node scripts/environment/test-automation.js test integration",
+    "test:performance": "node scripts/environment/test-automation.js test performance",
+    "test:security": "node scripts/environment/test-automation.js test security",
+    "test:compliance": "node scripts/environment/test-automation.js test compliance",
+    "test:all": "node scripts/environment/test-automation.js test all",
+    "test:report": "node scripts/environment/test-automation.js report",
+    "test:status": "node scripts/environment/test-automation.js status",
+
+    "lifecycle:start": "node scripts/environment/lifecycle-manager.js start",
+    "lifecycle:create": "node scripts/environment/lifecycle-manager.js create",
+    "lifecycle:delete": "node scripts/environment/lifecycle-manager.js delete",
+    "lifecycle:promote": "node scripts/environment/lifecycle-manager.js promote",
+    "lifecycle:backup": "node scripts/environment/lifecycle-manager.js backup",
+    "lifecycle:restore": "node scripts/environment/lifecycle-manager.js restore",
+    "lifecycle:status": "node scripts/environment/lifecycle-manager.js status",
+    "lifecycle:workflows": "node scripts/environment/lifecycle-manager.js workflows",
+
+    "env:setup": "chmod +x scripts/environment/*.js && mkdir -p config/{environments,monitoring,testing,lifecycle,templates} config/monitoring/{health,alerts,rules} config/testing/{suites,reports} config/lifecycle/{policies,workflows,backups}",
+    "env:validate": "npm run config:validate && npm run monitor:check && npm run test:smoke",
+    "env:full-test": "npm run test:all && npm run monitor:status && npm run optimizer:analyze",
+    "env:health": "npm run monitor:status && npm run test:smoke && npm run optimizer:metrics",
+    "env:cleanup": "npm run optimizer:cleanup && npm run lifecycle:cleanup"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.67.0",
+    "handlebars": "^4.7.8",
+    "joi": "^17.13.3",
+    "node-fetch": "^3.3.2",
+    "yaml": "^2.5.0",
+    "fs-extra": "^11.2.0",
+    "cron": "^3.1.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "@types/fs-extra": "^11.0.4",
+    "@types/handlebars": "^4.1.0",
+    "typescript": "^5.9.3"
+  }
+}

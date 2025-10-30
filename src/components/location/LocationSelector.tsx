@@ -137,7 +137,7 @@ export function LocationSelector({
   if (variant === 'default') {
     return (
       <div className={cn('space-y-2', className)}>
-        <label className="text-sm font-medium">Select Location</label>
+        <label className="text-sm font-medium" htmlFor="select-location">Select Location</label>
         <Select value={selectedLocationId} onValueChange={handleLocationSelect}>
           <SelectTrigger>
             <div className="flex items-center gap-2">

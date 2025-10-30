@@ -21,7 +21,7 @@ import {
   CreditCard,
   Camera
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -76,11 +76,11 @@ const UserBookings: React.FC = () => {
     mutationFn: (bookingId: string) => bookingService.cancelBooking(bookingId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-bookings'] });
-      toast.success(t('user.bookings.cancelSuccess'));
+      toast aria-live="polite" aria-atomic="true".success(t('user.bookings.cancelSuccess'));
       setCancellingBooking(null);
     },
     onError: () => {
-      toast.error(t('user.bookings.cancelError'));
+      toast aria-live="polite" aria-atomic="true".error(t('user.bookings.cancelError'));
     },
   });
 
@@ -90,12 +90,12 @@ const UserBookings: React.FC = () => {
       bookingService.submitReview(bookingId, { rating, comment }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-bookings'] });
-      toast.success(t('user.bookings.reviewSuccess'));
+      toast aria-live="polite" aria-atomic="true".success(t('user.bookings.reviewSuccess'));
       setReviewDialogOpen(false);
       setSelectedBooking(null);
     },
     onError: () => {
-      toast.error(t('user.bookings.reviewError'));
+      toast aria-live="polite" aria-atomic="true".error(t('user.bookings.reviewError'));
     },
   });
 
@@ -534,7 +534,7 @@ const ReviewForm: React.FC<{
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (rating === 0) {
-      toast.error(t('user.bookings.review.ratingRequired'));
+      toast aria-live="polite" aria-atomic="true".error(t('user.bookings.review.ratingRequired'));
       return;
     }
     onSubmit(rating, comment);

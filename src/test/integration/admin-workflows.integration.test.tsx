@@ -566,7 +566,7 @@ describe('Admin Workflow Integration Tests', () => {
       });
     });
 
-    it('manages user communication and notifications', async () => {
+    it('manages user communication and notification aria-live="polite" aria-atomic="true"s', async () => {
       vi.doMock('@/services/emailService', () => ({
         sendBulkEmail: vi.fn(() => Promise.resolve({
           sent: 3,
@@ -576,7 +576,7 @@ describe('Admin Workflow Integration Tests', () => {
 
       render(<UserManager />);
 
-      // Send bulk notification
+      // Send bulk notification aria-live="polite" aria-atomic="true"
       const selectAllCheckbox = screen.getByLabelText(/select all users/i);
       fireEvent.click(selectAllCheckbox);
 

@@ -27,7 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 import {
   SEOAnalysis,
   ContentManagement,
@@ -63,7 +63,7 @@ export const SEOOptimizer: React.FC<SEOOptimizerProps> = ({
   className
 }) => {
   const { t } = useTranslation();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   // State
   const [content, setContent] = useState<Partial<ContentManagement>>(
@@ -263,13 +263,13 @@ export const SEOOptimizer: React.FC<SEOOptimizerProps> = ({
       setSeoAnalysis(analysis);
       onOptimized?.(analysis, suggestions);
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('admin.seo.analysisComplete'),
         description: t('admin.seo.analysisCompleteDesc')
       });
     } catch (error) {
       console.error('Error analyzing SEO:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('admin.seo.analysisFailed'),
         description: t('admin.seo.analysisFailedDesc'),
         variant: 'destructive'
@@ -286,7 +286,7 @@ export const SEOOptimizer: React.FC<SEOOptimizerProps> = ({
     urlSlug,
     calculateKeywordDensity,
     onOptimized,
-    toast,
+    toast aria-live="polite" aria-atomic="true",
     t
   ]);
 
@@ -328,24 +328,24 @@ export const SEOOptimizer: React.FC<SEOOptimizerProps> = ({
 
     setUrlSlug(generatedSlug);
 
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: t('admin.seo.metaGenerated'),
       description: t('admin.seo.metaGeneratedDesc')
     });
-  }, [content, toast, t]);
+  }, [content, toast aria-live="polite" aria-atomic="true", t]);
 
   // Copy to clipboard
   const copyToClipboard = useCallback(async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: t('common.copied'),
         description: t('common.copiedToClipboard')
       });
     } catch (error) {
       console.error('Error copying:', error);
     }
-  }, [toast, t]);
+  }, [toast aria-live="polite" aria-atomic="true", t]);
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600';

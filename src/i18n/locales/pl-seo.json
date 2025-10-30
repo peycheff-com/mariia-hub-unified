@@ -1,0 +1,96 @@
+{
+  "seo": {
+    "language": "pl-PL",
+    "home": {
+      "title": "Mariia Beauty & Fitness - Profesjonalne Usługi w Warszawie",
+      "description": "Profesjonalny makijaż permanentny i certyfikowane treningi personalne w Warszawie. Luksusowe studio urody w Śródmieściu. Zarezerwuj wizytę już dziś.",
+      "keywords": "makijaż permanentny Warszawa, trening personalny Warszawa, studio urody Warszawa, PMU Warszawa, fitness Śródmieście, brwi permanentne Warszawa"
+    },
+    "beauty": {
+      "title": "Makijaż Permanentny Warszawa - Profesjonalne Usługi PMU | Mariia Beauty",
+      "description": "Nagradzany makijaż permanentny w Warszawie. Delikatne, naturalne efekty healed-first approach. Brwi, usta, eyeliner. Luksusowe studio w Śródmieściu.",
+      "keywords": "makijaż permanentny Warszawa, PMU Warszawa, brwi permanentne Warszawa, usta permanentne Warszawa, eyeliner permanentny, salon urody Warszawa"
+    },
+    "beautyServices": {
+      "title": "Usługi Kosmetyczne - Makijaż Permanentny Warszawa | Mariia Beauty Studio",
+      "description": "Kompleksowe usługi kosmetyczne w Warszawie. Makijaż permanentny brwi, ust, eyeliner. Profesjonalna stylizacja i laminacja. Najwyższej jakości pigmenty.",
+      "keywords": "usługi kosmetyczne Warszawa, makijaż permanentny, stylizacja brwi, laminacja rzęs, salon piękności Warszawa, PMU centrum Warszawa"
+    },
+    "fitness": {
+      "title": "Trening Personalny Warszawa - Certyfikowany Trener | Mariia Fitness",
+      "description": "Certyfikowany trening personalny w Warszawie. Indywidualne podejście bez presji i porównań. Holistyczne wellness i treningi personalne.",
+      "keywords": "trening personalny Warszawa, fitness Warszawa, trener personalny Warszawa, siłownia Śródmieście, ćwiczenia personalne, wellness Warszawa"
+    },
+    "about": {
+      "title": "O Marii - Artystka PMU i Trenerka Personalna Warszawa",
+      "description": "Poznaj Mariia Borysevych - certyfikowaną artystkę makijażu permanentnego i trenerkę personalną. Luksusowe studio w sercu Warszawy od 2023 roku.",
+      "keywords": "Mariia Borysevych, artystka PMU Warszawa, trenerka personalna Warszawa, o mnie, studio urody Warszawa, makijaż permanentny opinie"
+    },
+    "contact": {
+      "title": "Kontakt - Mariia Beauty & Fitness Warszawa | Rezerwacje",
+      "description": "Skontaktuj się z Mariia Beauty & Fitness w Warszawie. Zarezerwuj wizytę na makijaż permanentny lub trening personalny. Smolna 8, Śródmieście.",
+      "keywords": "kontakt Warszawa, rezerwacje makijaż permanentny, kontakt PMU Warszawa, umów wizytę, telefon, email studio urody"
+    },
+    "booking": {
+      "title": "Rezerwacja Wizyty - Makijaż Permanentny i Trening Personalny",
+      "description": "Zarezerwuj wizytę na makijaż permanentny lub trening personalny w Warszawie. Szybka rezerwacja online, elastyczne terminy, luksusowe doświadczenie.",
+      "keywords": "rezerwacja wizyty Warszawa, makijaż permanentny online, umów trening personalny, rezerwacje PMU, booking Warszawa Śródmieście"
+    },
+    "blog": {
+      "title": "Blog - Porady Eksperta o Makijażu Permanentnym i Fitness",
+      "description": "Blog o makijażu permanentnym, fitness i wellness w Warszawie. Porady eksperta, trendy, pielęgnacja, zdrowy styl życia. Aktualne artykuły.",
+      "keywords": "blog makijaż permanentny, porady PMU, fitness Warszawa, wellness blog, pielęgnacja brwi, treningi personalne porady"
+    },
+    "reviews": {
+      "title": "Opinie Klientów - Makijaż Permanentny i Trening Personalny Warszawa",
+      "description": "Sprawdź opinie klientów o makijażu permanentnym i treningach personalnych w Mariia Beauty & Fitness Warszawa. 44+ pozytywnych recenzji.",
+      "keywords": "opinie makijaż permanentny Warszawa, recenzje PMU, opinie trening personalny, oceny klientów, polecenia studio urody"
+    },
+    "privacy": {
+      "title": "Polityka Prywatności | Mariia Beauty & Fitness Warszawa",
+      "description": "Polityka prywatności Mariia Beauty & Fitness. Ochrona danych osobowych, RODO, informacje o przetwarzaniu danych klientów w Warszawie.",
+      "keywords": "polityka prywatności, RODO, ochrona danych osobowych, GDPR Warszawa, prywatność klientów, przetwarzanie danych"
+    },
+    "terms": {
+      "title": "Regulamin Świadczenia Usług | Mariia Beauty & Fitness",
+      "description": "Regulamin świadczenia usług makijażu permanentnego i treningów personalnych w Warszawie. Warunki rezerwacji, płatności, anulowania.",
+      "keywords": "regulamin, warunki świadczenia usług, makijaż permanentny regulamin, trening personalny warunki, umowa o świadczenie usług"
+    }
+  },
+  "localBusiness": {
+    "name": "Mariia Beauty & Fitness",
+    "description": "Profesjonalny makijaż permanentny i certyfikowane treningi personalne w sercu Warszawy. Luksusowe doświadczenie z podejściem healed-first.",
+    "address": "Smolna 8, 00-375 Warszawa, Polska",
+    "phone": "+48 536 200 573",
+    "email": "kontakt@mariaborysevych.com",
+    "hours": "Poniedziałek-Piątek: 9:00-19:00, Sobota: 10:00-16:00",
+    "priceRange": "$$$$",
+    "paymentAccepted": "Gotówka, Karta płatnicza, Przelew bankowy",
+    "currenciesAccepted": "PLN"
+  },
+  "breadcrumbs": {
+    "home": "Strona główna",
+    "beauty": "Uroda",
+    "fitness": "Fitness",
+    "about": "O mnie",
+    "contact": "Kontakt",
+    "blog": "Blog",
+    "booking": "Rezerwacja",
+    "reviews": "Opinie",
+    "privacy": "Prywatność",
+    "terms": "Regulamin"
+  },
+  "socialMedia": {
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "youtube": "YouTube",
+    "tiktok": "TikTok"
+  },
+  "language": {
+    "selectLanguage": "Wybierz język",
+    "currentLanguage": "Aktualny język",
+    "primary": "Główny",
+    "preferencesSaved": "Preferencje językowe zapisane automatycznie",
+    "currentLocale": "Aktualne ustawienia regionalne"
+  }
+}

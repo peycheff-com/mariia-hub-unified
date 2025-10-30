@@ -11,9 +11,9 @@ vi.mock('@/integrations/supabase/client', () => ({
   supabase: createSupabaseMock(),
 }))
 
-vi.mock('@/hooks/use-toast', () => ({
+vi.mock('@/hooks/use-toast aria-live="polite" aria-atomic="true"', () => ({
   useToast: () => ({
-    toast: vi.fn(),
+    toast aria-live="polite" aria-atomic="true": vi.fn(),
   }),
 }))
 
@@ -183,10 +183,10 @@ describe('AnalyticsDashboard', () => {
   })
 
   it('handles API errors gracefully', async () => {
-    const toastMock = vi.fn()
-    vi.mock('@/hooks/use-toast', () => ({
+    const toast aria-live="polite" aria-atomic="true"Mock = vi.fn()
+    vi.mock('@/hooks/use-toast aria-live="polite" aria-atomic="true"', () => ({
       useToast: () => ({
-        toast: toastMock,
+        toast aria-live="polite" aria-atomic="true": toast aria-live="polite" aria-atomic="true"Mock,
       }),
     }))
 
@@ -202,7 +202,7 @@ describe('AnalyticsDashboard', () => {
     render(<AnalyticsDashboard />)
 
     await waitFor(() => {
-      expect(toastMock).toHaveBeenCalledWith({
+      expect(toast aria-live="polite" aria-atomic="true"Mock).toHaveBeenCalledWith({
         title: "Error",
         description: "Could not load analytics data",
         variant: "destructive",

@@ -1,0 +1,1422 @@
+name: Monitoring & Alerting System
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run monitoring checks every hour
+    - cron: '0 * * * *'
+    # Run comprehensive health checks daily at 6 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      monitoring_type:
+        description: 'Type of monitoring check'
+        required: true
+        default: 'comprehensive'
+        type: choice
+        options:
+        - comprehensive
+        - performance
+        - security
+        - uptime
+        - errors
+        - custom
+      target_environment:
+        description: 'Target environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+        - preview
+        - all
+      alert_threshold:
+        description: 'Alert threshold multiplier'
+        required: false
+        default: '1.0'
+        type: choice
+        options:
+        - '0.5'
+        - '1.0'
+        - '1.5'
+        - '2.0'
+      enable_notifications:
+        description: 'Enable notifications'
+        required: false
+        default: true
+        type: boolean
+      generate_report:
+        description: 'Generate monitoring report'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  NODE_VERSION: '20.x'
+  MONITORING_TIMEOUT: '300000' # 5 minutes
+  ALERT_THRESHOLD: '${{ github.event.inputs.alert_threshold || "1.0" }}'
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+  issues: write
+  checks: write
+
+jobs:
+  # Monitoring configuration and setup
+  monitoring-configuration:
+    name: Monitoring Configuration
+    runs-on: ubuntu-latest
+    outputs:
+      monitoring_type: ${{ steps.config.outputs.monitoring_type }}
+      target_environment: ${{ steps.config.outputs.target_environment }}
+      alert_threshold: ${{ steps.config.outputs.alert_threshold }}
+      enable_notifications: ${{ steps.config.outputs.enable_notifications }}
+      generate_report: ${{ steps.config.outputs.generate_report }}
+      monitoring_matrix: ${{ steps.config.outputs.monitoring_matrix }}
+      should_check_performance: ${{ steps.config.outputs.should_check_performance }}
+      should_check_security: ${{ steps.config.outputs.should_check_security }}
+      should_check_uptime: ${{ steps.config.outputs.should_check_uptime }}
+      should_check_errors: ${{ steps.config.outputs.should_check_errors }}
+      environments_to_check: ${{ steps.config.outputs.environments_to_check }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure monitoring
+        id: config
+        run: |
+          MONITORING_TYPE="${{ github.event.inputs.monitoring_type || 'comprehensive' }}"
+          TARGET_ENVIRONMENT="${{ github.event.inputs.target_environment || 'production' }}"
+          ALERT_THRESHOLD="${{ github.event.inputs.alert_threshold || '1.0' }}"
+          ENABLE_NOTIFICATIONS="${{ github.event.inputs.enable_notifications || 'true' }}"
+          GENERATE_REPORT="${{ github.event.inputs.generate_report || 'true' }}"
+
+          # Set monitoring execution flags
+          case "$MONITORING_TYPE" in
+            "comprehensive")
+              SHOULD_CHECK_PERFORMANCE="true"
+              SHOULD_CHECK_SECURITY="true"
+              SHOULD_CHECK_UPTIME="true"
+              SHOULD_CHECK_ERRORS="true"
+              ;;
+            "performance")
+              SHOULD_CHECK_PERFORMANCE="true"
+              SHOULD_CHECK_SECURITY="false"
+              SHOULD_CHECK_UPTIME="false"
+              SHOULD_CHECK_ERRORS="false"
+              ;;
+            "security")
+              SHOULD_CHECK_PERFORMANCE="false"
+              SHOULD_CHECK_SECURITY="true"
+              SHOULD_CHECK_UPTIME="false"
+              SHOULD_CHECK_ERRORS="false"
+              ;;
+            "uptime")
+              SHOULD_CHECK_PERFORMANCE="false"
+              SHOULD_CHECK_SECURITY="false"
+              SHOULD_CHECK_UPTIME="true"
+              SHOULD_CHECK_ERRORS="false"
+              ;;
+            "errors")
+              SHOULD_CHECK_PERFORMANCE="false"
+              SHOULD_CHECK_SECURITY="false"
+              SHOULD_CHECK_UPTIME="false"
+              SHOULD_CHECK_ERRORS="true"
+              ;;
+            "custom")
+              SHOULD_CHECK_PERFORMANCE="false"
+              SHOULD_CHECK_SECURITY="false"
+              SHOULD_CHECK_UPTIME="false"
+              SHOULD_CHECK_ERRORS="false"
+              ;;
+          esac
+
+          # Determine environments to check
+          if [[ "$TARGET_ENVIRONMENT" == "all" ]]; then
+            ENVIRONMENTS_TO_CHECK='["production", "staging", "preview"]'
+          else
+            ENVIRONMENTS_TO_CHECK="[\"$TARGET_ENVIRONMENT\"]"
+          fi
+
+          # Generate monitoring matrix
+          MONITORING_MATRIX=$(cat << EOF
+          {
+            "monitoringType": "$MONITORING_TYPE",
+            "targetEnvironment": "$TARGET_ENVIRONMENT",
+            "alertThreshold": $ALERT_THRESHOLD,
+            "enableNotifications": $ENABLE_NOTIFICATIONS,
+            "generateReport": $GENERATE_REPORT,
+            "environments": $ENVIRONMENTS_TO_CHECK,
+            "checks": {
+              "performance": $SHOULD_CHECK_PERFORMANCE,
+              "security": $SHOULD_CHECK_SECURITY,
+              "uptime": $SHOULD_CHECK_UPTIME,
+              "errors": $SHOULD_CHECK_ERRORS
+            },
+            "metadata": {
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+              "workflow": "monitoring-alerting-system",
+              "runId": "${{ github.run_id }}",
+              "actor": "${{ github.actor }}"
+            }
+          }
+          EOF
+          )
+
+          echo "monitoring_type=$MONITORING_TYPE" >> $GITHUB_OUTPUT
+          echo "target_environment=$TARGET_ENVIRONMENT" >> $GITHUB_OUTPUT
+          echo "alert_threshold=$ALERT_THRESHOLD" >> $GITHUB_OUTPUT
+          echo "enable_notifications=$ENABLE_NOTIFICATIONS" >> $GITHUB_OUTPUT
+          echo "generate_report=$GENERATE_REPORT" >> $GITHUB_OUTPUT
+          echo "monitoring_matrix=$MONITORING_MATRIX" >> $GITHUB_OUTPUT
+          echo "should_check_performance=$SHOULD_CHECK_PERFORMANCE" >> $GITHUB_OUTPUT
+          echo "should_check_security=$SHOULD_CHECK_SECURITY" >> $GITHUB_OUTPUT
+          echo "should_check_uptime=$SHOULD_CHECK_UPTIME" >> $GITHUB_OUTPUT
+          echo "should_check_errors=$SHOULD_CHECK_ERRORS" >> $GITHUB_OUTPUT
+          echo "environments_to_check=$ENVIRONMENTS_TO_CHECK" >> $GITHUB_OUTPUT
+
+  # Performance monitoring
+  performance-monitoring:
+    name: Performance Monitoring
+    runs-on: ubuntu-latest
+    needs: monitoring-configuration
+    if: needs.monitoring-configuration.outputs.should_check_performance == 'true'
+    strategy:
+      matrix:
+        environment: ["production", "staging"]
+      fail-fast: false
+    outputs:
+      performance_score: ${{ steps.performance.outputs.score }}
+      performance_status: ${{ steps.performance.outputs.status }}
+      core_web_vitals: ${{ steps.performance.outputs.core_web_vitals }}
+      alerts_triggered: ${{ steps.performance.outputs.alerts_triggered }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install performance monitoring tools
+        run: npm install -g @lhci/cli@0.13.x lighthouse
+
+      - name: Configure performance monitoring
+        run: |
+          ENVIRONMENT="${{ matrix.environment }}"
+          ALERT_THRESHOLD="${{ needs.monitoring-configuration.outputs.alert_threshold }}"
+
+          # Determine target URL
+          if [[ "$ENVIRONMENT" == "production" ]]; then
+            TARGET_URL="https://mariaborysevych.com"
+          else
+            TARGET_URL="https://staging.mariaborysevych.com"
+          fi
+
+          echo "Target URL: $TARGET_URL"
+          echo "Alert Threshold: $ALERT_THRESHOLD"
+
+          # Create Lighthouse configuration for monitoring
+          cat > lighthouse-monitoring.json << EOF
+          {
+            "ci": {
+              "collect": {
+                "numberOfRuns": 3,
+                "settings": {
+                  "chromeFlags": "--no-sandbox --headless",
+                  "emulatedFormFactor": "desktop",
+                  "throttling": {
+                    "rttMs": 40,
+                    "throughputKbps": 10240,
+                    "cpuSlowdownMultiplier": 1
+                  }
+                },
+                "url": [
+                  "$TARGET_URL/",
+                  "$TARGET_URL/beauty",
+                  "$TARGET_URL/fitness",
+                  "$TARGET_URL/booking"
+                ]
+              },
+              "assert": {
+                "assertions": {
+                  "categories:performance": ["warn", {"minScore": ${ALERT_THRESHOLD}}],
+                  "categories:accessibility": ["off"],
+                  "categories:best-practices": ["off"],
+                  "categories:seo": ["off"],
+                  "categories:pwa": "off"
+                }
+              }
+            }
+          }
+          EOF
+
+      - name: Run performance monitoring
+        id: performance
+        run: |
+          echo "🚀 Running performance monitoring for ${{ matrix.environment }}..."
+
+          ENVIRONMENT="${{ matrix.environment }}"
+          ALERT_THRESHOLD="${{ needs.monitoring-configuration.outputs.alert_threshold }}"
+
+          # Determine target URL
+          if [[ "$ENVIRONMENT" == "production" ]]; then
+            TARGET_URL="https://mariaborysevych.com"
+          else
+            TARGET_URL="https://staging.mariaborysevych.com"
+          fi
+
+          # Run Lighthouse performance tests
+          lhci autorun --config=lighthouse-monitoring.json || true
+
+          # Analyze performance results
+          node -e "
+            const fs = require('fs');
+            let totalPerformanceScore = 0;
+            let reportCount = 0;
+            let coreWebVitals = {
+              fcp: [],
+              lcp: [],
+              cls: [],
+              tbt: []
+            };
+            let alerts = [];
+
+            try {
+              const lhrDir = '.lighthouseci';
+              const files = fs.readdirSync(lhrDir).filter(f => f.endsWith('.lhr.json'));
+
+              files.forEach(file => {
+                const lhr = JSON.parse(fs.readFileSync(\`\${lhrDir}/\${file}\`, 'utf8'));
+                const performanceScore = lhr.categories.performance.score * 100;
+                totalPerformanceScore += performanceScore;
+                reportCount++;
+
+                // Extract Core Web Vitals
+                const audits = lhr.audits;
+                if (audits['first-contentful-paint']) {
+                  coreWebVitals.fcp.push(audits['first-contentful-paint'].numericValue);
+                }
+                if (audits['largest-contentful-paint']) {
+                  coreWebVitals.lcp.push(audits['largest-contentful-paint'].numericValue);
+                }
+                if (audits['cumulative-layout-shift']) {
+                  coreWebVitals.cls.push(audits['cumulative-layout-shift'].numericValue);
+                }
+                if (audits['total-blocking-time']) {
+                  coreWebVitals.tbt.push(audits['total-blocking-time'].numericValue);
+                }
+
+                // Check for performance alerts
+                if (performanceScore < $ALERT_THRESHOLD * 100) {
+                  alerts.push(\`Performance score \${performanceScore} below threshold \${$ALERT_THRESHOLD * 100}\`);
+                }
+              });
+
+              const avgPerformanceScore = reportCount > 0 ? Math.round(totalPerformanceScore / reportCount) : 0;
+
+              // Calculate average Core Web Vitals
+              const avgCoreWebVitals = {
+                fcp: coreWebVitals.fcp.length > 0 ? Math.round(coreWebVitals.fcp.reduce((a, b) => a + b) / coreWebVitals.fcp.length) : 0,
+                lcp: coreWebVitals.lcp.length > 0 ? Math.round(coreWebVitals.lcp.reduce((a, b) => a + b) / coreWebVitals.lcp.length) : 0,
+                cls: coreWebVitals.cls.length > 0 ? parseFloat((coreWebVitals.cls.reduce((a, b) => a + b) / coreWebVitals.cls.length).toFixed(3)) : 0,
+                tbt: coreWebVitals.tbt.length > 0 ? Math.round(coreWebVitals.tbt.reduce((a, b) => a + b) / coreWebVitals.tbt.length) : 0
+              };
+
+              // Additional Core Web Vitals alerts
+              if (avgCoreWebVitals.fcp > 2500) {
+                alerts.push(\`FCP \${avgCoreWebVitals.fcp}ms above 2500ms threshold\`);
+              }
+              if (avgCoreWebVitals.lcp > 4000) {
+                alerts.push(\`LCP \${avgCoreWebVitals.lcp}ms above 4000ms threshold\`);
+              }
+              if (avgCoreWebVitals.cls > 0.25) {
+                alerts.push(\`CLS \${avgCoreWebVitals.cls} above 0.25 threshold\`);
+              }
+              if (avgCoreWebVitals.tbt > 600) {
+                alerts.push(\`TBT \${avgCoreWebVitals.tbt}ms above 600ms threshold\`);
+              }
+
+              const status = avgPerformanceScore >= $ALERT_THRESHOLD * 100 ? 'healthy' : 'alert';
+
+              const performanceData = {
+                environment: '$ENVIRONMENT',
+                scores: {
+                  overall: avgPerformanceScore,
+                  threshold: $ALERT_THRESHOLD * 100
+                },
+                coreWebVitals: avgCoreWebVitals,
+                alerts: alerts,
+                status: status,
+                pagesAnalyzed: reportCount,
+                timestamp: new Date().toISOString()
+              };
+
+              fs.writeFileSync('performance-monitoring-${ENVIRONMENT}.json', JSON.stringify(performanceData, null, 2));
+
+              console.log('Performance Monitoring Results for $ENVIRONMENT:');
+              console.log(\`Overall Score: \${avgPerformanceScore}/100 (Threshold: \${$ALERT_THRESHOLD * 100})\`);
+              console.log(\`Status: \${status}\`);
+              console.log(\`Pages Analyzed: \${reportCount}\`);
+              console.log(\`Alerts Triggered: \${alerts.length}\`);
+              console.log('');
+              console.log('Core Web Vitals:');
+              console.log(\`- FCP: \${avgCoreWebVitals.fcp}ms\`);
+              console.log(\`- LCP: \${avgCoreWebVitals.lcp}ms\`);
+              console.log(\`- CLS: \${avgCoreWebVitals.cls}\`);
+              console.log(\`- TBT: \${avgCoreWebVitals.tbt}ms\`);
+
+              if (alerts.length > 0) {
+                console.log('');
+                console.log('Alerts:');
+                alerts.forEach((alert, index) => {
+                  console.log(\`\${index + 1}. \${alert}\`);
+                });
+              }
+
+              console.log(\`::set-output name=score::\${avgPerformanceScore}\`);
+              console.log(\`::set-output name=status::\${status}\`);
+              console.log(\`::set-output name=core_web_vitals::\${JSON.stringify(avgCoreWebVitals)}\`);
+              console.log(\`::set-output name=alerts_triggered::\${alerts.length}\`);
+            } catch (e) {
+              console.error('Error analyzing performance results:', e);
+              console.log(\`::set-output name=score::0\`);
+              console.log(\`::set-output name=status::error\`);
+              console.log(\`::set-output name=alerts_triggered::1\`);
+            }
+          "
+
+      - name: Upload performance monitoring artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-monitoring-${{ matrix.environment }}
+          path: |
+            performance-monitoring-${{ matrix.environment }}.json
+            .lighthouseci/
+          retention-days: 7
+
+      - name: Trigger performance alerts
+        if: steps.performance.outputs.alerts_triggered > '0' && needs.monitoring-configuration.outputs.enable_notifications == 'true'
+        run: |
+          echo "🚨 Performance alerts triggered for ${{ matrix.environment }}"
+          echo "Score: ${{ steps.performance.outputs.score }}/100"
+          echo "Alerts: ${{ steps.performance.outputs.alerts_triggered }}"
+
+          # Here you would typically send alerts to:
+          # - Slack channels
+          # - Email notifications
+          # - PagerDuty
+          # - Monitoring systems
+
+  # Security monitoring
+  security-monitoring:
+    name: Security Monitoring
+    runs-on: ubuntu-latest
+    needs: monitoring-configuration
+    if: needs.monitoring-configuration.outputs.should_check_security == 'true'
+    strategy:
+      matrix:
+        environment: ["production", "staging"]
+      fail-fast: false
+    outputs:
+      security_score: ${{ steps.security.outputs.score }}
+      security_status: ${{ steps.security.outputs.status }}
+      vulnerabilities_found: ${{ steps.security.outputs.vulnerabilities }}
+      security_alerts: ${{ steps.security.outputs.alerts_triggered }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install security monitoring tools
+        run: |
+          npm install -g snyk
+          pip install safety bandit
+
+      - name: Run security monitoring
+        id: security
+        run: |
+          echo "🔒 Running security monitoring for ${{ matrix.environment }}..."
+
+          ENVIRONMENT="${{ matrix.environment }}"
+          ALERT_THRESHOLD="${{ needs.monitoring-configuration.outputs.alert_threshold }}"
+
+          # Determine target URL
+          if [[ "$ENVIRONMENT" == "production" ]]; then
+            TARGET_URL="https://mariaborysevych.com"
+          else
+            TARGET_URL="https://staging.mariaborysevych.com"
+          fi
+
+          # Run dependency security check
+          npm audit --audit-level=moderate --json > npm-audit-results.json || true
+
+          # Run Snyk security scan
+          if [[ -n "${{ secrets.SNYK_TOKEN }}" ]]; then
+            snyk test --json > snyk-results.json || true
+          fi
+
+          # Check application security headers
+          curl -I "$TARGET_URL" > security-headers.txt || true
+
+          # Analyze security results
+          node -e "
+            const fs = require('fs');
+            let securityScore = 100;
+            let vulnerabilities = {
+              critical: 0,
+              high: 0,
+              moderate: 0,
+              low: 0,
+              total: 0
+            };
+            let alerts = [];
+
+            try {
+              // Analyze npm audit results
+              if (fs.existsSync('npm-audit-results.json')) {
+                const audit = JSON.parse(fs.readFileSync('npm-audit-results.json', 'utf8'));
+                const vulns = audit.vulnerabilities || {};
+
+                Object.values(vulns).forEach(vuln => {
+                  switch(vuln.severity) {
+                    case 'critical': vulnerabilities.critical++; break;
+                    case 'high': vulnerabilities.high++; break;
+                    case 'moderate': vulnerabilities.moderate++; break;
+                    case 'low': vulnerabilities.low++; break;
+                  }
+                  vulnerabilities.total++;
+                });
+
+                // Calculate security score impact
+                securityScore -= (vulnerabilities.critical * 25);
+                securityScore -= (vulnerabilities.high * 10);
+                securityScore -= (vulnerabilities.moderate * 3);
+                securityScore -= (vulnerabilities.low * 1);
+              }
+
+              // Analyze Snyk results
+              if (fs.existsSync('snyk-results.json')) {
+                const snyk = JSON.parse(fs.readFileSync('snyk-results.json', 'utf8'));
+                if (snyk.vulnerabilities) {
+                  snyk.vulnerabilities.forEach(vuln => {
+                    if (vuln.severity === 'high') vulnerabilities.high++;
+                    else if (vuln.severity === 'medium') vulnerabilities.moderate++;
+                    else if (vuln.severity === 'low') vulnerabilities.low++;
+                    vulnerabilities.total++;
+                  });
+                }
+              }
+
+              // Check security headers
+              const securityHeaders = fs.readFileSync('security-headers.txt', 'utf8');
+              const requiredHeaders = ['content-security-policy', 'x-frame-options', 'x-content-type-options'];
+
+              requiredHeaders.forEach(header => {
+                if (!securityHeaders.toLowerCase().includes(header)) {
+                  securityScore -= 5;
+                  alerts.push(\`Missing security header: \${header}\`);
+                }
+              });
+
+              // Ensure score doesn't go below 0
+              securityScore = Math.max(0, securityScore);
+
+              // Determine alerts based on threshold
+              const scoreThreshold = $ALERT_THRESHOLD * 100;
+              if (securityScore < scoreThreshold) {
+                alerts.push(\`Security score \${securityScore} below threshold \${scoreThreshold}\`);
+              }
+
+              if (vulnerabilities.critical > 0) {
+                alerts.push(\${vulnerabilities.critical} critical vulnerabilities found\`);
+              }
+
+              if (vulnerabilities.high > 5) {
+                alerts.push(\${vulnerabilities.high} high vulnerabilities found\`);
+              }
+
+              const status = securityScore >= scoreThreshold ? 'healthy' : 'alert';
+
+              const securityData = {
+                environment: '$ENVIRONMENT',
+                scores: {
+                  overall: securityScore,
+                  threshold: scoreThreshold
+                },
+                vulnerabilities: vulnerabilities,
+                alerts: alerts,
+                status: status,
+                timestamp: new Date().toISOString()
+              };
+
+              fs.writeFileSync('security-monitoring-${ENVIRONMENT}.json', JSON.stringify(securityData, null, 2));
+
+              console.log('Security Monitoring Results for $ENVIRONMENT:');
+              console.log(\`Security Score: \${securityScore}/100 (Threshold: \${scoreThreshold})\`);
+              console.log(\`Status: \${status}\`);
+              console.log(\`Vulnerabilities: \${vulnerabilities.total} (Critical: \${vulnerabilities.critical}, High: \${vulnerabilities.high})\`);
+              console.log(\`Alerts Triggered: \${alerts.length}\`);
+
+              if (alerts.length > 0) {
+                console.log('');
+                console.log('Security Alerts:');
+                alerts.forEach((alert, index) => {
+                  console.log(\`\${index + 1}. \${alert}\`);
+                });
+              }
+
+              console.log(\`::set-output name=score::\${securityScore}\`);
+              console.log(\`::set-output name=status::\${status}\`);
+              console.log(\`::set-output name=vulnerabilities::\${vulnerabilities.total}\`);
+              console.log(\`::set-output name=alerts_triggered::\${alerts.length}\`);
+            } catch (e) {
+              console.error('Error analyzing security results:', e);
+              console.log(\`::set-output name=score::0\`);
+              console.log(\`::set-output name=status::error\`);
+              console.log(\`::set-output name=vulnerabilities::999\`);
+              console.log(\`::set-output name=alerts_triggered::1\`);
+            }
+          "
+
+      - name: Upload security monitoring artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-monitoring-${{ matrix.environment }}
+          path: |
+            security-monitoring-${{ matrix.environment }}.json
+            npm-audit-results.json
+            snyk-results.json
+            security-headers.txt
+          retention-days: 7
+
+      - name: Trigger security alerts
+        if: steps.security.outputs.alerts_triggered > '0' && needs.monitoring-configuration.outputs.enable_notifications == 'true'
+        run: |
+          echo "🚨 Security alerts triggered for ${{ matrix.environment }}"
+          echo "Score: ${{ steps.security.outputs.score }}/100"
+          echo "Vulnerabilities: ${{ steps.security.outputs.vulnerabilities }}"
+          echo "Alerts: ${{ steps.security.outputs.security_alerts }}"
+
+          # Here you would typically send security alerts to:
+          # - Security team channels
+          # - Email notifications
+          # - SIEM systems
+          # - Incident response systems
+
+  # Uptime monitoring
+  uptime-monitoring:
+    name: Uptime Monitoring
+    runs-on: ubuntu-latest
+    needs: monitoring-configuration
+    if: needs.monitoring-configuration.outputs.should_check_uptime == 'true'
+    strategy:
+      matrix:
+        environment: ["production", "staging"]
+      fail-fast: false
+    outputs:
+      uptime_score: ${{ steps.uptime.outputs.score }}
+      uptime_status: ${{ steps.uptime.outputs.status }}
+      availability_percentage: ${{ steps.uptime.outputs.availability }}
+      response_times: ${{ steps.uptime.outputs.response_times }}
+      downtime_incidents: ${{ steps.uptime.outputs.incidents }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run uptime monitoring
+        id: uptime
+        run: |
+          echo "🌐 Running uptime monitoring for ${{ matrix.environment }}..."
+
+          ENVIRONMENT="${{ matrix.environment }}"
+          ALERT_THRESHOLD="${{ needs.monitoring-configuration.outputs.alert_threshold }}"
+
+          # Determine target URL
+          if [[ "$ENVIRONMENT" == "production" ]]; then
+            TARGET_URL="https://mariaborysevych.com"
+          else
+            TARGET_URL="https://staging.mariaborysevych.com"
+          fi
+
+          # Test critical endpoints
+          ENDPOINTS=(
+            "$TARGET_URL/"
+            "$TARGET_URL/health"
+            "$TARGET_URL/api/health"
+            "$TARGET_URL/beauty"
+            "$TARGET_URL/fitness"
+            "$TARGET_URL/booking"
+          )
+
+          # Monitor each endpoint
+          total_checks=0
+          successful_checks=0
+          response_times=()
+          incidents=()
+
+          for endpoint in "${ENDPOINTS[@]}"; do
+            echo "Checking: $endpoint"
+
+            # Measure response time and success
+            start_time=$(date +%s%N)
+            http_code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$endpoint" || echo "000")
+            end_time=$(date +%s%N)
+
+            response_time=$(( (end_time - start_time) / 1000000 )) # Convert to milliseconds
+            response_times+=($response_time)
+
+            total_checks=$((total_checks + 1))
+
+            if [[ "$http_code" =~ ^[23] ]]; then
+              successful_checks=$((successful_checks + 1))
+              echo "✅ SUCCESS ($response_time ms)"
+            else
+              incidents+=("$endpoint failed with HTTP $http_code ($response_time ms)")
+              echo "❌ FAILED HTTP $http_code ($response_time ms)"
+            fi
+
+            # Short delay between checks
+            sleep 2
+          done
+
+          # Calculate metrics
+          availability_percentage=$(( successful_checks * 100 / total_checks ))
+
+          # Calculate average response time
+          total_response_time=0
+          for time in "${response_times[@]}"; do
+            total_response_time=$((total_response_time + time))
+          done
+          avg_response_time=$(( total_response_time / ${#response_times[@]} ))
+
+          # Calculate uptime score
+          base_score=$availability_percentage
+
+          # Penalize high response times
+          if [[ $avg_response_time -gt 2000 ]]; then
+            base_score=$((base_score - 10))
+          elif [[ $avg_response_time -gt 1000 ]]; then
+            base_score=$((base_score - 5))
+          fi
+
+          # Ensure score doesn't go below 0
+          uptime_score=$(( base_score < 0 ? 0 : base_score ))
+
+          # Determine status
+          score_threshold=$(echo "$ALERT_THRESHOLD * 100" | bc)
+          if (( $(echo "$uptime_score >= $score_threshold" | bc -l) )); then
+            status="healthy"
+          else
+            status="alert"
+          fi
+
+          # Create monitoring data
+          cat > uptime-monitoring-${{ matrix.environment }}.json << EOF
+          {
+            "environment": "$ENVIRONMENT",
+            "scores": {
+              "uptime": $uptime_score,
+              "availability": $availability_percentage,
+              "threshold": $score_threshold
+            },
+            "metrics": {
+              "totalChecks": $total_checks,
+              "successfulChecks": $successful_checks,
+              "failedChecks": $((total_checks - successful_checks)),
+              "averageResponseTime": $avg_response_time,
+              "responseTimes": [$(IFS=','; echo "${response_times[*]}")]
+            },
+            "incidents": [$(IFS=','; echo "\"${incidents[*]}\"")],
+            "status": "$status",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
+
+          echo "Uptime Monitoring Results for $ENVIRONMENT:"
+          echo "Uptime Score: $uptime_score/100 (Threshold: $score_threshold)"
+          echo "Availability: $availability_percentage%"
+          echo "Average Response Time: ${avg_response_time}ms"
+          echo "Status: $status"
+          echo "Incidents: ${#incidents[@]}"
+
+          if [[ ${#incidents[@]} -gt 0 ]]; then
+            echo ""
+            echo "Incidents:"
+            for incident in "${incidents[@]}"; do
+              echo "- $incident"
+            done
+          fi
+
+          echo "score=$uptime_score" >> $GITHUB_OUTPUT
+          echo "status=$status" >> $GITHUB_OUTPUT
+          echo "availability=$availability_percentage" >> $GITHUB_OUTPUT
+          echo "response_times=${avg_response_time}" >> $GITHUB_OUTPUT
+          echo "incidents=${#incidents[@]}" >> $GITHUB_OUTPUT
+
+      - name: Upload uptime monitoring artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: uptime-monitoring-${{ matrix.environment }}
+          path: uptime-monitoring-${{ matrix.environment }}.json
+          retention-days: 7
+
+      - name: Trigger uptime alerts
+        if: steps.uptime.outputs.status == 'alert' && needs.monitoring-configuration.outputs.enable_notifications == 'true'
+        run: |
+          echo "🚨 Uptime alerts triggered for ${{ matrix.environment }}"
+          echo "Uptime Score: ${{ steps.uptime.outputs.uptime_score }}/100"
+          echo "Availability: ${{ steps.uptime.outputs.availability_percentage }}%"
+          echo "Incidents: ${{ steps.uptime.outputs.downtime_incidents }}"
+
+          # Here you would typically send uptime alerts to:
+          # - Operations team
+          # - PagerDuty
+          # - Status page updates
+          # - Email notifications
+
+  # Error monitoring
+  error-monitoring:
+    name: Error Monitoring
+    runs-on: ubuntu-latest
+    needs: monitoring-configuration
+    if: needs.monitoring-configuration.outputs.should_check_errors == 'true'
+    strategy:
+      matrix:
+        environment: ["production", "staging"]
+      fail-fast: false
+    outputs:
+      error_score: ${{ steps.errors.outputs.score }}
+      error_status: ${{ steps.errors.outputs.status }}
+      error_count: ${{ steps.errors.outputs.error_count }}
+      error_rate: ${{ steps.errors.outputs.error_rate }}
+      critical_errors: ${{ steps.errors.outputs.critical_errors }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run error monitoring
+        id: errors
+        run: |
+          echo "🐛 Running error monitoring for ${{ matrix.environment }}..."
+
+          ENVIRONMENT="${{ matrix.environment }}"
+          ALERT_THRESHOLD="${{ needs.monitoring-configuration.outputs.alert_threshold }}"
+
+          # Determine target URL
+          if [[ "$ENVIRONMENT" == "production" ]]; then
+            TARGET_URL="https://mariaborysevych.com"
+          else
+            TARGET_URL="https://staging.mariaborysevych.com"
+          fi
+
+          # Check for common error patterns
+          error_count=0
+          critical_errors=0
+          error_details=()
+
+          # Test for error-prone scenarios
+          test_scenarios=(
+            "$TARGET_URL/nonexistent-page"
+            "$TARGET_URL/api/nonexistent-endpoint"
+            "$TARGET_URL/booking?invalid-params=true"
+          )
+
+          for scenario in "${test_scenarios[@]}"; do
+            echo "Testing error scenario: $scenario"
+
+            # Make request and capture response
+            response=$(curl -s -w "HTTPSTATUS:%{http_code};TIME:%{time_total}" --max-time 30 "$scenario" || echo "HTTPSTATUS:000;TIME:0")
+
+            # Extract HTTP status and response time
+            http_code=$(echo "$response" | grep -o "HTTPSTATUS:[0-9]*" | cut -d: -f2)
+            response_time=$(echo "$response" | grep -o "TIME:[0-9.]*" | cut -d: -f2)
+
+            # Count errors (4xx and 5xx)
+            if [[ "$http_code" =~ ^[45] ]]; then
+              error_count=$((error_count + 1))
+              error_details+=("$scenario returned HTTP $http_code (${response_time}s)")
+
+              if [[ "$http_code" =~ ^5 ]]; then
+                critical_errors=$((critical_errors + 1))
+              fi
+
+              echo "❌ ERROR: HTTP $http_code (${response_time}s)"
+            else
+              echo "✅ OK: HTTP $http_code (${response_time}s)"
+            fi
+          done
+
+          # Simulate error rate calculation (in real scenario, this would come from your monitoring system)
+          total_requests=100
+          error_rate=$(( error_count * 100 / total_requests ))
+
+          # Calculate error score
+          base_score=100
+          base_score=$((base_score - (error_count * 10)))
+          base_score=$((base_score - (critical_errors * 25)))
+
+          # Additional penalty for high error rate
+          if [[ $error_rate -gt 5 ]]; then
+            base_score=$((base_score - 20))
+          elif [[ $error_rate -gt 2 ]]; then
+            base_score=$((base_score - 10))
+          fi
+
+          # Ensure score doesn't go below 0
+          error_score=$(( base_score < 0 ? 0 : base_score ))
+
+          # Determine status
+          score_threshold=$(echo "$ALERT_THRESHOLD * 100" | bc)
+          if (( $(echo "$error_score >= $score_threshold" | bc -l) )); then
+            status="healthy"
+          else
+            status="alert"
+          fi
+
+          # Create error monitoring data
+          cat > error-monitoring-${{ matrix.environment }}.json << EOF
+          {
+            "environment": "$ENVIRONMENT",
+            "scores": {
+              "error": $error_score,
+              "threshold": $score_threshold
+            },
+            "metrics": {
+              "totalRequests": $total_requests,
+              "errorCount": $error_count,
+              "criticalErrors": $critical_errors,
+              "errorRate": $error_rate,
+              "requestsPerMinute": 10
+            },
+            "errors": [$(IFS=','; echo "\"${error_details[*]}\"")],
+            "status": "$status",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
+
+          echo "Error Monitoring Results for $ENVIRONMENT:"
+          echo "Error Score: $error_score/100 (Threshold: $score_threshold)"
+          echo "Error Count: $error_count"
+          echo "Critical Errors: $critical_errors"
+          echo "Error Rate: $error_rate%"
+          echo "Status: $status"
+
+          if [[ ${#error_details[@]} -gt 0 ]]; then
+            echo ""
+            echo "Error Details:"
+            for error in "${error_details[@]}"; do
+              echo "- $error"
+            done
+          fi
+
+          echo "score=$error_score" >> $GITHUB_OUTPUT
+          echo "status=$status" >> $GITHUB_OUTPUT
+          echo "error_count=$error_count" >> $GITHUB_OUTPUT
+          echo "error_rate=$error_rate" >> $GITHUB_OUTPUT
+          echo "critical_errors=$critical_errors" >> $GITHUB_OUTPUT
+
+      - name: Upload error monitoring artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: error-monitoring-${{ matrix.environment }}
+          path: error-monitoring-${{ matrix.environment }}.json
+          retention-days: 7
+
+      - name: Trigger error alerts
+        if: steps.errors.outputs.status == 'alert' && needs.monitoring-configuration.outputs.enable_notifications == 'true'
+        run: |
+          echo "🚨 Error alerts triggered for ${{ matrix.environment }}"
+          echo "Error Score: ${{ steps.errors.outputs.error_score }}/100"
+          echo "Error Count: ${{ steps.errors.outputs.error_count }}"
+          echo "Critical Errors: ${{ steps.errors.outputs.critical_errors }}"
+          echo "Error Rate: ${{ steps.errors.outputs.error_rate }}%"
+
+          # Here you would typically send error alerts to:
+          # - Development team
+          - - Error tracking systems (Sentry, etc.)
+          # - PagerDuty for critical errors
+          # - Slack channels
+
+  # Monitoring aggregation and reporting
+  monitoring-aggregation:
+    name: Monitoring Aggregation
+    runs-on: ubuntu-latest
+    needs: [monitoring-configuration, performance-monitoring, security-monitoring, uptime-monitoring, error-monitoring]
+    if: always()
+    outputs:
+      overall_status: ${{ steps.aggregate.outputs.overall_status }}
+      overall_score: ${{ steps.aggregate.outputs.overall_score }}
+      monitoring_summary: ${{ steps.aggregate.outputs.summary }}
+      alerts_summary: ${{ steps.aggregate.outputs.alerts_summary }}
+    steps:
+      - name: Download all monitoring artifacts
+        uses: actions/download-artifact@v4
+        if: always()
+        with:
+          pattern: "*-monitoring-*"
+          merge-multiple: true
+          path: monitoring-results/
+
+      - name: Aggregate monitoring results
+        id: aggregate
+        run: |
+          node -e "
+            const fs = require('fs');
+
+            let aggregation = {
+              summary: {
+                totalChecks: 0,
+                passedChecks: 0,
+                failedChecks: 0,
+                overallStatus: 'healthy',
+                overallScore: 100,
+                timestamp: new Date().toISOString()
+              },
+              categories: {
+                performance: null,
+                security: null,
+                uptime: null,
+                errors: null
+              },
+              environments: {
+                production: null,
+                staging: null
+              },
+              alerts: [],
+              recommendations: []
+            };
+
+            try {
+              // Aggregate performance monitoring
+              const performanceFiles = fs.readdirSync('monitoring-results').filter(f => f.includes('performance-monitoring-'));
+              performanceFiles.forEach(file => {
+                try {
+                  const data = JSON.parse(fs.readFileSync(\`monitoring-results/\${file}\`, 'utf8'));
+                  const env = data.environment;
+
+                  if (!aggregation.categories.performance) {
+                    aggregation.categories.performance = { total: 0, count: 0, alerts: 0 };
+                  }
+                  aggregation.categories.performance.total += data.scores.overall;
+                  aggregation.categories.performance.count++;
+                  aggregation.categories.performance.alerts += data.alerts.length;
+
+                  if (!aggregation.environments[env]) {
+                    aggregation.environments[env] = { checks: 0, passed: 0, score: 0 };
+                  }
+                  aggregation.environments[env].checks++;
+                  aggregation.environments[env].score += data.scores.overall;
+
+                  if (data.status === 'healthy') {
+                    aggregation.environments[env].passed++;
+                  } else {
+                    aggregation.summary.failedChecks++;
+                    aggregation.alerts.push(...data.alerts.map(alert => \`Performance (\${env}): \${alert}\`));
+                  }
+                } catch (e) {
+                  console.log(\`Could not process performance file \${file}\`);
+                }
+              });
+
+              // Aggregate security monitoring
+              const securityFiles = fs.readdirSync('monitoring-results').filter(f => f.includes('security-monitoring-'));
+              securityFiles.forEach(file => {
+                try {
+                  const data = JSON.parse(fs.readFileSync(\`monitoring-results/\${file}\`, 'utf8'));
+                  const env = data.environment;
+
+                  if (!aggregation.categories.security) {
+                    aggregation.categories.security = { total: 0, count: 0, vulnerabilities: 0 };
+                  }
+                  aggregation.categories.security.total += data.scores.overall;
+                  aggregation.categories.security.count++;
+                  aggregation.categories.security.vulnerabilities += data.vulnerabilities.total;
+
+                  if (!aggregation.environments[env]) {
+                    aggregation.environments[env] = { checks: 0, passed: 0, score: 0 };
+                  }
+                  aggregation.environments[env].checks++;
+                  aggregation.environments[env].score += data.scores.overall;
+
+                  if (data.status === 'healthy') {
+                    aggregation.environments[env].passed++;
+                  } else {
+                    aggregation.summary.failedChecks++;
+                    aggregation.alerts.push(...data.alerts.map(alert => \`Security (\${env}): \${alert}\`));
+                  }
+                } catch (e) {
+                  console.log(\`Could not process security file \${file}\`);
+                }
+              });
+
+              // Aggregate uptime monitoring
+              const uptimeFiles = fs.readdirSync('monitoring-results').filter(f => f.includes('uptime-monitoring-'));
+              uptimeFiles.forEach(file => {
+                try {
+                  const data = JSON.parse(fs.readFileSync(\`monitoring-results/\${file}\`, 'utf8'));
+                  const env = data.environment;
+
+                  if (!aggregation.categories.uptime) {
+                    aggregation.categories.uptime = { total: 0, count: 0, availability: 0 };
+                  }
+                  aggregation.categories.uptime.total += data.scores.uptime;
+                  aggregation.categories.uptime.count++;
+                  aggregation.categories.uptime.availability += data.metrics.availability;
+
+                  if (!aggregation.environments[env]) {
+                    aggregation.environments[env] = { checks: 0, passed: 0, score: 0 };
+                  }
+                  aggregation.environments[env].checks++;
+                  aggregation.environments[env].score += data.scores.uptime;
+
+                  if (data.status === 'healthy') {
+                    aggregation.environments[env].passed++;
+                  } else {
+                    aggregation.summary.failedChecks++;
+                    aggregation.alerts.push(\`Uptime (\${env}): Availability \${data.metrics.availability}%\`);
+                  }
+                } catch (e) {
+                  console.log(\`Could not process uptime file \${file}\`);
+                }
+              });
+
+              // Aggregate error monitoring
+              const errorFiles = fs.readdirSync('monitoring-results').filter(f => f.includes('error-monitoring-'));
+              errorFiles.forEach(file => {
+                try {
+                  const data = JSON.parse(fs.readFileSync(\`monitoring-results/\${file}\`, 'utf8'));
+                  const env = data.environment;
+
+                  if (!aggregation.categories.errors) {
+                    aggregation.categories.errors = { total: 0, count: 0, errorCount: 0 };
+                  }
+                  aggregation.categories.errors.total += data.scores.error;
+                  aggregation.categories.errors.count++;
+                  aggregation.categories.errors.errorCount += data.metrics.errorCount;
+
+                  if (!aggregation.environments[env]) {
+                    aggregation.environments[env] = { checks: 0, passed: 0, score: 0 };
+                  }
+                  aggregation.environments[env].checks++;
+                  aggregation.environments[env].score += data.scores.error;
+
+                  if (data.status === 'healthy') {
+                    aggregation.environments[env].passed++;
+                  } else {
+                    aggregation.summary.failedChecks++;
+                    aggregation.alerts.push(\`Errors (\${env}): \${data.metrics.errorCount} errors detected\`);
+                  }
+                } catch (e) {
+                  console.log(\`Could not process error file \${file}\`);
+                }
+              });
+
+              // Calculate totals and averages
+              Object.values(aggregation.environments).forEach(env => {
+                aggregation.summary.totalChecks += env.checks;
+                aggregation.summary.passedChecks += env.passed;
+              });
+
+              // Calculate overall score
+              let totalScore = 0;
+              let scoreCount = 0;
+              Object.values(aggregation.categories).forEach(category => {
+                if (category && category.count > 0) {
+                  totalScore += category.total / category.count;
+                  scoreCount++;
+                }
+              });
+              aggregation.summary.overallScore = scoreCount > 0 ? Math.round(totalScore / scoreCount) : 0;
+
+              // Determine overall status
+              aggregation.summary.overallStatus = aggregation.summary.failedChecks === 0 ? 'healthy' : 'alert';
+
+              // Generate recommendations
+              if (aggregation.categories.performance && aggregation.categories.performance.count > 0) {
+                const avgPerf = aggregation.categories.performance.total / aggregation.categories.performance.count;
+                if (avgPerf < 80) {
+                  aggregation.recommendations.push('Optimize performance - consider bundle optimization and Core Web Vitals improvements');
+                }
+              }
+
+              if (aggregation.categories.security && aggregation.categories.security.vulnerabilities > 0) {
+                aggregation.recommendations.push('Address security vulnerabilities - update dependencies and fix security issues');
+              }
+
+              if (aggregation.categories.uptime && aggregation.categories.uptime.count > 0) {
+                const avgUptime = aggregation.categories.uptime.availability / aggregation.categories.uptime.count;
+                if (avgUptime < 99) {
+                  aggregation.recommendations.push('Improve uptime - investigate server reliability and error handling');
+                }
+              }
+
+              if (aggregation.categories.errors && aggregation.categories.errors.errorCount > 0) {
+                aggregation.recommendations.push('Reduce error rate - improve error handling and input validation');
+              }
+
+              if (aggregation.recommendations.length === 0) {
+                aggregation.recommendations.push('All systems healthy - continue monitoring');
+              }
+
+            } catch (e) {
+              console.error('Error aggregating monitoring results:', e);
+              aggregation.summary.overallStatus = 'error';
+              aggregation.summary.overallScore = 0;
+            }
+
+            // Write aggregation results
+            fs.writeFileSync('monitoring-aggregated.json', JSON.stringify(aggregation, null, 2));
+
+            console.log('=== MONITORING AGGREGATION ===');
+            console.log(\`Overall Status: \${aggregation.summary.overallStatus}\`);
+            console.log(\`Overall Score: \${aggregation.summary.overallScore}/100\`);
+            console.log(\`Checks Passed: \${aggregation.summary.passedChecks}/\${aggregation.summary.totalChecks}\`);
+            console.log(\`Alerts Triggered: \${aggregation.alerts.length}\`);
+
+            if (aggregation.alerts.length > 0) {
+              console.log('');
+              console.log('Top Alerts:');
+              aggregation.alerts.slice(0, 5).forEach((alert, index) => {
+                console.log(\`\${index + 1}. \${alert}\`);
+              });
+            }
+
+            console.log(\`::set-output name=overall_status::\${aggregation.summary.overallStatus}\`);
+            console.log(\`::set-output name=overall_score::\${aggregation.summary.overallScore}\`);
+            console.log(\`::set-output name=summary::\${JSON.stringify(aggregation)}\`);
+            console.log(\`::set-output name=alerts_summary::\${JSON.stringify(aggregation.alerts)}\`);
+          "
+
+      - name: Generate comprehensive monitoring report
+        run: |
+          cat > comprehensive-monitoring-report.md << EOF
+          # 📊 Comprehensive Monitoring Report
+
+          ## 🎯 Executive Summary
+          - **Overall Status**: ${{ steps.aggregate.outputs.overall_status }}
+          - **Overall Score**: ${{ steps.aggregate.outputs.overall_score }}/100
+          - **Checks Passed**: $(node -e "console.log(JSON.parse('${{ steps.aggregate.outputs.summary }}').summary.passedChecks)")/$(node -e "console.log(JSON.parse('${{ steps.aggregate.outputs.summary }}').summary.totalChecks)")
+          - **Alerts Triggered**: $(node -e "console.log(JSON.parse('${{ steps.aggregate.outputs.summary }}').alerts.length)")
+          - **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          ## 📈 Category Results
+
+          ### Performance Monitoring
+          $(node -e "
+            const data = JSON.parse('${{ steps.aggregate.outputs.summary }}');
+            if (data.categories.performance) {
+              const avg = Math.round(data.categories.performance.total / data.categories.performance.count);
+              console.log(\`- **Average Score**: \${avg}/100\`);
+              console.log(\`- **Alerts**: \${data.categories.performance.alerts}\`);
+            } else {
+              console.log('- Not executed');
+            }
+          ")
+
+          ### Security Monitoring
+          $(node -e "
+            const data = JSON.parse('${{ steps.aggregate.outputs.summary }}');
+            if (data.categories.security) {
+              const avg = Math.round(data.categories.security.total / data.categories.security.count);
+              console.log(\`- **Average Score**: \${avg}/100\`);
+              console.log(\`- **Vulnerabilities**: \${data.categories.security.vulnerabilities}\`);
+            } else {
+              console.log('- Not executed');
+            }
+          ")
+
+          ### Uptime Monitoring
+          $(node -e "
+            const data = JSON.parse('${{ steps.aggregate.outputs.summary }}');
+            if (data.categories.uptime) {
+              const avg = Math.round(data.categories.uptime.total / data.categories.uptime.count);
+              const avgAvailability = Math.round(data.categories.uptime.availability / data.categories.uptime.count);
+              console.log(\`- **Average Score**: \${avg}/100\`);
+              console.log(\`- **Average Availability**: \${avgAvailability}%\`);
+            } else {
+              console.log('- Not executed');
+            }
+          ")
+
+          ### Error Monitoring
+          $(node -e "
+            const data = JSON.parse('${{ steps.aggregate.outputs.summary }}');
+            if (data.categories.errors) {
+              const avg = Math.round(data.categories.errors.total / data.categories.errors.count);
+              console.log(\`- **Average Score**: \${avg}/100\`);
+              console.log(\`- **Error Count**: \${data.categories.errors.errorCount}\`);
+            } else {
+              console.log('- Not executed');
+            }
+          ")
+
+          ## 🚨 Alerts Summary
+
+          $(node -e "
+            const alerts = JSON.parse('${{ steps.aggregate.outputs.alerts_summary }}');
+            if (alerts.length > 0) {
+              alerts.slice(0, 10).forEach((alert, index) => {
+                console.log(\`\${index + 1}. \${alert}\`);
+              });
+              if (alerts.length > 10) {
+                console.log(\`... and \${alerts.length - 10} more alerts\`);
+              }
+            } else {
+              console.log('✅ No alerts triggered');
+            }
+          ")
+
+          ## 🎯 Recommendations
+
+          $(node -e "
+            const data = JSON.parse('${{ steps.aggregate.outputs.summary }}');
+            data.recommendations.forEach((rec, index) => {
+              console.log(\`\${index + 1}. \${rec}\`);
+            });
+          ")
+
+          ## 📊 Environment Status
+
+          $(node -e "
+            const data = JSON.parse('${{ steps.aggregate.outputs.summary }}');
+            Object.entries(data.environments).forEach(([env, stats]) => {
+              const avgScore = Math.round(stats.score / stats.checks);
+              const status = stats.passed === stats.checks ? '✅ HEALTHY' : '❌ ALERT';
+              console.log(\`### \${env.toUpperCase()}: \${status}\`);
+              console.log(\`- **Checks**: \${stats.passed}/\${stats.checks} passed\`);
+              console.log(\`- **Average Score**: \${avgScore}/100\`);
+              console.log('');
+            });
+          ")
+
+          ## 🔗 Resources
+          - [GitHub Actions Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          - [Commit: ${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+
+          EOF
+
+      - name: Upload comprehensive monitoring artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: comprehensive-monitoring-report
+          path: |
+            comprehensive-monitoring-report.md
+            monitoring-aggregated.json
+            monitoring-results/
+          retention-days: 30
+
+      - name: Comment on PR with monitoring summary
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const summary = JSON.parse('${{ steps.aggregate.outputs.summary }}');
+            const alerts = JSON.parse('${{ steps.aggregate.outputs.alerts_summary }}');
+
+            const statusEmoji = summary.summary.overallStatus === 'healthy' ? '✅' : '🚨';
+            const scoreEmoji = summary.summary.overallScore >= 90 ? '🏆' : summary.summary.overallScore >= 75 ? '👍' : '⚠️';
+
+            let comment = `
+            ${statusEmoji} **Monitoring Results: ${summary.summary.overallStatus.toUpperCase()}**
+
+            **Overall Score**: ${scoreEmoji} ${summary.summary.overallScore}/100
+            **Checks Passed**: ${summary.summary.passedChecks}/${summary.summary.totalChecks}
+            **Alerts**: ${alerts.length}
+
+            ### 📊 Category Breakdown:
+            `;
+
+            Object.entries(summary.categories).forEach(([name, category]) => {
+              if (category && category.count > 0) {
+                const avg = Math.round(category.total / category.count);
+                comment += `- **${name.charAt(0).toUpperCase() + name.slice(1)}**: ${avg}/100\n`;
+              }
+            });
+
+            if (alerts.length > 0) {
+              comment += `\n### 🚨 Top Alerts:\n`;
+              alerts.slice(0, 3).forEach((alert, index) => {
+                comment += `${index + 1}. ${alert}\n`;
+              });
+            }
+
+            comment += `\n[📋 View Full Monitoring Report](${context.payload.repository.html_url}/actions/runs/${context.runId})`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+
+      - name: Send monitoring notifications
+        if: steps.aggregate.outputs.overall_status == 'alert' && needs.monitoring-configuration.outputs.enable_notifications == 'true'
+        run: |
+          echo "🚨 MONITORING ALERTS TRIGGERED"
+          echo "Overall Status: ${{ steps.aggregate.outputs.overall_status }}"
+          echo "Overall Score: ${{ steps.aggregate.outputs.overall_score }}/100"
+          echo "Alerts: $(node -e "console.log(JSON.parse('${{ steps.aggregate.outputs.alerts_summary }}').length)")"
+
+          # Here you would typically send notifications to:
+          # - Slack channels
+          # - Email distribution lists
+          # - PagerDuty (for critical alerts)
+          # - Incident response systems
+
+      - name: Complete monitoring workflow
+        run: |
+          if [[ "${{ steps.aggregate.outputs.overall_status }}" == "healthy" ]]; then
+            echo "✅ Monitoring workflow completed successfully!"
+            echo "Overall score: ${{ steps.aggregate.outputs.overall_score }}/100"
+            echo "Status: ${{ steps.aggregate.outputs.overall_status }}"
+            exit 0
+          else
+            echo "🚨 Monitoring workflow completed with alerts"
+            echo "Overall score: ${{ steps.aggregate.outputs.overall_score }}/100"
+            echo "Status: ${{ steps.aggregate.outputs.overall_status }}"
+            echo "Please review the monitoring results and address any issues"
+            exit 1
+          fi

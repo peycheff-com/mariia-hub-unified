@@ -6,12 +6,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { useSlotGeneration } from '@/hooks/useSlotGeneration';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 
 const Reschedule = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const token = searchParams.get('token');
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -33,7 +33,7 @@ const Reschedule = () => {
         .eq('reschedule_token', token)
         .maybeSingle();
       if (error || !data) {
-        toast({ title: 'Invalid link', description: 'This reschedule link is invalid or expired', variant: 'destructive' });
+        toast aria-live="polite" aria-atomic="true"({ title: 'Invalid link', description: 'This reschedule link is invalid or expired', variant: 'destructive' });
         navigate('/');
         return;
       }
@@ -57,7 +57,7 @@ const Reschedule = () => {
       setLoading(false);
     };
     loadBooking();
-  }, [token, navigate, toast]);
+  }, [token, navigate, toast aria-live="polite" aria-atomic="true"]);
 
   const { slots, loading: slotsLoading } = useSlotGeneration({
     serviceId: booking?.service_id,
@@ -75,10 +75,10 @@ const Reschedule = () => {
       body: { token, newDateTime }
     });
     if (error || !data?.success) {
-      toast({ title: 'Reschedule failed', description: error?.message || 'Please choose another time', variant: 'destructive' });
+      toast aria-live="polite" aria-atomic="true"({ title: 'Reschedule failed', description: error?.message || 'Please choose another time', variant: 'destructive' });
       return;
     }
-    toast({ title: 'Rescheduled', description: 'Your appointment has been updated' });
+    toast aria-live="polite" aria-atomic="true"({ title: 'Rescheduled', description: 'Your appointment has been updated' });
     navigate('/dashboard');
   };
 

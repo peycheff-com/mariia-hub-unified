@@ -3,7 +3,7 @@ import { X, Calendar, Clock, User, CreditCard, Check } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 import { useBookingStore, useBookingStep, useBookingCanProceed, useBookingIsCreating, useCurrentBooking } from '@/stores/bookingStore';
 import { apiGateway } from '@/services/apiGateway';
 import { cqrsService, Commands } from '@/services/cqrsService';
@@ -29,7 +29,7 @@ export const BookingSheetNew: React.FC<BookingSheetProps> = ({
   initialServiceId,
   initialServiceType,
 }) => {
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const step = useBookingStep();
   const canProceed = useBookingCanProceed();
   const isCreating = useBookingIsCreating();
@@ -83,7 +83,7 @@ export const BookingSheetNew: React.FC<BookingSheetProps> = ({
       }
     } catch (error) {
       logger.error('Failed to load service:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Could not load the selected service",
         variant: "destructive",
@@ -100,7 +100,7 @@ export const BookingSheetNew: React.FC<BookingSheetProps> = ({
       const { selectedService, selectedTimeSlot, bookingDetails } = bookingState;
 
       if (!selectedService || !selectedTimeSlot || !bookingDetails) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Error",
           description: "Please complete all required fields",
           variant: "destructive",
@@ -125,7 +125,7 @@ export const BookingSheetNew: React.FC<BookingSheetProps> = ({
       const result = await cqrsService.executeCommand(command);
 
       if (result) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Booking Confirmed!",
           description: "Your appointment has been successfully booked",
         });
@@ -133,7 +133,7 @@ export const BookingSheetNew: React.FC<BookingSheetProps> = ({
       }
     } catch (error) {
       logger.error('Failed to create booking:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Booking Failed",
         description: error instanceof Error ? error.message : "Failed to create booking",
         variant: "destructive",

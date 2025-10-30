@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { Calendar, Clock, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { format, addDays, isSameDay, startOfDay, isToday, isTomorrow, startOfMonth } from 'date-fns';
 import { useTranslation } from 'react-i18next';

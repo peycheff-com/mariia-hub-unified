@@ -15,7 +15,7 @@ const Footer = () => {
   // removed unused handleNavClick
   
   return (
-    <footer id="footer" className="bg-charcoal text-pearl py-16 md:py-20 relative overflow-hidden">
+    <footer role="contentinfo" id="footer" className="bg-charcoal text-pearl py-16 md:py-20 relative overflow-hidden">
       {/* Minimal accent */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-px bg-gradient-to-r from-transparent via-champagne/20 to-transparent" />
 

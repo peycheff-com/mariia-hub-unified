@@ -19,7 +19,7 @@ import {
   AlertCircle,
   Check
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -44,7 +44,7 @@ const UserFavorites: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [editingNotes, setEditingNotes] = useState<UserFavorite | null>(null);
   const [notesDialogOpen, setNotesDialogOpen] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState<Record<string, boolean>>({});
+  const [notification aria-live="polite" aria-atomic="true"sEnabled, setNotificationsEnabled] = useState<Record<string, boolean>>({});
 
   // Fetch favorites
   const { data: favorites, isLoading } = useQuery({
@@ -58,10 +58,10 @@ const UserFavorites: React.FC = () => {
     mutationFn: (favoriteId: string) => favoritesService.removeFavorite(favoriteId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-favorites'] });
-      toast.success(t('user.favorites.removeSuccess'));
+      toast aria-live="polite" aria-atomic="true".success(t('user.favorites.removeSuccess'));
     },
     onError: () => {
-      toast.error(t('user.favorites.removeError'));
+      toast aria-live="polite" aria-atomic="true".error(t('user.favorites.removeError'));
     },
   });
 
@@ -73,20 +73,20 @@ const UserFavorites: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['user-favorites'] });
       setNotesDialogOpen(false);
       setEditingNotes(null);
-      toast.success(t('user.favorites.notesUpdateSuccess'));
+      toast aria-live="polite" aria-atomic="true".success(t('user.favorites.notesUpdateSuccess'));
     },
     onError: () => {
-      toast.error(t('user.favorites.notesUpdateError'));
+      toast aria-live="polite" aria-atomic="true".error(t('user.favorites.notesUpdateError'));
     },
   });
 
-  // Update notification preference mutation
+  // Update notification aria-live="polite" aria-atomic="true" preference mutation
   const updateNotificationMutation = useMutation({
     mutationFn: ({ favoriteId, enabled }: { favoriteId: string; enabled: boolean }) =>
       favoritesService.updateNotificationPreference(favoriteId, enabled),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-favorites'] });
-      toast.success(t('user.favorites.notificationUpdateSuccess'));
+      toast aria-live="polite" aria-atomic="true".success(t('user.favorites.notification aria-live="polite" aria-atomic="true"UpdateSuccess'));
     },
   });
 
@@ -266,10 +266,10 @@ const UserFavorites: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Bell className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm text-gray-600">{t('user.favorites.notifications')}</span>
+                      <span className="text-sm text-gray-600">{t('user.favorites.notification aria-live="polite" aria-atomic="true"s')}</span>
                     </div>
                     <Switch
-                      checked={notificationsEnabled[favorite.id] ?? true}
+                      checked={notification aria-live="polite" aria-atomic="true"sEnabled[favorite.id] ?? true}
                       onCheckedChange={(enabled) => toggleNotifications(favorite.id, enabled)}
                       size="sm"
                     />

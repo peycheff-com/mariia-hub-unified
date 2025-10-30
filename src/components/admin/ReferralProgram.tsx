@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Users, Share2, TrendingUp, Gift, Calendar, Filter, Search, Download, Mail, MessageCircle, Facebook, Twitter, Settings, Award } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { toast } from 'sonner';
+import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -45,7 +45,7 @@ interface ReferralSettings {
   default_referrer_reward_points: number;
   expiry_days: number;
   auto_approve: boolean;
-  email_notifications: boolean;
+  email_notification aria-live="polite" aria-atomic="true"s: boolean;
 }
 
 export function ReferralProgram() {
@@ -57,7 +57,7 @@ export function ReferralProgram() {
     default_referrer_reward_points: 100,
     expiry_days: 90,
     auto_approve: true,
-    email_notifications: true
+    email_notification aria-live="polite" aria-atomic="true"s: true
   });
 
   const queryClient = useQueryClient();
@@ -165,9 +165,9 @@ export function ReferralProgram() {
       .eq('id', referralId);
 
     if (error) {
-      toast.error('Failed to update referral status');
+      toast aria-live="polite" aria-atomic="true".error('Failed to update referral status');
     } else {
-      toast.success('Referral status updated successfully');
+      toast aria-live="polite" aria-atomic="true".success('Referral status updated successfully');
       queryClient.invalidateQueries({ queryKey: ['admin-referrals'] });
       queryClient.invalidateQueries({ queryKey: ['admin-referral-stats'] });
     }
@@ -201,7 +201,7 @@ export function ReferralProgram() {
   // Send reminder email
   const sendReminder = async (referral: ReferralWithUser) => {
     // This would integrate with your email service
-    toast.success('Reminder email sent successfully');
+    toast aria-live="polite" aria-atomic="true".success('Reminder email sent successfully');
   };
 
   const filteredReferrals = referrals?.filter(referral => {
@@ -275,14 +275,14 @@ export function ReferralProgram() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="email-notifications">Email Notifications</Label>
+                  <Label htmlFor="email-notification aria-live="polite" aria-atomic="true"s">Email Notifications</Label>
                   <Switch
-                    id="email-notifications"
-                    checked={settings.email_notifications}
-                    onCheckedChange={(checked) => setSettings({...settings, email_notifications: checked})}
+                    id="email-notification aria-live="polite" aria-atomic="true"s"
+                    checked={settings.email_notification aria-live="polite" aria-atomic="true"s}
+                    onCheckedChange={(checked) => setSettings({...settings, email_notification aria-live="polite" aria-atomic="true"s: checked})}
                   />
                 </div>
-                <Button className="w-full" onClick={() => toast.success('Settings saved successfully')}>
+                <Button className="w-full" onClick={() => toast aria-live="polite" aria-atomic="true".success('Settings saved successfully')}>
                   Save Settings
                 </Button>
               </div>

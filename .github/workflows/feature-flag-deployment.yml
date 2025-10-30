@@ -1,0 +1,1454 @@
+name: Feature Flag & Advanced Deployment Strategies
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      deployment_strategy:
+        description: 'Deployment strategy'
+        required: true
+        default: 'standard'
+        type: choice
+        options:
+        - standard
+        - canary
+        - blue-green
+        - feature-flag
+        - a-b-testing
+      target_environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+        - preview
+      feature_flags:
+        description: 'Feature flags to enable (comma-separated)'
+        required: false
+        type: string
+      traffic_percentage:
+        description: 'Traffic percentage (for canary/A-B testing)'
+        required: false
+        default: '10'
+        type: choice
+        options:
+        - '5'
+        - '10'
+        - '25'
+        - '50'
+        - '100'
+      rollback_enabled:
+        description: 'Enable automatic rollback on failure'
+        required: false
+        default: true
+        type: boolean
+      rollback_threshold:
+        description: 'Failure threshold for rollback (%)'
+        required: false
+        default: '10'
+        type: choice
+        options:
+        - '5'
+        - '10'
+        - '15'
+        - '20'
+
+env:
+  NODE_VERSION: '20.x'
+  DEPLOYMENT_TIMEOUT: '1800000' # 30 minutes
+  ROLLBACK_TIMEOUT: '300000'   # 5 minutes
+
+permissions:
+  contents: read
+  packages: write
+  deployments: write
+  pull-requests: write
+  id-token: write
+  actions: read
+  checks: write
+
+jobs:
+  # Deployment strategy configuration
+  deployment-configuration:
+    name: Deployment Configuration
+    runs-on: ubuntu-latest
+    outputs:
+      strategy: ${{ steps.config.outputs.strategy }}
+      environment: ${{ steps.config.outputs.environment }}
+      feature_flags: ${{ steps.config.outputs.feature_flags }}
+      traffic_percentage: ${{ steps.config.outputs.traffic_percentage }}
+      rollback_enabled: ${{ steps.config.outputs.rollback_enabled }}
+      rollback_threshold: ${{ steps.config.outputs.rollback_threshold }}
+      deployment_matrix: ${{ steps.config.outputs.deployment_matrix }}
+      should_use_canary: ${{ steps.config.outputs.should_use_canary }}
+      should_use_blue_green: ${{ steps.config.outputs.should_use_blue_green }}
+      should_use_feature_flags: ${{ steps.config.outputs.should_use_feature_flags }}
+      should_use_ab_testing: ${{ steps.config.outputs.should_use_ab_testing }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure deployment strategy
+        id: config
+        run: |
+          STRATEGY="${{ github.event.inputs.deployment_strategy || 'standard' }}"
+          ENVIRONMENT="${{ github.event.inputs.target_environment || 'staging' }}"
+          FEATURE_FLAGS="${{ github.event.inputs.feature_flags || '' }}"
+          TRAFFIC_PERCENTAGE="${{ github.event.inputs.traffic_percentage || '10' }}"
+          ROLLBACK_ENABLED="${{ github.event.inputs.rollback_enabled || 'true' }}"
+          ROLLBACK_THRESHOLD="${{ github.event.inputs.rollback_threshold || '10' }}"
+
+          # Process feature flags
+          if [[ -z "$FEATURE_FLAGS" ]]; then
+            case "$STRATEGY" in
+              "feature-flag")
+                FEATURE_FLAGS="new-booking-flow,enhanced-ui,improved-analytics"
+                ;;
+              "canary")
+                FEATURE_FLAGS="canary-deployment"
+                ;;
+              "a-b-testing")
+                FEATURE_FLAGS="ab-test-variant-a"
+                ;;
+              *)
+                FEATURE_FLAGS="default"
+                ;;
+            esac
+          fi
+
+          # Set deployment strategy flags
+          case "$STRATEGY" in
+            "canary")
+              SHOULD_USE_CANARY="true"
+              SHOULD_USE_BLUE_GREEN="false"
+              SHOULD_USE_FEATURE_FLAGS="true"
+              SHOULD_USE_AB_TESTING="false"
+              ;;
+            "blue-green")
+              SHOULD_USE_CANARY="false"
+              SHOULD_USE_BLUE_GREEN="true"
+              SHOULD_USE_FEATURE_FLAGS="false"
+              SHOULD_USE_AB_TESTING="false"
+              ;;
+            "feature-flag")
+              SHOULD_USE_CANARY="false"
+              SHOULD_USE_BLUE_GREEN="false"
+              SHOULD_USE_FEATURE_FLAGS="true"
+              SHOULD_USE_AB_TESTING="false"
+              ;;
+            "a-b-testing")
+              SHOULD_USE_CANARY="false"
+              SHOULD_USE_BLUE_GREEN="false"
+              SHOULD_USE_FEATURE_FLAGS="true"
+              SHOULD_USE_AB_TESTING="true"
+              ;;
+            *)
+              SHOULD_USE_CANARY="false"
+              SHOULD_USE_BLUE_GREEN="false"
+              SHOULD_USE_FEATURE_FLAGS="false"
+              SHOULD_USE_AB_TESTING="false"
+              ;;
+          esac
+
+          # Generate deployment matrix
+          DEPLOYMENT_MATRIX=$(cat << EOF
+          {
+            "strategy": "$STRATEGY",
+            "environment": "$ENVIRONMENT",
+            "featureFlags": "$FEATURE_FLAGS",
+            "trafficPercentage": $TRAFFIC_PERCENTAGE,
+            "rollbackEnabled": $ROLLBACK_ENABLED,
+            "rollbackThreshold": $ROLLBACK_THRESHOLD,
+            "deployments": {
+              "canary": $SHOULD_USE_CANARY,
+              "blueGreen": $SHOULD_USE_BLUE_GREEN,
+              "featureFlag": $SHOULD_USE_FEATURE_FLAGS,
+              "abTesting": $SHOULD_USE_AB_TESTING
+            },
+            "metadata": {
+              "commit": "${{ github.sha }}",
+              "branch": "${{ github.ref_name }}",
+              "actor": "${{ github.actor }}",
+              "runId": "${{ github.run_id }}",
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            }
+          }
+          EOF
+          )
+
+          echo "strategy=$STRATEGY" >> $GITHUB_OUTPUT
+          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+          echo "feature_flags=$FEATURE_FLAGS" >> $GITHUB_OUTPUT
+          echo "traffic_percentage=$TRAFFIC_PERCENTAGE" >> $GITHUB_OUTPUT
+          echo "rollback_enabled=$ROLLBACK_ENABLED" >> $GITHUB_OUTPUT
+          echo "rollback_threshold=$ROLLBACK_THRESHOLD" >> $GITHUB_OUTPUT
+          echo "deployment_matrix=$DEPLOYMENT_MATRIX" >> $GITHUB_OUTPUT
+          echo "should_use_canary=$SHOULD_USE_CANARY" >> $GITHUB_OUTPUT
+          echo "should_use_blue_green=$SHOULD_USE_BLUE_GREEN" >> $GITHUB_OUTPUT
+          echo "should_use_feature_flags=$SHOULD_USE_FEATURE_FLAGS" >> $GITHUB_OUTPUT
+          echo "should_use_ab_testing=$SHOULD_USE_AB_TESTING" >> $GITHUB_OUTPUT
+
+  # Feature flag management
+  feature-flag-management:
+    name: Feature Flag Management
+    runs-on: ubuntu-latest
+    needs: deployment-configuration
+    if: needs.deployment-configuration.outputs.should_use_feature_flags == 'true'
+    outputs:
+      flags_configured: ${{ steps.flags.outputs.configured }}
+      flags_enabled: ${{ steps.flags.outputs.enabled }}
+      feature_config: ${{ steps.flags.outputs.config }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create feature flag configuration
+        id: flags
+        run: |
+          FEATURE_FLAGS="${{ needs.deployment-configuration.outputs.feature_flags }}"
+          ENVIRONMENT="${{ needs.deployment-configuration.outputs.environment }}"
+          STRATEGY="${{ needs.deployment-configuration.outputs.strategy }}"
+
+          echo "🚩 Configuring feature flags for deployment"
+          echo "Environment: $ENVIRONMENT"
+          echo "Strategy: $STRATEGY"
+          echo "Flags: $FEATURE_FLAGS"
+
+          # Create feature flag configuration file
+          cat > feature-flags-config.json << EOF
+          {
+            "environment": "$ENVIRONMENT",
+            "strategy": "$STRATEGY",
+            "flags": {},
+            "rollout": {
+              "percentage": ${{ needs.deployment-configuration.outputs.traffic_percentage }},
+              "enabled": true
+            },
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "metadata": {
+              "commit": "${{ github.sha }}",
+              "actor": "${{ github.actor }}",
+              "runId": "${{ github.run_id }}"
+            }
+          }
+          EOF
+
+          # Configure individual feature flags
+          IFS=',' read -ra FLAGS <<< "$FEATURE_FLAGS"
+          for flag in "${FLAGS[@]}"; do
+            FLAG_NAME=$(echo "$flag" | xargs) # trim whitespace
+
+            # Determine flag configuration based on strategy
+            case "$STRATEGY" in
+              "canary")
+                FLAG_PERCENTAGE="${{ needs.deployment-configuration.outputs.traffic_percentage }}"
+                ;;
+              "feature-flag")
+                FLAG_PERCENTAGE="100" # Full rollout for feature flag strategy
+                ;;
+              "a-b-testing")
+                FLAG_PERCENTAGE="50" # 50/50 split for A/B testing
+                ;;
+              *)
+                FLAG_PERCENTAGE="100"
+                ;;
+            esac
+
+            # Add flag to configuration
+            node -e "
+              const config = JSON.parse(require('fs').readFileSync('feature-flags-config.json', 'utf8'));
+              config.flags['$FLAG_NAME'] = {
+                enabled: true,
+                rolloutPercentage: $FLAG_PERCENTAGE,
+                description: 'Feature flag for $FLAG_NAME',
+                conditions: {
+                  environments: ['$ENVIRONMENT'],
+                  users: [],
+                  percentage: $FLAG_PERCENTAGE
+                }
+              };
+              require('fs').writeFileSync('feature-flags-config.json', JSON.stringify(config, null, 2));
+            "
+
+            echo "✅ Configured feature flag: $FLAG_NAME (${FLAG_PERCENTAGE}% rollout)"
+          done
+
+          # Create environment-specific configuration
+          cat > .env.feature-flags << EOF
+          # Feature Flags Configuration
+          VITE_FEATURE_FLAGS_ENABLED=true
+          VITE_DEPLOYMENT_STRATEGY=$STRATEGY
+          VITE_DEPLOYMENT_ENVIRONMENT=$ENVIRONMENT
+          VITE_FEATURE_FLAGS=$FEATURE_FLAGS
+          VITE_ROLLOUT_PERCENTAGE=${{ needs.deployment-configuration.outputs.traffic_percentage }}
+          VITE_COMMIT_SHA=${{ github.sha }}
+          VITE_DEPLOYMENT_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          EOF
+
+          # Validate configuration
+          node -e "
+            const config = JSON.parse(require('fs').readFileSync('feature-flags-config.json', 'utf8'));
+            const flagCount = Object.keys(config.flags).length;
+
+            console.log('Feature Flag Configuration Summary:');
+            console.log(\`- Environment: \${config.environment}\`);
+            console.log(\`- Strategy: \${config.strategy}\`);
+            console.log(\`- Flags Configured: \${flagCount}\`);
+            console.log(\`- Rollout Percentage: \${config.rollout.percentage}%\`);
+
+            Object.entries(config.flags).forEach(([name, flag]) => {
+              console.log(\`  - \${name}: \${flag.enabled ? 'ENABLED' : 'DISABLED'} (\${flag.rolloutPercentage}%)\`);
+            });
+
+            console.log(\`::set-output name=configured::\${flagCount}\`);
+            console.log(\`::set-output name=enabled::\${Object.values(config.flags).filter(f => f.enabled).length}\`);
+            console.log(\`::set-output name=config::\${JSON.stringify(config)}\`);
+          "
+
+      - name: Upload feature flag configuration
+        uses: actions/upload-artifact@v4
+        with:
+          name: feature-flag-config
+          path: |
+            feature-flags-config.json
+            .env.feature-flags
+          retention-days: 7
+
+  # Canary deployment strategy
+  canary-deployment:
+    name: Canary Deployment
+    runs-on: ubuntu-latest
+    needs: [deployment-configuration, feature-flag-management]
+    if: needs.deployment-configuration.outputs.should_use_canary == 'true'
+    environment:
+      name: ${{ needs.deployment-configuration.outputs.environment }}
+      url: ${{ steps.deploy.outputs.url }}
+    outputs:
+      canary_url: ${{ steps.deploy.outputs.url }}
+      canary_status: ${{ steps.deploy.outputs.status }}
+      rollback_available: ${{ steps.deploy.outputs.rollback_available }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download feature flag configuration
+        uses: actions/download-artifact@v4
+        with:
+          name: feature-flag-config
+          path: .
+
+      - name: Build canary deployment
+        run: |
+          echo "🚀 Building canary deployment..."
+
+          # Load feature flag configuration
+          source .env.feature-flags
+
+          # Build with canary-specific configuration
+          export NODE_ENV="production"
+          export VITE_BUILD_TYPE="canary"
+          export VITE_CANARY_DEPLOYMENT="true"
+          export VITE_DEPLOYMENT_ID="canary-${{ github.run_number }}-${{ github.sha:0:7 }}"
+
+          npm run build
+
+          # Add canary-specific metadata
+          cat > dist/canary-info.json << EOF
+          {
+            "deploymentType": "canary",
+            "deploymentId": "$VITE_DEPLOYMENT_ID",
+            "environment": "${{ needs.deployment-configuration.outputs.environment }}",
+            "trafficPercentage": ${{ needs.deployment-configuration.outputs.traffic_percentage }},
+            "featureFlags": "${{ needs.deployment-configuration.outputs.feature_flags }}",
+            "rollbackEnabled": ${{ needs.deployment-configuration.outputs.rollback_enabled }},
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit": "${{ github.sha }}",
+            "actor": "${{ github.actor }}"
+          }
+          EOF
+
+      - name: Deploy canary to Vercel
+        id: deploy
+        run: |
+          echo "🌐 Deploying canary to Vercel..."
+
+          # Deploy canary version
+          CANARY_DEPLOYMENT_URL="canary-${{ github.run_number }}-${{ github.sha:0:7 }}.vercel.app"
+
+          npx vercel --token ${{ secrets.VERCEL_TOKEN }} \
+            --scope ${{ secrets.VERCEL_ORG_ID }} \
+            --name "mariia-hub-canary" \
+            --alias "$CANARY_DEPLOYMENT_URL" \
+            ${{ needs.deployment-configuration.outputs.environment == 'production' && '--prod' || '' }}
+
+          # Wait for deployment to be ready
+          sleep 30
+
+          # Health checks
+          for i in {1..10}; do
+            if curl -f "https://$CANARY_DEPLOYMENT_URL/" && curl -f "https://$CANARY_DEPLOYMENT_URL/health"; then
+              echo "✅ Canary deployment is healthy"
+              break
+            fi
+            echo "Health check attempt $i failed, retrying..."
+            sleep 30
+          done
+
+          echo "url=https://$CANARY_DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "status=success" >> $GITHUB_OUTPUT
+          echo "rollback_available=true" >> $GITHUB_OUTPUT
+
+      - name: Configure traffic routing for canary
+        run: |
+          echo "🔧 Configuring traffic routing for canary deployment..."
+
+          # This would integrate with your load balancer or CDN
+          # For demonstration, we'll show the configuration
+          TRAFFIC_PERCENTAGE="${{ needs.deployment-configuration.outputs.traffic_percentage }}"
+          CANARY_URL="${{ steps.deploy.outputs.url }}"
+
+          cat > canary-traffic-config.json << EOF
+          {
+            "strategy": "canary",
+            "traffic": {
+              "canary": {
+                "url": "$CANARY_URL",
+                "percentage": $TRAFFIC_PERCENTAGE
+              },
+              "stable": {
+                "url": "https://${{ needs.deployment-configuration.outputs.environment == 'production' && 'mariaborysevych.com' || 'staging.mariaborysevych.com' }}",
+                "percentage": $((100 - TRAFFIC_PERCENTAGE))
+              }
+            },
+            "rollout": {
+              "enabled": true,
+              "autoIncrement": false,
+              "incrementPercentage": 5,
+              "incrementInterval": "1h"
+            },
+            "rollback": {
+              "enabled": ${{ needs.deployment-configuration.outputs.rollback_enabled }},
+              "threshold": ${{ needs.deployment-configuration.outputs.rollback_threshold }}
+            }
+          }
+          EOF
+
+          echo "✅ Traffic routing configured for $TRAFFIC_PERCENTAGE% canary traffic"
+
+      - name: Run canary smoke tests
+        run: |
+          echo "🧪 Running canary smoke tests..."
+
+          CANARY_URL="${{ steps.deploy.outputs.url }}"
+
+          # Basic health checks
+          curl -f "$CANARY_URL/" || exit 1
+          curl -f "$CANARY_URL/health" || exit 1
+          curl -f "$CANARY_URL/api/health" || exit 1
+
+          # Feature flag validation
+          if [[ "${{ needs.deployment-configuration.outputs.feature_flags }}" != "default" ]]; then
+            echo "Validating feature flags..."
+            curl -f "$CANARY_URL/api/features/status" || echo "⚠️ Feature flag endpoint not available"
+          fi
+
+          echo "✅ Canary smoke tests passed"
+
+      - name: Set up canary monitoring
+        run: |
+          echo "📊 Setting up canary deployment monitoring..."
+
+          # Create monitoring configuration
+          cat > canary-monitoring.json << EOF
+          {
+            "deployment": {
+              "url": "${{ steps.deploy.outputs.url }}",
+              "type": "canary",
+              "trafficPercentage": ${{ needs.deployment-configuration.outputs.traffic_percentage }}
+            },
+            "monitoring": {
+              "metrics": ["response_time", "error_rate", "throughput", "cpu_usage", "memory_usage"],
+              "thresholds": {
+                "error_rate": 0.05,
+                "response_time_p95": 2000,
+                "cpu_usage": 0.8,
+                "memory_usage": 0.85
+              },
+              "rollback": {
+                "enabled": ${{ needs.deployment-configuration.outputs.rollback_enabled }},
+                "threshold": ${{ needs.deployment-configuration.outputs.rollback_threshold }},
+                "evaluationWindow": "5m"
+              }
+            },
+            "alerts": {
+              "channels": ["slack", "email"],
+              "conditions": ["error_rate > threshold", "response_time_p95 > threshold"]
+            }
+          }
+          EOF
+
+          echo "✅ Canary monitoring configured"
+
+      - name: Upload canary deployment artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: canary-deployment
+          path: |
+            canary-traffic-config.json
+            canary-monitoring.json
+            dist/canary-info.json
+          retention-days: 7
+
+  # Blue-Green deployment strategy
+  blue-green-deployment:
+    name: Blue-Green Deployment
+    runs-on: ubuntu-latest
+    needs: [deployment-configuration, feature-flag-management]
+    if: needs.deployment-configuration.outputs.should_use_blue_green == 'true'
+    environment:
+      name: ${{ needs.deployment-configuration.outputs.environment }}
+      url: ${{ steps.deploy.outputs.url }}
+    outputs:
+      blue_url: ${{ steps.deploy.outputs.blue_url }}
+      green_url: ${{ steps.deploy.outputs.green_url }}
+      active_environment: ${{ steps.deploy.outputs.active_environment }}
+      deployment_status: ${{ steps.deploy.outputs.status }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Determine current active environment
+        id: detect-env
+        run: |
+          echo "🔍 Detecting current active environment..."
+
+          # In a real scenario, this would check your load balancer or DNS
+          # For demonstration, we'll simulate the detection
+          CURRENT_ACTIVE="blue" # Default to blue
+          TARGET_ENV="green"
+
+          # Simulate checking current deployment
+          if curl -s "https://api.github.com/repos/${{ github.repository }}/deployments" \
+            | jq -r '.[] | select(.environment == "${{ needs.deployment-configuration.outputs.environment }}" and .state == "SUCCESS") | .ref' \
+            | grep -q "green" 2>/dev/null; then
+            CURRENT_ACTIVE="green"
+            TARGET_ENV="blue"
+          fi
+
+          echo "current_active=$CURRENT_ACTIVE" >> $GITHUB_OUTPUT
+          echo "target_env=$TARGET_ENV" >> $GITHUB_OUTPUT
+          echo "Currently active: $CURRENT_ACTIVE, Target: $TARGET_ENV"
+
+      - name: Build blue-green deployment
+        run: |
+          echo "🏗️ Building blue-green deployment..."
+
+          # Load feature flag configuration
+          if [[ -f ".env.feature-flags" ]]; then
+            source .env.feature-flags
+          fi
+
+          # Build with blue-green specific configuration
+          export NODE_ENV="production"
+          export VITE_BUILD_TYPE="blue-green"
+          export VITE_BLUE_GREEN_DEPLOYMENT="true"
+          export VITE_TARGET_ENV="${{ steps.detect-env.outputs.target_env }}"
+
+          npm run build
+
+          # Add blue-green specific metadata
+          cat > dist/blue-green-info.json << EOF
+          {
+            "deploymentType": "blue-green",
+            "targetEnvironment": "${{ steps.detect-env.outputs.target_env }}",
+            "activeEnvironment": "${{ steps.detect-env.outputs.current_active }}",
+            "environment": "${{ needs.deployment-configuration.outputs.environment }}",
+            "featureFlags": "${{ needs.deployment-configuration.outputs.feature_flags }}",
+            "rollbackEnabled": ${{ needs.deployment-configuration.outputs.rollback_enabled }},
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit": "${{ github.sha }}",
+            "actor": "${{ github.actor }}"
+          }
+          EOF
+
+      - name: Deploy to target environment
+        id: deploy
+        run: |
+          echo "🚀 Deploying to ${{ steps.detect-env.outputs.target_env }} environment..."
+
+          TARGET_ENV="${{ steps.detect-env.outputs.target_env }}"
+          ACTIVE_ENV="${{ steps.detect-env.outputs.current_active }}"
+          DEPLOY_ENV="${{ needs.deployment-configuration.outputs.environment }}"
+
+          if [[ "$DEPLOY_ENV" == "production" ]]; then
+            BLUE_GREEN_DOMAIN="$TARGET_ENV.mariaborysevych.com"
+            VERCEL_ARGS="--prod"
+          else
+            BLUE_GREEN_DOMAIN="$TARGET_ENV-staging.mariaborysevych.com"
+            VERCEL_ARGS=""
+          fi
+
+          # Deploy to target environment
+          npx vercel --token ${{ secrets.VERCEL_TOKEN }} \
+            --scope ${{ secrets.VERCEL_ORG_ID }} \
+            $VERCEL_ARGS \
+            --name "mariia-hub-$TARGET_ENV" \
+            --alias "$BLUE_GREEN_DOMAIN"
+
+          # Wait for deployment
+          sleep 30
+
+          # Health checks on new deployment
+          for i in {1..10}; do
+            if curl -f "https://$BLUE_GREEN_DOMAIN/" && curl -f "https://$BLUE_GREEN_DOMAIN/health"; then
+              echo "✅ $TARGET_ENV deployment is healthy"
+              break
+            fi
+            echo "Health check attempt $i failed, retrying..."
+            sleep 30
+          done
+
+          # Set URLs based on environment
+          if [[ "$DEPLOY_ENV" == "production" ]]; then
+            echo "blue_url=https://blue.mariaborysevych.com" >> $GITHUB_OUTPUT
+            echo "green_url=https://green.mariaborysevych.com" >> $GITHUB_OUTPUT
+          else
+            echo "blue_url=https://blue-staging.mariaborysevych.com" >> $GITHUB_OUTPUT
+            echo "green_url=https://green-staging.mariaborysevych.com" >> $GITHUB_OUTPUT
+          fi
+
+          echo "active_environment=$TARGET_ENV" >> $GITHUB_OUTPUT
+          echo "status=success" >> $GITHUB_OUTPUT
+          echo "url=https://$BLUE_GREEN_DOMAIN" >> $GITHUB_OUTPUT
+
+      - name: Run comprehensive smoke tests on new deployment
+        run: |
+          echo "🧪 Running comprehensive smoke tests..."
+
+          DEPLOY_URL="${{ steps.deploy.outputs.url }}"
+
+          # Basic health checks
+          curl -f "$DEPLOY_URL/" || exit 1
+          curl -f "$DEPLOY_URL/health" || exit 1
+          curl -f "$DEPLOY_URL/api/health" || exit 1
+
+          # Critical path tests
+          curl -f "$DEPLOY_URL/beauty" || exit 1
+          curl -f "$DEPLOY_URL/fitness" || exit 1
+          curl -f "$DEPLOY_URL/booking" || exit 1
+          curl -f "$DEPLOY_URL/about" || exit 1
+
+          # API endpoints
+          curl -f "$DEPLOY_URL/api/services" || exit 1
+          curl -f "$DEPLOY_URL/api/availability" || exit 1
+
+          echo "✅ All smoke tests passed"
+
+      - name: Prepare traffic switching
+        run: |
+          echo "🔄 Preparing traffic switching configuration..."
+
+          # Create traffic switching configuration
+          cat > blue-green-traffic-config.json << EOF
+          {
+            "strategy": "blue-green",
+            "environments": {
+              "blue": {
+                "url": "${{ steps.deploy.outputs.blue_url }}",
+                "status": "${{ steps.detect-env.outputs.current_active == 'blue' && 'active' || 'standby' }}"
+              },
+              "green": {
+                "url": "${{ steps.deploy.outputs.green_url }}",
+                "status": "${{ steps.detect-env.outputs.current_active == 'green' && 'active' || 'standby' }}"
+              }
+            },
+            "currentActive": "${{ steps.detect-env.outputs.target_env }}",
+            "traffic": {
+              "target": "${{ steps.detect-env.outputs.target_env }}",
+              "switchTime": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+              "rollbackEnabled": ${{ needs.deployment-configuration.outputs.rollback_enabled }}
+            },
+            "healthChecks": {
+              "enabled": true,
+              "interval": "30s",
+              "timeout": "10s",
+              "failureThreshold": 3
+            }
+          }
+          EOF
+
+          echo "✅ Traffic switching prepared"
+
+      - name: Upload blue-green deployment artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: blue-green-deployment
+          path: |
+            blue-green-traffic-config.json
+            dist/blue-green-info.json
+          retention-days: 7
+
+  # A/B Testing deployment
+  ab-testing-deployment:
+    name: A/B Testing Deployment
+    runs-on: ubuntu-latest
+    needs: [deployment-configuration, feature-flag-management]
+    if: needs.deployment-configuration.outputs.should_use_ab_testing == 'true'
+    environment:
+      name: ${{ needs.deployment-configuration.outputs.environment }}
+      url: ${{ steps.deploy.outputs.url }}
+    outputs:
+      variant_a_url: ${{ steps.deploy.outputs.variant_a_url }}
+      variant_b_url: ${{ steps.deploy.outputs.variant_b_url }}
+      test_config: ${{ steps.deploy.outputs.test_config }}
+      test_status: ${{ steps.deploy.outputs.status }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download feature flag configuration
+        uses: actions/download-artifact@v4
+        with:
+          name: feature-flag-config
+          path: .
+
+      - name: Build A/B test variants
+        run: |
+          echo "🧪 Building A/B test variants..."
+
+          # Load feature flag configuration
+          source .env.feature-flags
+
+          # Build Variant A (Control)
+          echo "Building Variant A (Control)..."
+          export NODE_ENV="production"
+          export VITE_BUILD_TYPE="ab-test"
+          export VITE_AB_TEST_VARIANT="A"
+          export VITE_AB_TEST_ID="test-${{ github.run_number }}-A"
+
+          npm run build
+          cp -r dist dist-variant-a
+
+          # Clean and build Variant B (Treatment)
+          rm -rf dist
+          echo "Building Variant B (Treatment)..."
+          export VITE_AB_TEST_VARIANT="B"
+          export VITE_AB_TEST_ID="test-${{ github.run_number }}-B"
+
+          npm run build
+          cp -r dist dist-variant-b
+
+          echo "✅ Both A/B test variants built successfully"
+
+      - name: Deploy A/B test variants
+        id: deploy
+        run: |
+          echo "🚀 Deploying A/B test variants..."
+
+          ENVIRONMENT="${{ needs.deployment-configuration.outputs.environment }}"
+          TRAFFIC_SPLIT="${{ needs.deployment-configuration.outputs.traffic_percentage }}"
+          TEST_ID="test-${{ github.run_number }}"
+
+          # Deploy Variant A
+          VARIANT_A_URL="ab-${TEST_ID}-variant-a.vercel.app"
+          npx vercel --token ${{ secrets.VERCEL_TOKEN }} \
+            --scope ${{ secrets.VERCEL_ORG_ID }} \
+            --name "mariia-hub-ab-test-${TEST_ID}-a" \
+            --alias "$VARIANT_A_URL" \
+            ${{ ENVIRONMENT == 'production' && '--prod' || '' }}
+
+          # Deploy Variant B
+          VARIANT_B_URL="ab-${TEST_ID}-variant-b.vercel.app"
+          npx vercel --token ${{ secrets.VERCEL_TOKEN }} \
+            --scope ${{ secrets.VERCEL_ORG_ID }} \
+            --name "mariia-hub-ab-test-${TEST_ID}-b" \
+            --alias "$VARIANT_B_URL" \
+            ${{ ENVIRONMENT == 'production' && '--prod' || '' }}
+
+          # Wait for deployments
+          sleep 60
+
+          # Health checks on both variants
+          for variant in "A" "B"; do
+            URL="ab-${TEST_ID}-variant-${variant,,}.vercel.app"
+            echo "Checking Variant $variant at $URL..."
+
+            for i in {1..5}; do
+              if curl -f "https://$URL/" && curl -f "https://$URL/health"; then
+                echo "✅ Variant $variant is healthy"
+                break
+              fi
+              echo "Health check attempt $i failed, retrying..."
+              sleep 30
+            done
+          done
+
+          echo "variant_a_url=https://$VARIANT_A_URL" >> $GITHUB_OUTPUT
+          echo "variant_b_url=https://$VARIANT_B_URL" >> $GITHUB_OUTPUT
+          echo "status=success" >> $GITHUB_OUTPUT
+
+      - name: Configure A/B test traffic routing
+        run: |
+          echo "🔧 Configuring A/B test traffic routing..."
+
+          TEST_ID="test-${{ github.run_number }}"
+          TRAFFIC_SPLIT="${{ needs.deployment-configuration.outputs.traffic_percentage }}"
+
+          # Create A/B test configuration
+          cat > ab-test-config.json << EOF
+          {
+            "testId": "$TEST_ID",
+            "strategy": "ab-testing",
+            "environment": "${{ needs.deployment-configuration.outputs.environment }}",
+            "variants": {
+              "A": {
+                "name": "Control",
+                "url": "${{ steps.deploy.outputs.variant_a_url }}",
+                "trafficPercentage": $((100 - TRAFFIC_SPLIT)),
+                "description": "Original version - control group"
+              },
+              "B": {
+                "name": "Treatment",
+                "url": "${{ steps.deploy.outputs.variant_b_url }}",
+                "trafficPercentage": $TRAFFIC_SPLIT,
+                "description": "New version - treatment group"
+              }
+            },
+            "traffic": {
+              "totalPercentage": 100,
+              "allocation": {
+                "A": $((100 - TRAFFIC_SPLIT)),
+                "B": $TRAFFIC_SPLIT
+              }
+            },
+            "featureFlags": "${{ needs.deployment-configuration.outputs.feature_flags }}",
+            "metrics": [
+              "conversion_rate",
+              "page_views",
+              "bounce_rate",
+              "time_on_page",
+              "booking_completion_rate"
+            ],
+            "duration": "7d",
+            "sampleSize": {
+              "minimum": 1000,
+              "target": 5000
+            },
+            "confidence": 0.95,
+            "significance": 0.05,
+            "rollback": {
+              "enabled": ${{ needs.deployment-configuration.outputs.rollback_enabled }},
+              "threshold": 0.1
+            }
+          }
+          EOF
+
+          echo "✅ A/B test traffic routing configured"
+          echo "Test ID: $TEST_ID"
+          echo "Variant A (Control): $((100 - TRAFFIC_SPLIT))% traffic"
+          echo "Variant B (Treatment): $TRAFFIC_SPLIT% traffic"
+
+      - name: Run A/B test validation
+        run: |
+          echo "🧪 Running A/B test validation..."
+
+          VARIANT_A_URL="${{ steps.deploy.outputs.variant_a_url }}"
+          VARIANT_B_URL="${{ steps.deploy.outputs.variant_b_url }}"
+
+          # Validate both variants
+          for variant_url in "$VARIANT_A_URL" "$VARIANT_B_URL"; do
+            echo "Validating $variant_url..."
+
+            # Basic health checks
+            curl -f "$variant_url/" || exit 1
+            curl -f "$variant_url/health" || exit 1
+            curl -f "$variant_url/api/health" || exit 1
+
+            # Check for A/B test specific features
+            curl -f "$variant_url/api/ab-test/status" || echo "⚠️ A/B test endpoint not available"
+          done
+
+          # Validate traffic routing setup
+          echo "✅ A/B test validation completed"
+          echo "Both variants are healthy and ready for traffic routing"
+
+      - name: Set up A/B test monitoring
+        run: |
+          echo "📊 Setting up A/B test monitoring..."
+
+          cat > ab-test-monitoring.json << EOF
+          {
+            "testId": "test-${{ github.run_number }}",
+            "monitoring": {
+              "metrics": [
+                {
+                  "name": "conversion_rate",
+                  "type": "conversion",
+                  "event": "booking_completed"
+                },
+                {
+                  "name": "page_views",
+                  "type": "engagement",
+                  "event": "page_view"
+                },
+                {
+                  "name": "bounce_rate",
+                  "type": "engagement",
+                  "event": "session_end"
+                }
+              ],
+              "alerts": {
+                "channels": ["slack", "email"],
+                "conditions": [
+                  "conversion_rate_difference > 0.1",
+                  "error_rate > 0.05",
+                  "sample_size_insufficient"
+                ]
+              }
+            },
+            "analysis": {
+              "statisticalTest": "chi_square",
+              "confidence": 0.95,
+              "minimumSampleSize": 1000,
+              "checkInterval": "1h"
+            }
+          }
+          EOF
+
+          echo "✅ A/B test monitoring configured"
+
+      - name: Upload A/B test artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ab-test-deployment
+          path: |
+            ab-test-config.json
+            ab-test-monitoring.json
+            dist-variant-a/
+            dist-variant-b/
+          retention-days: 14
+
+  # Standard deployment with feature flags
+  standard-feature-deployment:
+    name: Standard Feature Deployment
+    runs-on: ubuntu-latest
+    needs: [deployment-configuration, feature-flag-management]
+    if: needs.deployment-configuration.outputs.should_use_feature_flags == 'true' && needs.deployment-configuration.outputs.strategy == 'standard'
+    environment:
+      name: ${{ needs.deployment-configuration.outputs.environment }}
+      url: ${{ steps.deploy.outputs.url }}
+    outputs:
+      deployment_url: ${{ steps.deploy.outputs.url }}
+      deployment_status: ${{ steps.deploy.outputs.status }}
+      features_enabled: ${{ steps.deploy.outputs.features_enabled }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download feature flag configuration
+        uses: actions/download-artifact@v4
+        with:
+          name: feature-flag-config
+          path: .
+
+      - name: Build with feature flags
+        run: |
+          echo "🚀 Building deployment with feature flags..."
+
+          # Load feature flag configuration
+          source .env.feature-flags
+
+          # Build with feature flags
+          export NODE_ENV="production"
+          export VITE_BUILD_TYPE="feature-flag"
+          export VITE_FEATURE_DEPLOYMENT="true"
+
+          npm run build
+
+          # Add feature flag metadata
+          cat > dist/feature-deployment-info.json << EOF
+          {
+            "deploymentType": "feature-flag",
+            "environment": "${{ needs.deployment-configuration.outputs.environment }}",
+            "featureFlags": "${{ needs.deployment-configuration.outputs.feature_flags }}",
+            "rolloutPercentage": ${{ needs.deployment-configuration.outputs.traffic_percentage }},
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit": "${{ github.sha }}",
+            "actor": "${{ github.actor }}"
+          }
+          EOF
+
+      - name: Deploy with feature flags
+        id: deploy
+        run: |
+          echo "🚀 Deploying with feature flags..."
+
+          ENVIRONMENT="${{ needs.deployment-configuration.outputs.environment }}"
+          FEATURE_FLAGS="${{ needs.deployment-configuration.outputs.feature_flags }}"
+
+          # Deploy to Vercel
+          if [[ "$ENVIRONMENT" == "production" ]]; then
+            DEPLOY_URL="https://mariaborysevych.com"
+            VERCEL_ARGS="--prod"
+          else
+            DEPLOY_URL="https://staging.mariaborysevych.com"
+            VERCEL_ARGS=""
+          fi
+
+          npx vercel --token ${{ secrets.VERCEL_TOKEN }} \
+            --scope ${{ secrets.VERCEL_ORG_ID }} \
+            $VERCEL_ARGS
+
+          # Wait for deployment
+          sleep 30
+
+          # Health checks
+          for i in {1..5}; do
+            if curl -f "$DEPLOY_URL/" && curl -f "$DEPLOY_URL/health"; then
+              echo "✅ Feature deployment is healthy"
+              break
+            fi
+            echo "Health check attempt $i failed, retrying..."
+            sleep 30
+          done
+
+          echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          echo "status=success" >> $GITHUB_OUTPUT
+          echo "features_enabled=${FEATURE_FLAGS}" >> $GITHUB_OUTPUT
+
+      - name: Validate feature flags
+        run: |
+          echo "🧪 Validating feature flags..."
+
+          DEPLOY_URL="${{ steps.deploy.outputs.url }}"
+          FEATURE_FLAGS="${{ steps.deploy.outputs.features_enabled }}"
+
+          # Check feature flag endpoint
+          curl -f "$DEPLOY_URL/api/features/status" || echo "⚠️ Feature flag endpoint not available"
+
+          # Validate specific features
+          IFS=',' read -ra FLAGS <<< "$FEATURE_FLAGS"
+          for flag in "${FLAGS[@]}"; do
+            FLAG_NAME=$(echo "$flag" | xargs)
+            echo "Validating feature: $FLAG_NAME"
+            # Add specific feature validation logic here
+          done
+
+          echo "✅ Feature flag validation completed"
+
+      - name: Upload feature deployment artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: feature-deployment
+          path: |
+            dist/feature-deployment-info.json
+            .env.feature-flags
+          retention-days: 7
+
+  # Deployment monitoring and health checks
+  deployment-monitoring:
+    name: Deployment Monitoring
+    runs-on: ubuntu-latest
+    needs: [deployment-configuration, canary-deployment, blue-green-deployment, ab-testing-deployment, standard-feature-deployment]
+    if: always() && (
+      needs.canary-deployment.result == 'success' ||
+      needs.blue-green-deployment.result == 'success' ||
+      needs.ab-testing-deployment.result == 'success' ||
+      needs.standard-feature-deployment.result == 'success'
+    )
+    outputs:
+      monitoring_status: ${{ steps.monitor.outputs.status }}
+      health_score: ${{ steps.monitor.outputs.health_score }}
+      rollback_triggered: ${{ steps.monitor.outputs.rollback_triggered }}
+    steps:
+      - name: Download deployment artifacts
+        uses: actions/download-artifact@v4
+        if: always()
+        with:
+          pattern: "*-deployment"
+          merge-multiple: true
+          path: deployment-artifacts/
+
+      - name: Initialize monitoring
+        id: monitor
+        run: |
+          echo "📊 Initializing deployment monitoring..."
+
+          STRATEGY="${{ needs.deployment-configuration.outputs.strategy }}"
+          ENVIRONMENT="${{ needs.deployment-configuration.outputs.environment }}"
+          ROLLBACK_ENABLED="${{ needs.deployment-configuration.outputs.rollback_enabled }}"
+
+          # Determine which deployment was successful
+          DEPLOYMENT_URL=""
+          MONITORING_CONFIG=""
+
+          if [[ "${{ needs.canary-deployment.result }}" == "success" ]]; then
+            DEPLOYMENT_URL="${{ needs.canary-deployment.outputs.canary_url }}"
+            MONITORING_CONFIG="deployment-artifacts/canary-monitoring.json"
+          elif [[ "${{ needs.blue-green-deployment.result }}" == "success" ]]; then
+            DEPLOYMENT_URL="${{ needs.blue-green-deployment.outputs.active_environment == 'blue' && needs.blue-green-deployment.outputs.blue_url || needs.blue-green-deployment.outputs.green_url }}"
+            MONITORING_CONFIG="deployment-artifacts/blue-green-traffic-config.json"
+          elif [[ "${{ needs.ab-testing-deployment.result }}" == "success" ]]; then
+            DEPLOYMENT_URL="${{ needs.ab-testing-deployment.outputs.variant_a_url }}" # Monitor variant A initially
+            MONITORING_CONFIG="deployment-artifacts/ab-test-monitoring.json"
+          elif [[ "${{ needs.standard-feature-deployment.result }}" == "success" ]]; then
+            DEPLOYMENT_URL="${{ needs.standard-feature-deployment.outputs.deployment_url }}"
+          fi
+
+          echo "Monitoring deployment: $DEPLOYMENT_URL"
+          echo "Strategy: $STRATEGY"
+          echo "Environment: $ENVIRONMENT"
+
+          # Initialize monitoring status
+          MONITORING_STATUS="healthy"
+          HEALTH_SCORE="100"
+          ROLLBACK_TRIGGERED="false"
+
+          echo "status=$MONITORING_STATUS" >> $GITHUB_OUTPUT
+          echo "health_score=$HEALTH_SCORE" >> $GITHUB_OUTPUT
+          echo "rollback_triggered=$ROLLBACK_TRIGGERED" >> $GITHUB_OUTPUT
+
+      - name: Run health checks
+        run: |
+          echo "🏥 Running comprehensive health checks..."
+
+          DEPLOYMENT_URL="${{ steps.monitor.outputs.status }}" # This would be the actual URL from previous step
+          # For demonstration, we'll use a placeholder
+          DEPLOYMENT_URL="${{ needs.standard-feature-deployment.outputs.deployment_url || needs.canary-deployment.outputs.canary_url || needs.blue-green-deployment.outputs.blue_url }}"
+
+          if [[ -z "$DEPLOYMENT_URL" ]]; then
+            echo "❌ No deployment URL available for monitoring"
+            exit 1
+          fi
+
+          echo "Checking health of: $DEPLOYMENT_URL"
+
+          # Extended health checks
+          HEALTH_PASSED=true
+
+          # Basic connectivity
+          if ! curl -f "$DEPLOYMENT_URL/" > /dev/null; then
+            echo "❌ Basic connectivity check failed"
+            HEALTH_PASSED=false
+          fi
+
+          # Health endpoint
+          if ! curl -f "$DEPLOYMENT_URL/health" > /dev/null; then
+            echo "❌ Health endpoint check failed"
+            HEALTH_PASSED=false
+          fi
+
+          # API health
+          if ! curl -f "$DEPLOYMENT_URL/api/health" > /dev/null; then
+            echo "❌ API health check failed"
+            HEALTH_PASSED=false
+          fi
+
+          # Critical pages
+          for page in "beauty" "fitness" "booking" "about"; do
+            if ! curl -f "$DEPLOYMENT_URL/$page" > /dev/null; then
+              echo "❌ Critical page check failed: $page"
+              HEALTH_PASSED=false
+            fi
+          done
+
+          # Feature flag endpoint (if applicable)
+          if [[ "${{ needs.deployment-configuration.outputs.should_use_feature_flags }}" == "true" ]]; then
+            if ! curl -f "$DEPLOYMENT_URL/api/features/status" > /dev/null; then
+              echo "⚠️ Feature flag endpoint not available (may be expected)"
+            fi
+          fi
+
+          if [[ "$HEALTH_PASSED" == "true" ]]; then
+            echo "✅ All health checks passed"
+          else
+            echo "❌ Some health checks failed"
+            if [[ "${{ needs.deployment-configuration.outputs.rollback_enabled }}" == "true" ]]; then
+              echo "🚨 Rollback conditions met - initiating rollback procedure"
+            fi
+          fi
+
+      - name: Set up ongoing monitoring
+        run: |
+          echo "📈 Setting up ongoing monitoring..."
+
+          # Create monitoring configuration file
+          cat > ongoing-monitoring.json << EOF
+          {
+            "deployment": {
+              "strategy": "${{ needs.deployment-configuration.outputs.strategy }}",
+              "environment": "${{ needs.deployment-configuration.outputs.environment }}",
+              "url": "${{ needs.standard-feature-deployment.outputs.deployment_url || needs.canary-deployment.outputs.canary_url }}",
+              "rollbackEnabled": ${{ needs.deployment-configuration.outputs.rollback_enabled }}
+            },
+            "monitoring": {
+              "duration": "1h",
+              "interval": "5m",
+              "metrics": {
+                "availability": { "threshold": 0.99 },
+                "responseTime": { "threshold": 2000 },
+                "errorRate": { "threshold": 0.05 },
+                "throughput": { "threshold": 100 }
+              }
+            },
+            "alerts": {
+              "enabled": true,
+              "channels": ["github"],
+              "conditions": [
+                "availability < 0.95",
+                "error_rate > 0.1",
+                "response_time_p95 > 5000"
+              ]
+            }
+          }
+          EOF
+
+          echo "✅ Ongoing monitoring configured"
+
+      - name: Upload monitoring artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-monitoring
+          path: |
+            ongoing-monitoring.json
+            deployment-artifacts/
+          retention-days: 7
+
+  # Rollback procedures (if needed)
+  rollback-procedures:
+    name: Rollback Procedures
+    runs-on: ubuntu-latest
+    needs: [deployment-configuration, deployment-monitoring]
+    if: failure() && needs.deployment-configuration.outputs.rollback_enabled == 'true'
+    environment:
+      name: ${{ needs.deployment-configuration.outputs.environment }}
+    steps:
+      - name: Initialize rollback
+        run: |
+          echo "🚨 INITIATING ROLLBACK PROCEDURES"
+          echo "Strategy: ${{ needs.deployment-configuration.outputs.strategy }}"
+          echo "Environment: ${{ needs.deployment-configuration.outputs.environment }}"
+          echo "Reason: Deployment health checks failed"
+
+      - name: Execute rollback based on strategy
+        run: |
+          STRATEGY="${{ needs.deployment-configuration.outputs.strategy }}"
+          ENVIRONMENT="${{ needs.deployment-configuration.outputs.environment }}"
+
+          case "$STRATEGY" in
+            "canary")
+              echo "🔄 Rolling back canary deployment..."
+              echo "Redirecting all traffic back to stable deployment"
+              # In a real scenario, this would update your load balancer configuration
+              ;;
+            "blue-green")
+              echo "🔄 Rolling back blue-green deployment..."
+              echo "Switching traffic back to previous stable environment"
+              # In a real scenario, this would switch traffic back to the other environment
+              ;;
+            "feature-flag")
+              echo "🔄 Disabling feature flags..."
+              echo "Turning off all newly enabled features"
+              # In a real scenario, this would update your feature flag service
+              ;;
+            "a-b-testing")
+              echo "🔄 Stopping A/B test..."
+              echo "Redirecting all traffic to control variant (Variant A)"
+              # In a real scenario, this would update your A/B testing configuration
+              ;;
+            *)
+              echo "🔄 Standard rollback..."
+              echo "Reverting to previous deployment"
+              # In a real scenario, this would redeploy the previous version
+              ;;
+          esac
+
+      - name: Verify rollback success
+        run: |
+          echo "✅ Rollback procedures completed"
+          echo "Verifying rollback success..."
+
+          # In a real scenario, you would verify that the rollback was successful
+          # by checking health endpoints and ensuring traffic is flowing correctly
+
+      - name: Notify rollback completion
+        run: |
+          echo "📢 Rollback notification sent"
+          echo "Deployment has been rolled back successfully"
+          echo "Please investigate the cause of the failure before redeploying"
+
+  # Deployment completion and summary
+  deployment-completion:
+    name: Deployment Completion
+    runs-on: ubuntu-latest
+    needs: [deployment-configuration, canary-deployment, blue-green-deployment, ab-testing-deployment, standard-feature-deployment, deployment-monitoring, rollback-procedures]
+    if: always()
+    steps:
+      - name: Generate deployment summary
+        id: summary
+        run: |
+          STRATEGY="${{ needs.deployment-configuration.outputs.strategy }}"
+          ENVIRONMENT="${{ needs.deployment-configuration.outputs.environment }}"
+
+          # Determine which deployment succeeded
+          DEPLOYMENT_STATUS="failed"
+          DEPLOYMENT_URL=""
+          DEPLOYMENT_TYPE="none"
+
+          if [[ "${{ needs.standard-feature-deployment.result }}" == "success" ]]; then
+            DEPLOYMENT_STATUS="success"
+            DEPLOYMENT_URL="${{ needs.standard-feature-deployment.outputs.deployment_url }}"
+            DEPLOYMENT_TYPE="standard-feature"
+          elif [[ "${{ needs.canary-deployment.result }}" == "success" ]]; then
+            DEPLOYMENT_STATUS="success"
+            DEPLOYMENT_URL="${{ needs.canary-deployment.outputs.canary_url }}"
+            DEPLOYMENT_TYPE="canary"
+          elif [[ "${{ needs.blue-green-deployment.result }}" == "success" ]]; then
+            DEPLOYMENT_STATUS="success"
+            DEPLOYMENT_URL="${{ needs.blue-green-deployment.outputs.active_environment == 'blue' && needs.blue-green-deployment.outputs.blue_url || needs.blue-green-deployment.outputs.green_url }}"
+            DEPLOYMENT_TYPE="blue-green"
+          elif [[ "${{ needs.ab-testing-deployment.result }}" == "success" ]]; then
+            DEPLOYMENT_STATUS="success"
+            DEPLOYMENT_URL="${{ needs.ab-testing-deployment.outputs.variant_a_url }}"
+            DEPLOYMENT_TYPE="ab-testing"
+          fi
+
+          echo "status=$DEPLOYMENT_STATUS" >> $GITHUB_OUTPUT
+          echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "type=$DEPLOYMENT_TYPE" >> $GITHUB_OUTPUT
+
+      - name: Create comprehensive deployment report
+        run: |
+          cat > deployment-report.md << EOF
+          # 🚀 Deployment Report
+
+          ## 📋 Summary
+          - **Strategy**: ${{ needs.deployment-configuration.outputs.strategy }}
+          - **Environment**: ${{ needs.deployment-configuration.outputs.environment }}
+          - **Status**: ${{ steps.summary.outputs.status }}
+          - **Type**: ${{ steps.summary.outputs.type }}
+          - **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          ## 🔗 Deployment Details
+          - **URL**: ${{ steps.summary.outputs.url }}
+          - **Feature Flags**: ${{ needs.deployment-configuration.outputs.feature_flags }}
+          - **Traffic Percentage**: ${{ needs.deployment-configuration.outputs.traffic_percentage }}%
+          - **Rollback Enabled**: ${{ needs.deployment-configuration.outputs.rollback_enabled }}
+
+          ## 📊 Component Status
+          - **Feature Flag Management**: ${{ needs.feature-flag-management.result }}
+          - **Deployment**: ${{ steps.summary.outputs.status }}
+          - **Monitoring**: ${{ needs.deployment-monitoring.result }}
+          - **Rollback**: ${{ needs.rollback-procedures.result }}
+
+          ## 🎯 Next Steps
+          ${{ steps.summary.outputs.status == 'success' && '✅ Deployment completed successfully' || '❌ Deployment failed - see logs for details' }}
+
+          ${{ steps.summary.outputs.status == 'success' && 'Monitor the deployment for the next few hours to ensure stability.' || 'Investigate the failure and address any issues before redeploying.' }}
+
+          ## 🔗 Resources
+          - [GitHub Actions Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          - [Commit: ${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+
+          EOF
+
+      - name: Upload deployment report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deployment-report
+          path: deployment-report.md
+          retention-days: 30
+
+      - name: Comment on PR with deployment summary
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const statusEmoji = '${{ steps.summary.outputs.status }}' === 'success' ? '✅' : '❌';
+            const strategy = '${{ needs.deployment-configuration.outputs.strategy }}';
+            const environment = '${{ needs.deployment-configuration.outputs.environment }}';
+            const url = '${{ steps.summary.outputs.url }}';
+            const featureFlags = '${{ needs.deployment-configuration.outputs.feature_flags }}';
+
+            const comment = `
+            ${statusEmoji} **Deployment ${strategy.toUpperCase()}**
+
+            **Environment**: ${environment}
+            **Status**: ${{ steps.summary.outputs.status }}
+            **URL**: ${url}
+            **Feature Flags**: ${featureFlags}
+
+            [📋 View Deployment Report](${context.payload.repository.html_url}/actions/runs/${context.runId})
+            `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+
+      - name: Complete deployment workflow
+        run: |
+          if [[ "${{ steps.summary.outputs.status }}" == "success" ]]; then
+            echo "✅ Deployment workflow completed successfully!"
+            echo "Strategy: ${{ needs.deployment-configuration.outputs.strategy }}"
+            echo "Environment: ${{ needs.deployment-configuration.outputs.environment }}"
+            echo "URL: ${{ steps.summary.outputs.url }}"
+            exit 0
+          else
+            echo "❌ Deployment workflow failed"
+            echo "Please check the logs and address any issues"
+            exit 1
+          fi

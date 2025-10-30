@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 
 interface FunnelStep {
   step: string;
@@ -33,7 +33,7 @@ export function BookingFunnel({ dateRange }: BookingFunnelProps) {
   const [conversionTrend, setConversionTrend] = useState<ConversionData[]>([]);
   const [loading, setLoading] = useState(false);
   const [timeframe, setTimeframe] = useState<'daily' | 'weekly'>('daily');
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   useEffect(() => {
     fetchFunnelData();
@@ -115,7 +115,7 @@ export function BookingFunnel({ dateRange }: BookingFunnelProps) {
       await fetchConversionTrend();
     } catch (error) {
       console.error('Error fetching funnel data:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to fetch funnel data',
         variant: 'destructive',

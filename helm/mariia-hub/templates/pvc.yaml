@@ -1,0 +1,45 @@
+{{- if .Values.volumes.nginxCache.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "mariia-hub.nginxCacheVolumeName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mariia-hub.labels" . | nindent 4 }}
+    app.kubernetes.io/component: nginx-cache
+  {{- if .Values.volumes.nginxCache.annotations }}
+  annotations:
+    {{- toYaml .Values.volumes.nginxCache.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    {{- toYaml .Values.volumes.nginxCache.accessModes | nindent 4 }}
+  storageClassName: {{ .Values.volumes.nginxCache.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.volumes.nginxCache.size }}
+{{- end }}
+
+{{- if .Values.volumes.appLogs.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "mariia-hub.appLogsVolumeName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mariia-hub.labels" . | nindent 4 }}
+    app.kubernetes.io/component: app-logs
+  {{- if .Values.volumes.appLogs.annotations }}
+  annotations:
+    {{- toYaml .Values.volumes.appLogs.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    {{- toYaml .Values.volumes.appLogs.accessModes | nindent 4 }}
+  storageClassName: {{ .Values.volumes.appLogs.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.volumes.appLogs.size }}
+{{- end }}

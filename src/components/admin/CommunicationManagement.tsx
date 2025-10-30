@@ -22,7 +22,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "@/hooks/use-toast";
+import { toast aria-live="polite" aria-atomic="true" } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { CommunicationService, useCommunication } from "@/lib/communication";
 
 interface CommunicationStats {
@@ -95,7 +95,7 @@ export const CommunicationManagement = () => {
 
   const sendWhatsAppTest = async () => {
     if (!whatsappForm.phoneNumber || !whatsappForm.message) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Please fill in all fields",
         variant: "destructive"
@@ -112,7 +112,7 @@ export const CommunicationManagement = () => {
       });
 
       if (result.success) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Success",
           description: "WhatsApp message sent successfully!"
         });
@@ -123,7 +123,7 @@ export const CommunicationManagement = () => {
         throw new Error(result.error?.message || 'Failed to send');
       }
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message || "Failed to send WhatsApp message",
         variant: "destructive"
@@ -135,7 +135,7 @@ export const CommunicationManagement = () => {
 
   const sendSMSTest = async () => {
     if (!smsForm.phoneNumber || !smsForm.message) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Please fill in all fields",
         variant: "destructive"
@@ -153,7 +153,7 @@ export const CommunicationManagement = () => {
       });
 
       if (result.success) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Success",
           description: "SMS sent successfully!"
         });
@@ -164,7 +164,7 @@ export const CommunicationManagement = () => {
         throw new Error(result.error?.message || 'Failed to send');
       }
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message || "Failed to send SMS",
         variant: "destructive"

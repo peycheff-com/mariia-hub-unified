@@ -4,7 +4,7 @@ import { TrendingUp, Users, Calendar, DollarSign } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 
 const AnalyticsDashboard = () => {
   const [stats, setStats] = useState({
@@ -15,7 +15,7 @@ const AnalyticsDashboard = () => {
   });
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   useEffect(() => {
     loadAnalytics();
@@ -70,7 +70,7 @@ const AnalyticsDashboard = () => {
         setMonthlyData(chartData);
       }
     } catch (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Could not load analytics data",
         variant: "destructive",

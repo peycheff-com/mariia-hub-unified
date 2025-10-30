@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Toaster as Sonner, toast } from "sonner";
+import { Toaster as Sonner, toast aria-live="polite" aria-atomic="true" } from "sonner";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
@@ -15,14 +15,14 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       theme={getTheme() as ToasterProps["theme"]}
-      className="toaster group"
-      toastOptions={{
+      className="toast aria-live="polite" aria-atomic="true"er group"
+      toast aria-live="polite" aria-atomic="true"Options={{
         classNames: {
-          toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
-          description: "group-[.toast]:text-muted-foreground",
-          actionButton: "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
-          cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
+          toast aria-live="polite" aria-atomic="true":
+            "group toast aria-live="polite" aria-atomic="true" group-[.toast aria-live="polite" aria-atomic="true"er]:bg-background group-[.toast aria-live="polite" aria-atomic="true"er]:text-foreground group-[.toast aria-live="polite" aria-atomic="true"er]:border-border group-[.toast aria-live="polite" aria-atomic="true"er]:shadow-lg",
+          description: "group-[.toast aria-live="polite" aria-atomic="true"]:text-muted-foreground",
+          actionButton: "group-[.toast aria-live="polite" aria-atomic="true"]:bg-primary group-[.toast aria-live="polite" aria-atomic="true"]:text-primary-foreground",
+          cancelButton: "group-[.toast aria-live="polite" aria-atomic="true"]:bg-muted group-[.toast aria-live="polite" aria-atomic="true"]:text-muted-foreground",
         },
       }}
       {...props}
@@ -30,4 +30,4 @@ const Toaster = ({ ...props }: ToasterProps) => {
   );
 };
 
-export { Toaster, toast };
+export { Toaster, toast aria-live="polite" aria-atomic="true" };

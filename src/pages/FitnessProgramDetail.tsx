@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 import MobileFooter from "@/components/MobileFooter";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import BookingSheet from "@/components/booking/BookingSheet";
 import AvailableSlotsList from "@/components/AvailableSlotsList";
@@ -21,7 +21,7 @@ import {
 
 const FitnessProgramDetail = () => {
   const { slug } = useParams();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const { trackServiceView } = useAnalytics();
   const [loading, setLoading] = useState(true);
   const [program, setProgram] = useState<any>(null);
@@ -92,7 +92,7 @@ const FitnessProgramDetail = () => {
           setReviews(reviewsData || []);
         }
       } catch (error) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Error",
           description: "Could not load program details",
           variant: "destructive",
@@ -103,7 +103,7 @@ const FitnessProgramDetail = () => {
     };
 
     fetchProgramDetails();
-  }, [slug, toast]);
+  }, [slug, toast aria-live="polite" aria-atomic="true"]);
 
   if (loading) {
     return (
@@ -143,7 +143,7 @@ const FitnessProgramDetail = () => {
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <Navigation mode="fitness" />
 
-      <main className="pt-20">
+      <main role="main" className="pt-20">
         {/* Hero Section - Standardized */}
         <section className="section-standard bg-gradient-to-br from-sage/10 to-primary/5">
           <div className="container-standard">

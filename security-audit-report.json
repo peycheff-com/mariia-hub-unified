@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-10-29T22:17:53.756Z",
+  "timestamp": "2025-10-30T14:38:32.872Z",
   "scanResults": {
-    "files": 901,
-    "lines": 359715,
+    "files": 905,
+    "lines": 360890,
     "issues": 24,
     "warnings": 13,
-    "info": 1454
+    "info": 1499
   },
   "securityScore": 0,
   "issues": [
@@ -7443,6 +7443,393 @@
     },
     {
       "type": "CONSOLE_LOG",
+      "file": "src/scripts/test-api-connectivity.js",
+      "line": 5,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('🧪 Testing Application API Connectivity...')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/test-api-connectivity.js",
+      "line": 16,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log(`✅ API connectivity successful - Found ${services.length} services`)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/test-api-connectivity.js",
+      "line": 21,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log(`📋 Sample service: ${firstService.title} (${firstService.service_type})`)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/test-api-connectivity.js",
+      "line": 22,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log(`💰 Price: ${firstService.price} ${firstService.currency}`)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/test-api-connectivity.js",
+      "line": 34,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log(`✅ Availability API working - ${availability.slots?.length || 0} slots found`)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/test-api-connectivity.js",
+      "line": 37,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('ℹ️  Availability API test skipped (endpoint may not exist)')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/test-api-connectivity.js",
+      "line": 40,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('🎉 Application database connectivity verified!')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/test-api-connectivity.js",
+      "line": 44,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.error('❌ API connectivity test failed:', error.message)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/test-api-connectivity.js",
+      "line": 82,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('✅ All database systems operational!')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/test-api-connectivity.js",
+      "line": 84,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('⚠️  Database connectivity issues detected')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/test-api-connectivity.js",
+      "line": 86,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "}).catch(console.error)"
+    },
+    {
+      "type": "ENV_VAR",
+      "file": "src/scripts/verify-database.ts",
+      "line": 7,
+      "message": "Environment variable usage",
+      "severity": "INFO",
+      "recommendation": "Ensure environment variables are properly secured",
+      "content": "const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://fxpwracjakqpqpoivypm.supabase.co'"
+    },
+    {
+      "type": "ENV_VAR",
+      "file": "src/scripts/verify-database.ts",
+      "line": 8,
+      "message": "Environment variable usage",
+      "severity": "INFO",
+      "recommendation": "Ensure environment variables are properly secured",
+      "content": "const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4cHdyYWNqYWtxcXFwb2l2eXBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyOTMzMzIsImV4cCI6MjA3Mzg2OTMzMn0.O7LHvEsfyFQT0FwYqyk9AKZ_mmIBaxgiTS1S5Utkk6c'"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 76,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('🔍 Starting Database Verification...')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 77,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('=====================================')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 86,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.error('❌ Database connectivity failed:', error.message)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 90,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('✅ Database connectivity established')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 92,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.error('❌ Failed to connect to database:', err)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 109,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('\\n📋 Verifying Core Tables:')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 110,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('----------------------------')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 117,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log(`${result.success ? '✅' : '❌'} ${result.message}`)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 121,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('\\n🎯 Verifying Services Data:')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 122,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('----------------------------')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 125,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log(`${servicesResult.success ? '✅' : '❌'} ${servicesResult.message}`)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 128,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('Sample services:')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 130,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log(`  ${index + 1}. ${service.title} (${service.service_type}) - ${service.price} PLN`)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 138,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('\\n📊 Verification Summary:')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 139,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('=========================')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 140,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log(`Tables verified: ${successfulTables}/${totalTables}`)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 141,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log(`Database status: ${successfulTables === totalTables ? '✅ HEALTHY' : '⚠️  NEEDS ATTENTION'}`)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 144,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('\\n⚠️  Issues found:')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 147,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log(`  - ${table}: ${result.message}`)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 153,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('\\n🧪 Testing Basic Functionality:')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 154,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('-------------------------------')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 169,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log(`❌ Availability check failed: ${availabilityError.message}`)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 171,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log(`✅ Availability slots found: ${availability?.length || 0}`)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 180,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log(`❌ Booking drafts check failed: ${draftsError.message}`)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 182,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log(`✅ Booking drafts accessible: ${drafts?.[0]?.count || 0} drafts`)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 186,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log(`❌ Functionality test failed: ${err}`)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 189,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('\\n🎉 Database verification completed!')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 192,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('✅ All systems operational - ready for bookings!')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 194,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.log('⚠️  Some issues detected - review the logs above')"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "src/scripts/verify-database.ts",
+      "line": 200,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "runDatabaseVerification().catch(console.error)"
+    },
+    {
+      "type": "CONSOLE_LOG",
       "file": "src/services/ComplianceService.ts",
       "line": 86,
       "message": "Console logging detected",
@@ -13060,7 +13447,7 @@
     {
       "type": "CONSOLE_LOG",
       "file": "supabase/functions/send-booking-confirmation/index.ts",
-      "line": 231,
+      "line": 230,
       "message": "Console logging detected",
       "severity": "INFO",
       "recommendation": "Remove console logs from production code",
@@ -13461,6 +13848,24 @@
       "severity": "INFO",
       "recommendation": "Remove console logs from production code",
       "content": "console.log('Account update:', value)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "supabase/functions/whatsapp-webhook/whatsapp-types.ts",
+      "line": 35,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.error('Signature verification error:', error)"
+    },
+    {
+      "type": "CONSOLE_LOG",
+      "file": "supabase/functions/whatsapp-webhook/whatsapp-types.ts",
+      "line": 67,
+      "message": "Console logging detected",
+      "severity": "INFO",
+      "recommendation": "Remove console logs from production code",
+      "content": "console.error('Error marking message as read:', error)"
     }
   ]
 }

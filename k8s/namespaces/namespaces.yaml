@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mariia-hub
+  labels:
+    name: mariia-hub
+    environment: production
+    project: mariia-hub
+    managed-by: kubernetes
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mariia-hub-staging
+  labels:
+    name: mariia-hub-staging
+    environment: staging
+    project: mariia-hub
+    managed-by: kubernetes
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mariia-hub-monitoring
+  labels:
+    name: mariia-hub-monitoring
+    environment: monitoring
+    project: mariia-hub
+    managed-by: kubernetes
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mariia-hub-cicd
+  labels:
+    name: mariia-hub-cicd
+    environment: cicd
+    project: mariia-hub
+    managed-by: kubernetes

@@ -1,0 +1,338 @@
+# Environment Manager Configuration
+# Main configuration for the advanced environment management system
+
+# Global settings
+global:
+  organization: "mariaborysevych"
+  domain: "mariaborysevych.com"
+  region: "europe-west1"
+  timezone: "Europe/Warsaw"
+  currency: "PLN"
+  language: "en"
+
+  # Default limits
+  maxEnvironments: 50
+  maxEnvironmentsPerType:
+    development: 10
+    staging: 5
+    production: 1
+    feature: 20
+    ephemeral: 15
+
+  # Resource quotas
+  quotas:
+    cpu: "10000m"
+    memory: "20Gi"
+    storage: "100Gi"
+    services: 100
+
+# Environment types configuration
+environmentTypes:
+  development:
+    description: "Development environment for local development and testing"
+    ttl: null
+    autoBackup: false
+    monitoring: false
+    resources:
+      cpu: "500m"
+      memory: "512Mi"
+      storage: "5Gi"
+      replicas: 1
+    features:
+      hotReload: true
+      debug: true
+      verboseLogs: true
+      profiling: true
+    security:
+      ssl: false
+      authentication: false
+    backup:
+      enabled: false
+    cleanup:
+      autoCleanup: false
+
+  staging:
+    description: "Staging environment for pre-production testing"
+    ttl: null
+    autoBackup: true
+    monitoring: true
+    resources:
+      cpu: "1000m"
+      memory: "1Gi"
+      storage: "10Gi"
+      replicas: 1
+    features:
+      hotReload: false
+      debug: false
+      verboseLogs: true
+      profiling: false
+    security:
+      ssl: true
+      authentication: true
+    backup:
+      enabled: true
+      schedule: "0 2 * * *"
+      retention: 14
+    cleanup:
+      autoCleanup: false
+
+  production:
+    description: "Production environment for live traffic"
+    ttl: null
+    autoBackup: true
+    monitoring: true
+    resources:
+      cpu: "2000m"
+      memory: "2Gi"
+      storage: "20Gi"
+      replicas: 2
+    features:
+      hotReload: false
+      debug: false
+      verboseLogs: false
+      profiling: false
+    security:
+      ssl: true
+      authentication: true
+      firewall: true
+    backup:
+      enabled: true
+      schedule: "0 1 * * *"
+      retention: 30
+    cleanup:
+      autoCleanup: false
+
+  feature:
+    description: "Feature branch environment for testing new features"
+    ttl: 604800 # 7 days
+    autoBackup: false
+    monitoring: true
+    resources:
+      cpu: "500m"
+      memory: "512Mi"
+      storage: "5Gi"
+      replicas: 1
+    features:
+      hotReload: false
+      debug: false
+      verboseLogs: true
+      profiling: false
+    security:
+      ssl: true
+      authentication: true
+    backup:
+      enabled: false
+    cleanup:
+      autoCleanup: true
+      schedule: "0 2 * * *"
+
+  ephemeral:
+    description: "Ephemeral environment for temporary testing"
+    ttl: 86400 # 24 hours
+    autoBackup: false
+    monitoring: false
+    resources:
+      cpu: "250m"
+      memory: "256Mi"
+      storage: "2Gi"
+      replicas: 1
+    features:
+      hotReload: false
+      debug: false
+      verboseLogs: true
+      profiling: false
+    security:
+      ssl: false
+      authentication: false
+    backup:
+      enabled: false
+    cleanup:
+      autoCleanup: true
+      schedule: "*/30 * * * *"
+
+# Default environments
+defaultEnvironments:
+  - name: "development"
+    type: "development"
+    template: "development"
+    autoCreate: true
+
+  - name: "staging"
+    type: "staging"
+    template: "staging"
+    autoCreate: true
+
+  - name: "production"
+    type: "production"
+    template: "production"
+    autoCreate: true
+
+# Provider configuration
+providers:
+  kubernetes:
+    enabled: true
+    configPath: "~/.kube/config"
+    namespace: "mariaborysevych"
+
+  docker:
+    enabled: true
+    registry: "docker.io"
+    namespace: "mariaborysevych"
+
+  terraform:
+    enabled: false
+    stateBackend: "s3"
+    stateBucket: "mariaborysevych-terraform-state"
+
+  ansible:
+    enabled: false
+    inventoryPath: "./inventory"
+    playbookPath: "./playbooks"
+
+# Integration settings
+integrations:
+  git:
+    provider: "github"
+    repository: "mariaborysevych/mariia-hub-unified"
+    autoDeployOnPush: true
+    protectedBranches: ["main", "production"]
+
+  ci_cd:
+    provider: "github-actions"
+    workflowPath: ".github/workflows"
+    autoTrigger: true
+
+  monitoring:
+    provider: "prometheus"
+    endpoint: "http://prometheus:9090"
+    grafana:
+      endpoint: "http://grafana:3000"
+
+  logging:
+    provider: "elasticsearch"
+    endpoint: "http://elasticsearch:9200"
+    kibana:
+      endpoint: "http://kibana:5601"
+
+  backup:
+    provider: "s3"
+    bucket: "mariaborysevych-backups"
+    region: "europe-west1"
+
+  notifications:
+    slack:
+      webhook: "${SLACK_WEBHOOK_URL}"
+      channel: "#environments"
+    email:
+      smtp: "${SMTP_HOST}"
+      port: 587
+      user: "${SMTP_USER}"
+      from: "environments@mariaborysevych.com"
+
+# Security settings
+security:
+  secrets:
+    provider: "vault"
+    address: "http://vault:8200"
+    path: "secret/mariaborysevych"
+
+  rbac:
+    enabled: true
+    defaultRole: "viewer"
+
+  network:
+    allowedCIDRs: ["0.0.0.0/0"]
+    blockedCIDRs: []
+
+  ssl:
+    provider: "letsencrypt"
+    email: "admin@mariaborysevych.com"
+
+# Optimization settings
+optimization:
+  autoScaling:
+    enabled: true
+    defaultMetrics: ["cpu", "memory"]
+    scaleUpCooldown: 60
+    scaleDownCooldown: 300
+
+  costOptimization:
+    enabled: true
+    dailyAnalysis: true
+    weeklyReport: true
+    recommendationsEnabled: true
+
+  resourceOptimization:
+    enabled: true
+    monitoringInterval: 30
+    optimizationInterval: 300
+
+# Testing settings
+testing:
+  automated:
+    enabled: true
+    schedules:
+      smoke: "*/5 * * * *"
+      integration: "*/15 * * * *"
+      performance: "0 */2 * * *"
+      security: "0 2 * * *"
+      compliance: "0 3 * * 0"
+
+  thresholds:
+    responseTime: 1000
+    errorRate: 1
+    availability: 99.9
+
+  reporting:
+    enabled: true
+    schedule: "0 6 * * *"
+    retention: 30
+
+# Lifecycle settings
+lifecycle:
+  autoCleanup:
+    enabled: true
+    inactiveThreshold: 720 # 30 days in hours
+    backupBeforeDelete: true
+
+  backup:
+    enabled: true
+    defaultSchedule: "0 2 * * *"
+    defaultRetention: 7
+    compression: true
+    encryption: true
+
+  maintenance:
+    enabled: true
+    defaultWindow: "02:00-04:00"
+    timezone: "Europe/Warsaw"
+    autoApproval: false
+
+# Monitoring settings
+monitoring:
+  health:
+    enabled: true
+    interval: 30
+    timeout: 10
+    retries: 3
+
+  metrics:
+    enabled: true
+    collectionInterval: 15
+    retention: 30
+
+  alerts:
+    enabled: true
+    channels: ["email", "slack"]
+    escalationRules:
+      critical: 5 # minutes
+      warning: 15 # minutes
+
+# Logging settings
+logging:
+  level: "info"
+  format: "json"
+  retention: 30
+  audit:
+    enabled: true
+    events: ["create", "delete", "modify", "access"]

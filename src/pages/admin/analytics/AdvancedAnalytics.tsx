@@ -463,7 +463,7 @@ export function AdvancedAnalytics({ className }: AdvancedAnalyticsProps) {
 
   // Export functionality
   const handleExport = (format: 'csv' | 'pdf') => {
-    toast.info(t('admin.analytics.exporting', { format }));
+    toast aria-live="polite" aria-atomic="true".info(t('admin.analytics.exporting', { format }));
     // Implementation would go here
   };
 

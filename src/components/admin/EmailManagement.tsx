@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import DOMPurify from 'dompurify';
 import {
   Mail,
   Send,
@@ -18,7 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "@/hooks/use-toast";
+import { toast aria-live="polite" aria-atomic="true" } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { ResendService } from "@/lib/resend";
 
 interface EmailCampaign {
@@ -74,7 +75,7 @@ export const EmailManagement = () => {
 
   const sendTestEmail = async () => {
     if (!testEmail) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Please enter a test email address",
         variant: "destructive"
@@ -95,12 +96,12 @@ export const EmailManagement = () => {
         }
       });
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Success",
         description: "Test email sent successfully!"
       });
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message || "Failed to send test email",
         variant: "destructive"
@@ -112,7 +113,7 @@ export const EmailManagement = () => {
 
   const sendCampaign = async () => {
     if (!campaignForm.name || !campaignForm.subject || !campaignForm.content) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Please fill in all campaign fields",
         variant: "destructive"
@@ -164,12 +165,12 @@ export const EmailManagement = () => {
         content: ''
       });
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Success",
         description: `Campaign sent to ${subscribers.length} subscribers!`
       });
     } catch (error: any) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message || "Failed to send campaign",
         variant: "destructive"
@@ -182,6 +183,14 @@ export const EmailManagement = () => {
   const previewEmail = () => {
     const preview = window.open('', '_blank');
     if (preview) {
+      // Sanitize content to prevent XSS attacks
+      const sanitizedContent = DOMPurify.sanitize(campaignForm.content, {
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'ul', 'ol', 'li', 'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+        ALLOWED_ATTR: ['href', 'target', 'rel'],
+        FORBID_TAGS: ['script', 'object', 'embed', 'iframe', 'form', 'input', 'button'],
+        FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur']
+      });
+
       preview.document.write(`
         <html>
           <head>
@@ -199,7 +208,7 @@ export const EmailManagement = () => {
               <p>Your Weekly Beauty & Wellness Update</p>
             </div>
             <div class="content">
-              ${campaignForm.content}
+              ${sanitizedContent}
             </div>
             <div class="footer">
               <p>You're receiving this email because you subscribed to our newsletter.</p>

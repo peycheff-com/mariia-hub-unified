@@ -1,0 +1,928 @@
+# Enhanced Production Docker Compose Configuration
+# ================================================
+
+version: '3.8'
+
+x-common-variables: &common-variables
+  NODE_ENV: production
+  TZ: Europe/Warsaw
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 40s
+
+x-restart-policy: &restart-policy
+  restart: unless-stopped
+
+x-deploy-defaults: &deploy-defaults
+  resources:
+    limits:
+      cpus: '2.0'
+      memory: 2G
+    reservations:
+      cpus: '1.0'
+      memory: 1G
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    max_attempts: 3
+    window: 120s
+  update_config:
+    parallelism: 1
+    delay: 10s
+    failure_action: rollback
+    order: start-first
+  rollback_config:
+    parallelism: 1
+    delay: 10s
+
+services:
+  # Enhanced Main Application with Advanced Features
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+      args:
+        BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+        BUILD_VERSION: ${BUILD_VERSION:-latest}
+        BUILD_SHA: ${BUILD_SHA:-$(git rev-parse HEAD)}
+        BUILD_TIME: ${BUILD_TIME:-$(date -u +'%H:%M:%S')}
+        VITE_BUILD_TARGET: production
+        VITE_APP_ENV: production
+    image: mariia-hub:${BUILD_VERSION:-latest}
+    container_name: mariia-hub-app-prod
+    ports:
+      - "${APP_PORT:-80}:8080"
+      - "${METRICS_PORT:-9090}:9090"
+    environment:
+      <<: *common-variables
+      # Application Configuration
+      APP_NAME: Mariia Hub
+      APP_VERSION: ${BUILD_VERSION:-latest}
+      APP_DOMAIN: ${APP_DOMAIN:-mariaborysevych.com}
+      APP_URL: ${APP_URL:-https://mariaborysevych.com}
+
+      # Build Information
+      BUILD_SHA: ${BUILD_SHA:-$(git rev-parse HEAD)}
+      BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+      BUILD_TIME: ${BUILD_TIME:-$(date -u +'%H:%M:%S')}
+
+      # External Services
+      VITE_SUPABASE_URL: ${SUPABASE_URL}
+      VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      VITE_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+      VITE_GA4_MEASUREMENT_ID: ${GA4_MEASUREMENT_ID}
+      VITE_SENTRY_DSN: ${SENTRY_DSN}
+
+      # Feature Flags
+      VITE_ENABLE_ANALYTICS: ${ENABLE_ANALYTICS:-true}
+      VITE_ENABLE_PWA: ${ENABLE_PWA:-true}
+      VITE_ENABLE_DEBUG: ${ENABLE_DEBUG:-false}
+
+      # Performance
+      VITE_CACHE_TTL: ${CACHE_TTL:-300}
+      VITE_MAX_CACHE_SIZE: ${MAX_CACHE_SIZE:-100}
+
+      # Security
+      VITE_ENABLE_CSRF: ${ENABLE_CSRF:-true}
+      VITE_SESSION_TIMEOUT: ${SESSION_TIMEOUT:-3600}
+    volumes:
+      - app_logs:/var/log/nginx
+      - nginx_cache:/var/cache/nginx
+      - ssl_certs:/etc/nginx/ssl:ro
+      - ./infrastructure/nginx/prod-nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/nginx/upstream.conf:/etc/nginx/conf.d/upstream.conf:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      monitoring:
+        condition: service_healthy
+    networks:
+      - mariia-hub-network
+      - monitoring-network
+    deploy:
+      <<: *deploy-defaults
+      replicas: 3
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - node.role == worker
+          - node.labels.environment == production
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.mariia-hub.rule=Host(`mariaborysevych.com`)"
+        - "traefik.http.routers.mariia-hub.entrypoints=websecure"
+        - "traefik.http.routers.mariia-hub.tls.certresolver=letsencrypt"
+        - "traefik.http.services.mariia-hub.loadbalancer.server.port=8080"
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "app,environment,version"
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "app=mariia-hub"
+      - "environment=production"
+      - "tier=frontend"
+      - "version=${BUILD_VERSION:-latest}"
+
+  # Enhanced PostgreSQL with Advanced Configuration
+  postgres:
+    image: postgres:15-alpine
+    container_name: mariia-hub-postgres-prod
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      <<: *common-variables
+      POSTGRES_DB: ${POSTGRES_DB:-mariia_hub}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: --encoding=UTF-8 --lc-collate=C --lc-ctype=C
+      POSTGRES_REPLICATION_USER: ${POSTGRES_REPLICATION_USER:-replicator}
+      POSTGRES_REPLICATION_PASSWORD: ${POSTGRES_REPLICATION_PASSWORD}
+      POSTGRES_BACKUP_SCHEDULE: ${POSTGRES_BACKUP_SCHEDULE:-0 2 * * *}
+      POSTGRES_BACKUP_RETENTION: ${POSTGRES_BACKUP_RETENTION:-30}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_backups:/backups
+      - postgres_logs:/var/log/postgresql
+      - ./infrastructure/postgres/postgresql-prod.conf:/etc/postgresql/postgresql.conf:ro
+      - ./infrastructure/postgres/pg_hba-prod.conf:/etc/postgresql/pg_hba.conf:ro
+      - ./infrastructure/postgres/init-prod.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./infrastructure/postgres/backup.sh:/scripts/backup.sh:ro
+      - ./infrastructure/postgres/restore.sh:/scripts/restore.sh:ro
+    networks:
+      - mariia-hub-network
+    deploy:
+      <<: *deploy-defaults
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.database == postgres
+      labels:
+        - "com.docker.compose.project=mariia-hub"
+        - "app=mariia-hub"
+        - "component=postgres"
+        - "environment=production"
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-mariia_hub}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+        labels: "app,component,environment"
+
+  # PostgreSQL Read Replica
+  postgres-replica:
+    image: postgres:15-alpine
+    container_name: mariia-hub-postgres-replica
+    ports:
+      - "${POSTGRES_REPLICA_PORT:-5433}:5432"
+    environment:
+      <<: *common-variables
+      PGUSER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_MASTER_SERVICE: postgres
+      POSTGRES_REPLICATION_USER: ${POSTGRES_REPLICATION_USER:-replicator}
+      POSTGRES_REPLICATION_PASSWORD: ${POSTGRES_REPLICATION_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-mariia_hub}
+    volumes:
+      - postgres_replica_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/replica-setup-prod.sh:/docker-entrypoint-initdb.d/replica-setup.sh:ro
+    networks:
+      - mariia-hub-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      <<: *deploy-defaults
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.database == replica
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Enhanced Redis with Clustering and Advanced Features
+  redis-master:
+    image: redis:7-alpine
+    container_name: mariia-hub-redis-master-prod
+    ports:
+      - "${REDIS_MASTER_PORT:-6379}:6379"
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      --cluster-enabled yes
+      --cluster-config-file nodes.conf
+      --cluster-node-timeout 5000
+      --protected-mode yes
+      --tcp-keepalive 300
+      --timeout 0
+    volumes:
+      - redis_master_data:/data
+      - redis_logs:/var/log/redis
+      - ./infrastructure/redis/redis-prod.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - mariia-hub-network
+    deploy:
+      <<: *deploy-defaults
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+      placement:
+        constraints:
+          - node.role == worker
+          - node.labels.cache == redis
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Redis Replica
+  redis-replica:
+    image: redis:7-alpine
+    container_name: mariia-hub-redis-replica-prod
+    ports:
+      - "${REDIS_REPLICA_PORT:-6380}:6379"
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --protected-mode yes
+      --tcp-keepalive 300
+      --timeout 0
+      --slaveof redis-master 6379
+      --masterauth ${REDIS_PASSWORD}
+    volumes:
+      - redis_replica_data:/data
+      - redis_logs:/var/log/redis
+    networks:
+      - mariia-hub-network
+    depends_on:
+      redis-master:
+        condition: service_healthy
+    deploy:
+      <<: *deploy-defaults
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Enhanced Load Balancer and Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: mariia-hub-nginx-prod
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./infrastructure/nginx/prod-nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/nginx/upstream.conf:/etc/nginx/conf.d/upstream.conf:ro
+      - ./infrastructure/nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+      - nginx_cache:/var/cache/nginx
+      - ssl_certs:/etc/nginx/ssl:ro
+    networks:
+      - mariia-hub-network
+      - monitoring-network
+    depends_on:
+      app:
+        condition: service_healthy
+    deploy:
+      <<: *deploy-defaults
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+      placement:
+        constraints:
+          - node.role == worker
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Advanced Monitoring Stack
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: mariia-hub-prometheus-prod
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./infrastructure/monitoring/prometheus-prod.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infrastructure/monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+      - prometheus_logs:/var/log/prometheus
+    networks:
+      - monitoring-network
+      - mariia-hub-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.size=10GB'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--log.level=info'
+      - '--log.format=json'
+    deploy:
+      <<: *deploy-defaults
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: mariia-hub-grafana-prod
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      <<: *common-variables
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SECURITY_DISABLE_GRAVATAR: "true"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_INSTALL_PLUGINS: "grafana-piechart-panel,grafana-worldmap-panel,grafana-clock-panel"
+      GF_DATABASE_TYPE: postgres
+      GF_DATABASE_HOST: postgres:5432
+      GF_DATABASE_NAME: grafana
+      GF_DATABASE_USER: grafana
+      GF_DATABASE_PASSWORD: ${GRAFANA_DB_PASSWORD}
+      GF_DATABASE_SSL_MODE: require
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - grafana_logs:/var/log/grafana
+      - ./infrastructure/monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./infrastructure/monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - monitoring-network
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    deploy:
+      <<: *deploy-defaults
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Log Aggregation with Loki
+  loki:
+    image: grafana/loki:latest
+    container_name: mariia-hub-loki-prod
+    ports:
+      - "${LOKI_PORT:-3100}:3100"
+    volumes:
+      - ./infrastructure/monitoring/loki-prod-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+      - loki_logs:/var/log/loki
+    networks:
+      - monitoring-network
+      - mariia-hub-network
+    command: -config.file=/etc/loki/local-config.yaml -log.level=info
+    deploy:
+      <<: *deploy-defaults
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+    <<: *restart-policy
+
+  # Advanced Backup Service
+  backup:
+    image: postgres:15-alpine
+    container_name: mariia-hub-backup-prod
+    environment:
+      <<: *common-variables
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-mariia_hub}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      BACKUP_SCHEDULE: ${BACKUP_SCHEDULE:-0 2 * * *}
+      RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+      S3_BUCKET: ${BACKUP_S3_BUCKET}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      BACKUP_TYPE: ${BACKUP_TYPE:-full}
+      ENCRYPT_BACKUP: ${ENCRYPT_BACKUP:-true}
+    volumes:
+      - ./infrastructure/backup/backup-prod.sh:/backup.sh:ro
+      - ./infrastructure/backup/restore-prod.sh:/restore.sh:ro
+      - postgres_backups:/backups
+      - backup_logs:/var/log/backup
+      - backup_config:/backup/config
+    networks:
+      - mariia-hub-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "
+        chmod +x /backup.sh /restore.sh &&
+        echo '$BACKUP_SCHEDULE /backup.sh' > /etc/crontabs/root &&
+        echo '0 */6 * * * /usr/sbin/logrotate /etc/logrotate.conf' > /etc/crontabs/root &&
+        crond -f
+      "
+    deploy:
+      <<: *deploy-defaults
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    <<: *restart-policy
+
+  # Advanced Log Rotation
+  logrotate:
+    image: alpine:latest
+    container_name: mariia-hub-logrotate-prod
+    volumes:
+      - ./infrastructure/logging/logrotate.conf:/etc/logrotate.conf:ro
+      - nginx_logs:/var/log/nginx
+      - app_logs:/var/log/app
+      - postgres_logs:/var/log/postgresql
+      - redis_logs:/var/log/redis
+      - prometheus_logs:/var/log/prometheus
+      - grafana_logs:/var/log/grafana
+      - backup_logs:/var/log/backup
+      - loki_logs:/var/log/loki
+    networks:
+      - mariia-hub-network
+    command: >
+      sh -c "
+        apk add --no-cache logrotate &&
+        echo '0 */6 * * * /usr/sbin/logrotate /etc/logrotate.conf' > /etc/crontabs/root &&
+        crond -f
+      "
+    deploy:
+      <<: *deploy-defaults
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    <<: *restart-policy
+
+  # Monitoring Service (Health Check)
+  monitoring:
+    image: alpine:latest
+    container_name: mariia-hub-monitoring-prod
+    volumes:
+      - ./infrastructure/monitoring/health-check.sh:/health-check.sh:ro
+    networks:
+      - mariia-hub-network
+      - monitoring-network
+    command: >
+      sh -c "
+        apk add --no-cache curl &&
+        chmod +x /health-check.sh &&
+        echo '*/1 * * * * /health-check.sh' > /etc/crontabs/root &&
+        crond -f
+      "
+    deploy:
+      <<: *deploy-defaults
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 64M
+        reservations:
+          cpus: '0.05'
+          memory: 32M
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "sh", "-c", "curl -f http://app:8080/health && curl -f http://postgres:5432 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Service Discovery and Load Balancing
+  consul:
+    image: consul:latest
+    container_name: mariia-hub-consul-prod
+    ports:
+      - "${CONSUL_UI_PORT:-8500}:8500"
+      - "${CONSUL_DNS_PORT:-8600}:8600/udp"
+    environment:
+      <<: *common-variables
+      CONSUL_BIND_INTERFACE: eth0
+      CONSUL_CLIENT_INTERFACE: eth0
+      CONSUL_DATA_DIR: /consul/data
+      CONSUL_CONFIG_DIR: /consul/config
+    volumes:
+      - consul_data:/consul/data
+      - consul_config:/consul/config
+    networks:
+      - mariia-hub-network
+    command: agent -server -bootstrap-expect=1 -ui -client=0.0.0.0 -datacenter=prod-dc1
+    deploy:
+      <<: *deploy-defaults
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    <<: *restart-policy
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "consul", "members"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# Enhanced Network Configuration
+networks:
+  mariia-hub-network:
+    name: mariia-hub-prod-network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/16
+          gateway: 172.22.0.1
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.bridge.enable_ip_masquerade: "true"
+      com.docker.network.driver.mtu: "1500"
+      com.docker.network.bridge.name: "mariia-hub-br0"
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "environment=production"
+      - "network=application"
+
+  monitoring-network:
+    name: mariia-hub-monitoring-network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.23.0.0/16
+          gateway: 172.23.0.1
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.bridge.enable_ip_masquerade: "true"
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "environment=production"
+      - "network=monitoring"
+
+# Enhanced Volume Configuration
+volumes:
+  # PostgreSQL Volumes
+  postgres_data:
+    name: mariia-hub-prod-postgres-data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-/data/mariia-hub}/postgres
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=postgres"
+      - "environment=production"
+
+  postgres_replica_data:
+    name: mariia-hub-prod-postgres-replica-data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-/data/mariia-hub}/postgres-replica
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=postgres-replica"
+      - "environment=production"
+
+  postgres_backups:
+    name: mariia-hub-prod-postgres-backups
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${BACKUP_PATH:-/data/mariia-hub}/backups/postgres
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=backup"
+      - "environment=production"
+
+  postgres_logs:
+    name: mariia-hub-prod-postgres-logs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOG_PATH:-/data/mariia-hub}/logs/postgres
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=logs"
+      - "environment=production"
+
+  # Redis Volumes
+  redis_master_data:
+    name: mariia-hub-prod-redis-master-data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-/data/mariia-hub}/redis/master
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=redis-master"
+      - "environment=production"
+
+  redis_replica_data:
+    name: mariia-hub-prod-redis-replica-data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-/data/mariia-hub}/redis/replica
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=redis-replica"
+      - "environment=production"
+
+  redis_logs:
+    name: mariia-hub-prod-redis-logs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOG_PATH:-/data/mariia-hub}/logs/redis
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=logs"
+      - "environment=production"
+
+  # Application Volumes
+  app_logs:
+    name: mariia-hub-prod-app-logs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOG_PATH:-/data/mariia-hub}/logs/app
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=logs"
+      - "environment=production"
+
+  nginx_logs:
+    name: mariia-hub-prod-nginx-logs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOG_PATH:-/data/mariia-hub}/logs/nginx
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=logs"
+      - "environment=production"
+
+  nginx_cache:
+    name: mariia-hub-prod-nginx-cache
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${CACHE_PATH:-/data/mariia-hub}/cache/nginx
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=cache"
+      - "environment=production"
+
+  ssl_certs:
+    name: mariia-hub-prod-ssl-certs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${SSL_PATH:-/data/mariia-hub}/ssl
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=ssl"
+      - "environment=production"
+
+  # Monitoring Volumes
+  prometheus_data:
+    name: mariia-hub-prod-prometheus-data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-/data/mariia-hub}/monitoring/prometheus
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=monitoring"
+      - "environment=production"
+
+  prometheus_logs:
+    name: mariia-hub-prod-prometheus-logs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOG_PATH:-/data/mariia-hub}/logs/prometheus
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=logs"
+      - "environment=production"
+
+  grafana_data:
+    name: mariia-hub-prod-grafana-data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-/data/mariia-hub}/monitoring/grafana
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=monitoring"
+      - "environment=production"
+
+  grafana_logs:
+    name: mariia-hub-prod-grafana-logs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOG_PATH:-/data/mariia-hub}/logs/grafana
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=logs"
+      - "environment=production"
+
+  loki_data:
+    name: mariia-hub-prod-loki-data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-/data/mariia-hub}/monitoring/loki
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=monitoring"
+      - "environment=production"
+
+  loki_logs:
+    name: mariia-hub-prod-loki-logs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOG_PATH:-/data/mariia-hub}/logs/loki
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=logs"
+      - "environment=production"
+
+  # Backup and Service Volumes
+  backup_logs:
+    name: mariia-hub-prod-backup-logs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOG_PATH:-/data/mariia-hub}/logs/backup
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=logs"
+      - "environment=production"
+
+  backup_config:
+    name: mariia-hub-prod-backup-config
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${CONFIG_PATH:-/data/mariia-hub}/config/backup
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=config"
+      - "environment=production"
+
+  consul_data:
+    name: mariia-hub-prod-consul-data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-/data/mariia-hub}/consul/data
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=service-discovery"
+      - "environment=production"
+
+  consul_config:
+    name: mariia-hub-prod-consul-config
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${CONFIG_PATH:-/data/mariia-hub}/consul/config
+    labels:
+      - "com.docker.compose.project=mariia-hub"
+      - "component=service-discovery"
+      - "environment=production"

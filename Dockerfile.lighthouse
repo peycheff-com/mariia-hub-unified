@@ -1,0 +1,23 @@
+# Dockerfile for Lighthouse CI Testing
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install Lighthouse CI
+RUN npm install -g @lhci/cli@0.12.x
+
+# Copy lighthouse configuration
+COPY lighthouserc.js ./
+COPY package*.json ./
+
+# Install project dependencies
+RUN npm ci --prefer-offline --no-audit
+
+# Create lighthouse results directory
+RUN mkdir -p .lighthouseci
+
+# Set permissions
+RUN chmod -R 755 .lighthouseci
+
+# Default command
+CMD ["lhci", "autorun"]

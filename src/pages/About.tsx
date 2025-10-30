@@ -15,7 +15,7 @@ const About = () => {
         structuredData={generatePersonSchema()}
       />
       <Navigation />
-      <main className="section-standard">
+      <main role="main" className="section-standard">
         <AboutSection />
       </main>
       <Footer />

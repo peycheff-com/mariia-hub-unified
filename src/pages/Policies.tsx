@@ -61,7 +61,7 @@ const Policies = () => {
                   <li>You'll receive an immediate confirmation email</li>
                   <li>Your appointment will be mirrored to our Booksy calendar within 1-3 business hours</li>
                   <li>You'll receive official reminders from Booksy before your appointment</li>
-                  <li>Optional WhatsApp notifications if you opt in</li>
+                  <li>Optional WhatsApp notification aria-live="polite" aria-atomic="true"s if you opt in</li>
                 </ul>
                 <p className="mt-2">
                   For Fitness services, you'll receive instant confirmation as your appointment is directly added to our system.

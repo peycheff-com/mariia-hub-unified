@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 
 interface RevenueData {
   date: string;
@@ -28,7 +28,7 @@ export function RevenueChart({ dateRange, onDateRangeChange }: RevenueChartProps
   const [loading, setLoading] = useState(false);
   const [timeGranularity, setTimeGranularity] = useState<'day' | 'week' | 'month'>('day');
   const [chartType, setChartType] = useState<'line' | 'bar' | 'area'>('line');
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   useEffect(() => {
     fetchRevenueData();
@@ -57,7 +57,7 @@ export function RevenueChart({ dateRange, onDateRangeChange }: RevenueChartProps
       setData(processedData);
     } catch (error) {
       console.error('Error fetching revenue data:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to fetch revenue data',
         variant: 'destructive',

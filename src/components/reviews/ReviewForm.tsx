@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { useAuth } from "@/hooks/useAuth";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 
@@ -37,7 +37,7 @@ const ReviewForm = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { serviceId } = useParams();
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   const [services, setServices] = useState<Service[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
@@ -71,7 +71,7 @@ const ReviewForm = () => {
       .order("title");
 
     if (error) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: "Failed to load services",
         variant: "destructive",
@@ -103,7 +103,7 @@ const ReviewForm = () => {
 
     for (const file of files) {
       if (file.size > 5 * 1024 * 1024) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "File too large",
           description: "Please upload photos under 5MB",
           variant: "destructive",
@@ -123,7 +123,7 @@ const ReviewForm = () => {
         });
 
       if (uploadError) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Upload failed",
           description: uploadError.message,
           variant: "destructive",
@@ -141,7 +141,7 @@ const ReviewForm = () => {
     setUploadedPhotos(prev => [...prev, ...uploadedUrls]);
     setFormData(prev => ({ ...prev, photos: [...prev.photos, ...uploadedUrls] }));
 
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: "Photos uploaded",
       description: `${uploadedUrls.length} photo(s) added to your review`,
     });
@@ -155,7 +155,7 @@ const ReviewForm = () => {
 
   const validateForm = (): boolean => {
     if (!formData.rating) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Rating required",
         description: "Please select a star rating",
         variant: "destructive",
@@ -164,7 +164,7 @@ const ReviewForm = () => {
     }
 
     if (!formData.content.trim() || formData.content.length < 20) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Review too short",
         description: "Please write at least 20 characters",
         variant: "destructive",
@@ -173,7 +173,7 @@ const ReviewForm = () => {
     }
 
     if (formData.content.length > 2000) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Review too long",
         description: "Please keep your review under 2000 characters",
         variant: "destructive",
@@ -182,7 +182,7 @@ const ReviewForm = () => {
     }
 
     if (!formData.service_id) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Service required",
         description: "Please select a service you're reviewing",
         variant: "destructive",
@@ -210,7 +210,7 @@ const ReviewForm = () => {
     e.preventDefault();
 
     if (!user) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Authentication required",
         description: "Please log in to leave a review",
         variant: "destructive",
@@ -224,7 +224,7 @@ const ReviewForm = () => {
     // Check for duplicate review
     const isDuplicate = await checkForDuplicateReview(formData.service_id);
     if (isDuplicate) {
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Review already exists",
         description: "You have already reviewed this service. You can edit your existing review.",
         variant: "destructive",
@@ -285,7 +285,7 @@ const ReviewForm = () => {
           .insert(photoInserts);
       }
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Review submitted!",
         description: "Thank you for your feedback. Your review will be visible after approval.",
       });
@@ -299,7 +299,7 @@ const ReviewForm = () => {
 
     } catch (error: any) {
       console.error('Error submitting review:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Error",
         description: error.message || "Failed to submit review",
         variant: "destructive",

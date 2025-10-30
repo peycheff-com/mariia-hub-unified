@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { MapPin, Clock, Sparkles, Dumbbell, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useAccessibility } from '@/contexts/AccessibilityContext';
 
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -53,6 +54,7 @@ export const Step1Choose = ({
   onComplete
 }: Step1Props) => {
   const { i18n } = useTranslation();
+  const { announce } = useAccessibility();
   const {
     trackServiceView,
     trackServiceSelection,
@@ -218,14 +220,24 @@ export const Step1Choose = ({
     }
   }, [selectedService, selectedLocation, onComplete, trackBookingFunnel]);
 
-  const filteredServices = services
-    .filter(s => !selectedType || s.service_type === selectedType)
-    .filter(s => !searchTerm || s.title.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Memoize filtered services to prevent re-computation
+  const filteredServices = useMemo(() => {
+    return services
+      .filter(s => !selectedType || s.service_type === selectedType)
+      .filter(s => !searchTerm || s.title.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [services, selectedType, searchTerm]);
 
-  const beautyServices = filteredServices.filter(s => s.service_type === 'beauty').slice(0, 6);
-  const fitnessServices = filteredServices.filter(s => s.service_type === 'fitness').slice(0, 6);
+  const beautyServices = useMemo(() =>
+    filteredServices.filter(s => s.service_type === 'beauty').slice(0, 6),
+    [filteredServices]
+  );
 
-  const handleServiceClick = (service: Service) => {
+  const fitnessServices = useMemo(() =>
+    filteredServices.filter(s => s.service_type === 'fitness').slice(0, 6),
+    [filteredServices]
+  );
+
+  const handleServiceClick = useCallback((service: Service) => {
     setSelectedService(service);
 
     // Track detailed service click
@@ -256,34 +268,46 @@ export const Step1Choose = ({
         auto_selection_reason: 'single_valid_option',
       });
     }
-  };
+  }, [trackCustomConversion, locations, searchOpen, searchTerm]);
 
-  const availableLocations = selectedService 
-    ? locations.filter(l => (selectedService.location_rules?.allowed_locations || ['studio']).includes(l.type))
-    : [];
+  const availableLocations = useMemo(() => {
+    return selectedService
+      ? locations.filter(l => (selectedService.location_rules?.allowed_locations || ['studio']).includes(l.type))
+      : [];
+  }, [selectedService, locations]);
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-4 md:space-y-6" role="form" aria-label="Booking step 1: Choose service type and service">
       {/* Step 1: Choose Type (Beauty or Fitness) */}
       {!selectedType ? (
         <div className="space-y-3">
-          <h3 className="text-base md:text-lg font-semibold text-pearl">What brings you here?</h3>
-          <div className="grid grid-cols-2 gap-2 md:gap-3">
+          <h2 className="text-base md:text-lg font-semibold text-pearl">What brings you here?</h2>
+          <div className="grid grid-cols-2 gap-2 md:gap-3" role="group" aria-label="Choose service type">
             <button
-              onClick={() => setSelectedType('beauty')}
-              className="p-6 md:p-8 rounded-2xl md:rounded-3xl border-2 border-champagne/20 glass-subtle hover:border-champagne/50 hover:shadow-luxury transition-all"
+              onClick={() => {
+                setSelectedType('beauty');
+                announce('Beauty services selected');
+              }}
+              className="p-6 md:p-8 rounded-2xl md:rounded-3xl border-2 border-champagne/20 glass-subtle hover:border-champagne/50 hover:shadow-luxury transition-all focus-visible touch-target-enhanced"
+              aria-label="Choose Beauty services including PMU and Brows"
+              aria-describedby="beauty-description"
             >
-              <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-champagne mx-auto mb-2 md:mb-3" />
+              <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-champagne mx-auto mb-2 md:mb-3" aria-hidden="true" />
               <div className="text-pearl font-semibold text-base md:text-lg">Beauty</div>
-              <div className="text-pearl/60 text-xs mt-1">PMU • Brows</div>
+              <div id="beauty-description" className="text-pearl/60 text-xs mt-1">PMU • Brows</div>
             </button>
             <button
-              onClick={() => setSelectedType('fitness')}
-              className="p-6 md:p-8 rounded-2xl md:rounded-3xl border-2 border-champagne/20 glass-subtle hover:border-champagne/50 hover:shadow-luxury transition-all"
+              onClick={() => {
+                setSelectedType('fitness');
+                announce('Fitness services selected');
+              }}
+              className="p-6 md:p-8 rounded-2xl md:rounded-3xl border-2 border-champagne/20 glass-subtle hover:border-champagne/50 hover:shadow-luxury transition-all focus-visible touch-target-enhanced"
+              aria-label="Choose Fitness services including training programs"
+              aria-describedby="fitness-description"
             >
-              <Dumbbell className="w-6 h-6 md:w-8 md:h-8 text-champagne mx-auto mb-2 md:mb-3" />
+              <Dumbbell className="w-6 h-6 md:w-8 md:h-8 text-champagne mx-auto mb-2 md:mb-3" aria-hidden="true" />
               <div className="text-pearl font-semibold text-base md:text-lg">Fitness</div>
-              <div className="text-pearl/60 text-xs mt-1">Training</div>
+              <div id="fitness-description" className="text-pearl/60 text-xs mt-1">Training</div>
             </button>
           </div>
         </div>
@@ -415,3 +439,6 @@ export const Step1Choose = ({
     </div>
   );
 };
+
+// Export memoized component for performance optimization
+export const Step1ChooseOptimized = memo(Step1Choose);

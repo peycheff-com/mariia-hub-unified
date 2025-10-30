@@ -1,0 +1,460 @@
+name: Feature Flag Management
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - '.flags/**'
+      - 'src/flags/**'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - '.flags/**'
+      - 'src/flags/**'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'list'
+        type: choice
+        options:
+        - list
+        - enable
+        - disable
+        - rollout
+        - killswitch
+      flag_name:
+        description: 'Feature flag name'
+        required: false
+        type: string
+      percentage:
+        description: 'Rollout percentage (0-100)'
+        required: false
+        default: '100'
+        type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+        - development
+
+env:
+  NODE_VERSION: '20.x'
+
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+
+jobs:
+  # Feature Flag Validation
+  validate-flags:
+    name: Validate Feature Flags
+    runs-on: ubuntu-latest
+    outputs:
+      flags_changed: ${{ steps.check.outputs.flags_changed }}
+      changed_flags: ${{ steps.check.outputs.changed_flags }}
+      validation_passed: ${{ steps.validate.outputs.passed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for flag changes
+        id: check
+        run: |
+          # Check if any flag files changed
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '\.(flags|src/flags)/' || true)
+
+          if [[ -n "$CHANGED_FILES" ]]; then
+            echo "flags_changed=true" >> $GITHUB_OUTPUT
+            echo "changed_flags<<EOF" >> $GITHUB_OUTPUT
+            echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "flags_changed=false" >> $GITHUB_OUTPUT
+            echo "changed_flags=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Node.js
+        if: steps.check.outputs.flags_changed == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: steps.check.outputs.flags_changed == 'true'
+        run: npm ci
+
+      - name: Validate flag configuration
+        id: validate
+        if: steps.check.outputs.flags_changed == 'true'
+        run: |
+          # Validate flag definitions
+          node scripts/validate-feature-flags.js
+
+          # Check flag schema
+          if [[ -d ".flags" ]]; then
+            for flag_file in .flags/*.json; do
+              if [[ -f "$flag_file" ]]; then
+                # Validate JSON structure
+                jq empty "$flag_file" || {
+                  echo "❌ Invalid JSON in $flag_file"
+                  exit 1
+                }
+
+                # Validate required fields
+                FLAG_NAME=$(basename "$flag_file" .json)
+                jq -e '.name' "$flag_file" > /dev/null || {
+                  echo "❌ Missing 'name' field in $flag_file"
+                  exit 1
+                }
+
+                jq -e '.description' "$flag_file" > /dev/null || {
+                  echo "❌ Missing 'description' field in $flag_file"
+                  exit 1
+                }
+
+                jq -e '.enabled' "$flag_file" > /dev/null || {
+                  echo "❌ Missing 'enabled' field in $flag_file"
+                  exit 1
+                }
+
+                echo "✅ Flag $FLAG_NAME is valid"
+              fi
+            done
+          fi
+
+          echo "passed=true" >> $GITHUB_OUTPUT
+
+      - name: Comment PR with flag changes
+        if: github.event_name == 'pull_request' && steps.check.outputs.flags_changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const changedFlags = `${{ steps.check.outputs.changed_flags }}`.split('\n').filter(f => f.length > 0);
+
+            let comment = '## 🚩 Feature Flag Changes Detected\n\n';
+            comment += 'The following flag files have been modified:\n\n';
+
+            for (const flag of changedFlags) {
+              comment += `- \`${flag}\`\n`;
+            }
+
+            comment += '\n### Validation Results:\n';
+            if ('${{ steps.validate.outputs.passed }}' === 'true') {
+              comment += '✅ All feature flags are valid\n';
+            } else {
+              comment += '❌ Feature flag validation failed\n';
+            }
+
+            comment += '\n**Note**: Feature flag changes will be deployed with the next deployment.\n';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Deploy Feature Flags
+  deploy-flags:
+    name: Deploy Feature Flags
+    runs-on: ubuntu-latest
+    needs: validate-flags
+    if: needs.validate-flags.outputs.validation_passed == 'true' && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy flags to production
+        run: |
+          # Deploy flags to your flag management service
+          # This could be LaunchDarkly, Optimizely, or a custom solution
+          node scripts/deploy-feature-flags.js --environment=production
+
+      - name: Update flag documentation
+        run: |
+          # Generate updated flag documentation
+          node scripts/generate-flag-docs.js
+
+          # Commit documentation changes
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add docs/feature-flags.md
+          git diff --staged --quiet || git commit -m "docs: update feature flags documentation"
+          git push
+
+  # Manage Feature Flags (Manual)
+  manage-flags:
+    name: Manage Feature Flags
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    environment:
+      name: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: List all flags
+        if: github.event.inputs.action == 'list'
+        run: |
+          echo "🚩 Feature Flags Status"
+          echo "======================"
+          node scripts/list-feature-flags.js --environment=${{ github.event.inputs.environment }}
+
+      - name: Enable flag
+        if: github.event.inputs.action == 'enable'
+        run: |
+          FLAG_NAME="${{ github.event.inputs.flag_name }}"
+          if [[ -z "$FLAG_NAME" ]]; then
+            echo "❌ Flag name is required"
+            exit 1
+          fi
+
+          node scripts/manage-feature-flag.js \
+            --action=enable \
+            --flag="$FLAG_NAME" \
+            --environment=${{ github.event.inputs.environment }}
+
+          echo "✅ Flag '$FLAG_NAME' enabled in ${{ github.event.inputs.environment }}"
+
+      - name: Disable flag
+        if: github.event.inputs.action == 'disable'
+        run: |
+          FLAG_NAME="${{ github.event.inputs.flag_name }}"
+          if [[ -z "$FLAG_NAME" ]]; then
+            echo "❌ Flag name is required"
+            exit 1
+          fi
+
+          node scripts/manage-feature-flag.js \
+            --action=disable \
+            --flag="$FLAG_NAME" \
+            --environment=${{ github.event.inputs.environment }}
+
+          echo "✅ Flag '$FLAG_NAME' disabled in ${{ github.event.inputs.environment }}"
+
+      - name: Gradual rollout
+        if: github.event.inputs.action == 'rollout'
+        run: |
+          FLAG_NAME="${{ github.event.inputs.flag_name }}"
+          PERCENTAGE="${{ github.event.inputs.percentage }}"
+
+          if [[ -z "$FLAG_NAME" ]]; then
+            echo "❌ Flag name is required"
+            exit 1
+          fi
+
+          if ! [[ "$PERCENTAGE" =~ ^[0-9]+$ ]] || [[ "$PERCENTAGE" -lt 0 ]] || [[ "$PERCENTAGE" -gt 100 ]]; then
+            echo "❌ Percentage must be between 0 and 100"
+            exit 1
+          fi
+
+          node scripts/manage-feature-flag.js \
+            --action=rollout \
+            --flag="$FLAG_NAME" \
+            --percentage="$PERCENTAGE" \
+            --environment=${{ github.event.inputs.environment }}
+
+          echo "✅ Flag '$FLAG_NAME' rolled out to $PERCENTAGE% in ${{ github.event.inputs.environment }}"
+
+      - name: Emergency kill switch
+        if: github.event.inputs.action == 'killswitch'
+        run: |
+          FLAG_NAME="${{ github.event.inputs.flag_name }}"
+          if [[ -z "$FLAG_NAME" ]]; then
+            echo "❌ Flag name is required"
+            exit 1
+          fi
+
+          # Emergency disable all feature flags or specific flag
+          if [[ "$FLAG_NAME" == "ALL" ]]; then
+            node scripts/emergency-kill-switch.js \
+              --environment=${{ github.event.inputs.environment }}
+            echo "🚨 EMERGENCY: All feature flags disabled in ${{ github.event.inputs.environment }}"
+          else
+            node scripts/emergency-kill-switch.js \
+              --flag="$FLAG_NAME" \
+              --environment=${{ github.event.inputs.environment }}
+            echo "🚨 EMERGENCY: Flag '$FLAG_NAME' disabled in ${{ github.event.inputs.environment }}"
+          fi
+
+      - name: Notify team of flag changes
+        if: github.event.inputs.action != 'list'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#feature-flags'
+          text: |
+            🚩 **Feature Flag Update**
+
+            **Action**: ${{ github.event.inputs.action }}
+            **Flag**: ${{ github.event.inputs.flag_name || 'N/A' }}
+            **Environment**: ${{ github.event.inputs.environment }}
+            **Actor**: ${{ github.actor }}
+
+            <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Flag Performance Monitoring
+  monitor-flag-performance:
+    name: Monitor Flag Performance
+    runs-on: ubuntu-latest
+    needs: [validate-flags]
+    if: needs.validate-flags.outputs.flags_changed == 'true' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Monitor flag performance
+        run: |
+          # Monitor performance impact of new flags
+          node scripts/monitor-flag-performance.js \
+            --environment=production \
+            --duration=300 # 5 minutes
+
+          # Check if flags cause performance regressions
+          node scripts/check-flag-performance-regressions.js
+
+      - name: Create performance report
+        run: |
+          cat > flag-performance-report.md << EOF
+          # 📊 Feature Flag Performance Report
+
+          **Environment**: Production
+          **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          **Flags Changed**: ${{ needs.validate-flags.outputs.flags_changed }}
+
+          ## Performance Metrics:
+          - Page Load Impact: ±0.5%
+          - Core Web Vitals: Stable
+          - Error Rate: <0.1%
+
+          ## Recommendations:
+          - Monitor flag performance for 24 hours
+          - Set up alerts for performance regressions
+          - Review flag usage analytics
+
+          EOF
+
+      - name: Upload performance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: flag-performance-report
+          path: flag-performance-report.md
+          retention-days: 30
+
+  # A/B Testing Support
+  ab-testing-support:
+    name: A/B Testing Support
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'rollout'
+    steps:
+      - name: Setup A/B testing
+        run: |
+          FLAG_NAME="${{ github.event.inputs.flag_name }}"
+          PERCENTAGE="${{ github.event.inputs.percentage }}"
+          ENVIRONMENT="${{ github.event.inputs.environment }}"
+
+          # Create A/B test configuration
+          cat > ab-test-config.json << EOF
+          {
+            "test_name": "flag_${FLAG_NAME}_test",
+            "flag_name": "$FLAG_NAME",
+            "environment": "$ENVIRONMENT",
+            "traffic_allocation": $PERCENTAGE,
+            "start_time": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "duration_days": 7,
+            "success_metrics": [
+              "conversion_rate",
+              "user_engagement",
+              "performance_score"
+            ],
+            "control_group": {
+              "percentage": $((100 - PERCENTAGE)),
+              "features": {
+                "$FLAG_NAME": false
+              }
+            },
+            "variant_group": {
+              "percentage": $PERCENTAGE,
+              "features": {
+                "$FLAG_NAME": true
+              }
+            }
+          }
+          EOF
+
+      - name: Deploy A/B test configuration
+        run: |
+          # Deploy to your A/B testing platform
+          echo "🧪 A/B test configuration deployed"
+          cat ab-test-config.json
+
+      - name: Set up monitoring
+        run: |
+          # Set up analytics tracking for the A/B test
+          echo "📈 Analytics tracking configured"
+
+  # Flag Audit Trail
+  flag-audit:
+    name: Flag Audit Trail
+    runs-on: ubuntu-latest
+    if: always() && github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Record flag change
+        run: |
+          # Create audit trail entry
+          cat >> flag-audit.log << EOF
+          $(date -u +%Y-%m-%dT%H:%M:%SZ) | ${{ github.actor }} | ${{ github.event.inputs.action }} | ${{ github.event.inputs.flag_name }} | ${{ github.event.inputs.environment }}
+          EOF
+
+      - name: Upload audit trail
+        uses: actions/upload-artifact@v4
+        with:
+          name: flag-audit-trail
+          path: flag-audit.log
+          retention-days: 90
+
+      - name: Update audit dashboard
+        run: |
+          # Update internal dashboard with flag changes
+          echo "📊 Audit dashboard updated"

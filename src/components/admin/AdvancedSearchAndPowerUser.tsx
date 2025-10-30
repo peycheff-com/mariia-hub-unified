@@ -245,7 +245,7 @@ import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
 import { cn } from "@/lib/utils";
 
 interface AdvancedSearchProps {
@@ -286,7 +286,7 @@ interface PowerUserSetting {
 }
 
 export function AdvancedSearchAndPowerUser({ className }: AdvancedSearchProps) {
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const [activeTab, setActiveTab] = useState("search");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<Record<string, any>>({});
@@ -433,11 +433,11 @@ export function AdvancedSearchAndPowerUser({ className }: AdvancedSearchProps) {
     };
 
     setSavedSearches(prev => [newSearch, ...prev]);
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: "Search saved",
       description: "Your search query has been saved for future use",
     });
-  }, [searchQuery, selectedFilters, savedSearches.length, toast]);
+  }, [searchQuery, selectedFilters, savedSearches.length, toast aria-live="polite" aria-atomic="true"]);
 
   const handleLoadSavedSearch = useCallback((savedSearch: SearchQuery) => {
     setSearchQuery(savedSearch.query);
@@ -457,11 +457,11 @@ export function AdvancedSearchAndPowerUser({ className }: AdvancedSearchProps) {
 
   const handleDeleteSavedSearch = useCallback((searchId: string) => {
     setSavedSearches(prev => prev.filter(search => search.id !== searchId));
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: "Search deleted",
       description: "Saved search has been removed",
     });
-  }, [toast]);
+  }, [toast aria-live="polite" aria-atomic="true"]);
 
   const handleRecordShortcut = useCallback((shortcutId: string) => {
     setIsRecordingShortcut(shortcutId);
@@ -495,12 +495,12 @@ export function AdvancedSearchAndPowerUser({ className }: AdvancedSearchProps) {
       e.preventDefault();
       setIsRecordingShortcut(null);
       setRecordedKeys([]);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: "Shortcut recorded",
         description: "Your keyboard shortcut has been updated",
       });
     }
-  }, [isRecordingShortcut, toast]);
+  }, [isRecordingShortcut, toast aria-live="polite" aria-atomic="true"]);
 
   const handleSettingChange = useCallback((settingId: string, value: any) => {
     setPowerUserSettings(prev => prev.map(setting =>
@@ -524,11 +524,11 @@ export function AdvancedSearchAndPowerUser({ className }: AdvancedSearchProps) {
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
 
-    toast({
+    toast aria-live="polite" aria-atomic="true"({
       title: "Settings exported",
       description: "Your settings have been exported successfully",
     });
-  }, [powerUserSettings, toast]);
+  }, [powerUserSettings, toast aria-live="polite" aria-atomic="true"]);
 
   const handleImportSettings = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -543,12 +543,12 @@ export function AdvancedSearchAndPowerUser({ className }: AdvancedSearchProps) {
           value: settings[setting.id] !== undefined ? settings[setting.id] : setting.value
         })));
 
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Settings imported",
           description: "Your settings have been imported successfully",
         });
       } catch (error) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: "Import failed",
           description: "Invalid settings file format",
           variant: "destructive",
@@ -556,7 +556,7 @@ export function AdvancedSearchAndPowerUser({ className }: AdvancedSearchProps) {
       }
     };
     reader.readAsText(file);
-  }, [toast]);
+  }, [toast aria-live="polite" aria-atomic="true"]);
 
   useEffect(() => {
     if (isRecordingShortcut) {

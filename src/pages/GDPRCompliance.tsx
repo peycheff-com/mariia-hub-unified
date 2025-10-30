@@ -5,6 +5,7 @@ import { SEO } from "@/components/SEO";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import MobileFooter from "@/components/MobileFooter";
+import { GDPRComplianceCenter } from "@/components/gdpr/GDPRComplianceCenter";
 
 const GDPRCompliance = () => {
   const { i18n } = useTranslation();
@@ -129,6 +130,11 @@ const GDPRCompliance = () => {
         keywords="GDPR, data protection, privacy rights, EU regulations, personal data, compliance"
       />
       <Navigation />
+
+      {/* Interactive GDPR Compliance Center */}
+      <GDPRComplianceCenter />
+
+      {/* Static Information Section */}
 
       {/* Header */}
       <section className="relative bg-gradient-to-b from-background via-background to-muted/10 pt-32 pb-20 md:pt-40 md:pb-32">

@@ -1,0 +1,673 @@
+name: Quality Gates and Performance Monitoring
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20.x'
+  NODE_OPTIONS: '--max-old-space-size=4096'
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  # Code Quality Analysis
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    outputs:
+      quality_score: ${{ steps.analysis.outputs.score }}
+      lint_issues: ${{ steps.lint.outputs.issues }}
+      type_errors: ${{ steps.types.outputs.errors }}
+      security_issues: ${{ steps.security.outputs.issues }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint with quality metrics
+        id: lint
+        run: |
+          # Run ESLint and generate detailed report
+          npm run lint -- --format=json --output-file=eslint-report.json || true
+
+          # Count issues by severity
+          node -e "
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('eslint-report.json', 'utf8'));
+            const errors = report.length;
+            const warnings = report.filter(r => r.severity === 1).length;
+
+            console.log('issues=' + errors);
+            console.log('warnings=' + warnings);
+            console.log('ESLint Issues: ' + errors + ' errors, ' + warnings + ' warnings');
+
+            // Fail if too many errors
+            if (errors > 50) {
+              console.error('❌ Too many ESLint errors (' + errors + '), threshold is 50');
+              process.exit(1);
+            }
+          " >> $GITHUB_OUTPUT
+
+      - name: Run TypeScript analysis
+        id: types
+        run: |
+          # Run TypeScript compiler
+          npx tsc --noEmit --pretty > typescript-report.txt 2>&1 || true
+
+          # Count type errors
+          TYPE_ERRORS=$(grep -c "error TS" typescript-report.txt || echo "0")
+          echo "errors=$TYPE_ERRORS" >> $GITHUB_OUTPUT
+
+          if [[ $TYPE_ERRORS -gt 10 ]]; then
+            echo "❌ Too many TypeScript errors ($TYPE_ERRORS), threshold is 10"
+            exit 1
+          fi
+
+          echo "✅ TypeScript analysis passed: $TYPE_ERRORS errors found"
+
+      - name: Run advanced security analysis
+        id: security
+        run: |
+          # Run security linting
+          npx eslint . \
+            --ext .js,.jsx,.ts,.tsx \
+            --config .eslintrc.security.json \
+            --format json \
+            --output-file security-report.json || true
+
+          SECURITY_ISSUES=$(cat security-report.json | jq length || echo "0")
+          echo "issues=$SECURITY_ISSUES" >> $GITHUB_OUTPUT
+
+          if [[ $SECURITY_ISSUES -gt 5 ]]; then
+            echo "❌ Too many security issues ($SECURITY_ISSUES), threshold is 5"
+            exit 1
+          fi
+
+          echo "✅ Security analysis passed: $SECURITY_ISSUES issues found"
+
+      - name: Code quality score calculation
+        id: analysis
+        run: |
+          # Calculate overall quality score (0-100)
+          LINT_ISSUES=${{ steps.lint.outputs.issues }}
+          TYPE_ERRORS=${{ steps.types.outputs.errors }}
+          SECURITY_ISSUES=${{ steps.security.outputs.issues }}
+
+          # Weight the different metrics
+          LINT_SCORE=$((80 - LINT_ISSUES))
+          TYPE_SCORE=$((90 - TYPE_ERRORS * 5))
+          SECURITY_SCORE=$((95 - SECURITY_ISSUES * 10))
+
+          # Ensure scores don't go below 0
+          LINT_SCORE=$((LINT_SCORE < 0 ? 0 : LINT_SCORE))
+          TYPE_SCORE=$((TYPE_SCORE < 0 ? 0 : TYPE_SCORE))
+          SECURITY_SCORE=$((SECURITY_SCORE < 0 ? 0 : SECURITY_SCORE))
+
+          # Calculate weighted average
+          QUALITY_SCORE=$(( (LINT_SCORE + TYPE_SCORE + SECURITY_SCORE) / 3 ))
+
+          echo "score=$QUALITY_SCORE" >> $GITHUB_OUTPUT
+
+          echo "📊 Code Quality Analysis Results:"
+          echo "   Lint Score: $LINT_SCORE/100"
+          echo "   Type Score: $TYPE_SCORE/100"
+          echo "   Security Score: $SECURITY_SCORE/100"
+          echo "   Overall Score: $QUALITY_SCORE/100"
+
+          if [[ $QUALITY_SCORE -lt 70 ]]; then
+            echo "❌ Code quality score ($QUALITY_SCORE) is below threshold (70)"
+            exit 1
+          fi
+
+      - name: Upload quality reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-quality-reports
+          path: |
+            eslint-report.json
+            typescript-report.txt
+            security-report.json
+          retention-days: 30
+
+  # Test Coverage Analysis
+  coverage-analysis:
+    name: Test Coverage Analysis
+    runs-on: ubuntu-latest
+    outputs:
+      line_coverage: ${{ steps.coverage.outputs.lines }}
+      function_coverage: ${{ steps.coverage.outputs.functions }}
+      branch_coverage: ${{ steps.coverage.outputs.branches }}
+      statement_coverage: ${{ steps.coverage.outputs.statements }}
+      coverage_trend: ${{ steps.coverage.outputs.trend }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Analyze coverage metrics
+        id: coverage
+        run: |
+          # Parse coverage report
+          node -e "
+            const fs = require('fs');
+            try {
+              const coverage = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
+              const { lines, functions, branches, statements } = coverage.total;
+
+              console.log('lines=' + lines.pct);
+              console.log('functions=' + functions.pct);
+              console.log('branches=' + branches.pct);
+              console.log('statements=' + statements.pct);
+
+              console.log('📊 Test Coverage Results:');
+              console.log('   Lines: ' + lines.pct + '%');
+              console.log('   Functions: ' + functions.pct + '%');
+              console.log('   Branches: ' + branches.pct + '%');
+              console.log('   Statements: ' + statements.pct + '%');
+
+              // Check coverage thresholds
+              const thresholds = { lines: 80, functions: 80, branches: 75, statements: 80 };
+              let failed = false;
+
+              Object.entries(thresholds).forEach(([metric, threshold]) => {
+                const coverage_pct = coverage.total[metric].pct;
+                if (coverage_pct < threshold) {
+                  console.error('❌ ' + metric + ' coverage ' + coverage_pct + '% is below threshold ' + threshold + '%');
+                  failed = true;
+                }
+              });
+
+              if (failed) {
+                process.exit(1);
+              }
+
+              // Calculate trend (mock for now)
+              console.log('trend=stable');
+
+            } catch (e) {
+              console.error('❌ Could not parse coverage report: ' + e.message);
+              process.exit(1);
+            }
+          " >> $GITHUB_OUTPUT
+
+      - name: Coverage trend analysis
+        run: |
+          # Compare with previous coverage if available
+          echo "📈 Coverage trend analysis..."
+
+          # Generate coverage badge
+          COVERAGE_PCT=${{ steps.coverage.outputs.lines }}
+          COLOR="brightgreen"
+          if [[ $COVERAGE_PCT -lt 80 ]]; then
+            COLOR="yellow"
+          elif [[ $COVERAGE_PCT -lt 70 ]]; then
+            COLOR="red"
+          fi
+
+          echo "Coverage badge: ${COVERAGE_PCT}% (${COLOR})"
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            coverage/
+            test-results/
+          retention-days: 30
+
+  # Performance and Bundle Analysis
+  performance-analysis:
+    name: Performance and Bundle Analysis
+    runs-on: ubuntu-latest
+    outputs:
+      bundle_size: ${{ steps.bundle.outputs.size }}
+      bundle_change: ${{ steps.bundle.outputs.change }}
+      lighthouse_score: ${{ steps.lighthouse.outputs.score }}
+      performance_regression: ${{ steps.lighthouse.outputs.regression }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Analyze bundle size
+        id: bundle
+        run: |
+          # Calculate bundle size
+          BUNDLE_SIZE=$(du -sk dist/ | cut -f1)
+          echo "size=$BUNDLE_SIZE" >> $GITHUB_OUTPUT
+
+          # Compare with baseline if available
+          if [[ -f "baseline-size.txt" ]]; then
+            BASELINE_SIZE=$(cat baseline-size.txt)
+            CHANGE=$((BUNDLE_SIZE - BASELINE_SIZE))
+            CHANGE_PCT=$(( (CHANGE * 100) / BASELINE_SIZE ))
+            echo "change=$CHANGE_PCT" >> $GITHUB_OUTPUT
+
+            echo "📦 Bundle Size Analysis:"
+            echo "   Current: ${BUNDLE_SIZE}KB"
+            echo "   Baseline: ${BASELINE_SIZE}KB"
+            echo "   Change: ${CHANGE_PCT}%"
+
+            # Fail if bundle size increased too much
+            if [[ $CHANGE_PCT -gt 10 ]]; then
+              echo "❌ Bundle size increased by ${CHANGE_PCT}% (threshold: 10%)"
+              exit 1
+            fi
+          else
+            echo "change=0" >> $GITHUB_OUTPUT
+            echo "$BUNDLE_SIZE" > baseline-size.txt
+            echo "📦 Bundle size baseline set: ${BUNDLE_SIZE}KB"
+          fi
+
+          # Analyze bundle composition
+          npx webpack-bundle-analyzer dist/static/js/*.js \
+            --mode=json \
+            --report=bundle-analysis.json || true
+
+      - name: Run Lighthouse CI
+        id: lighthouse
+        run: |
+          # Start application for Lighthouse testing
+          npm run preview &
+          APP_PID=$!
+          sleep 10
+
+          # Run Lighthouse
+          npx lighthouse http://localhost:4173 \
+            --output=json \
+            --output-path=lighthouse-report.json \
+            --chrome-flags="--headless" \
+            --quiet || true
+
+          # Stop application
+          kill $APP_PID 2>/dev/null || true
+
+          # Analyze Lighthouse results
+          node -e "
+            const fs = require('fs');
+            try {
+              const report = JSON.parse(fs.readFileSync('lighthouse-report.json', 'utf8'));
+              const performance = report.categories.performance.score * 100;
+              const accessibility = report.categories.accessibility.score * 100;
+              const bestPractices = report.categories['best-practices'].score * 100;
+              const seo = report.categories.seo.score * 100;
+
+              console.log('score=' + Math.round(performance));
+
+              console.log('🚀 Lighthouse Results:');
+              console.log('   Performance: ' + Math.round(performance) + '/100');
+              console.log('   Accessibility: ' + Math.round(accessibility) + '/100');
+              console.log('   Best Practices: ' + Math.round(bestPractices) + '/100');
+              console.log('   SEO: ' + Math.round(seo) + '/100');
+
+              // Check performance threshold
+              if (performance < 90) {
+                console.log('regression=true');
+                console.error('❌ Performance score (' + performance + ') is below threshold (90)');
+                process.exit(1);
+              } else {
+                console.log('regression=false');
+              }
+
+            } catch (e) {
+              console.log('score=0');
+              console.log('regression=true');
+              console.error('❌ Could not run Lighthouse analysis');
+              process.exit(1);
+            }
+          " >> $GITHUB_OUTPUT
+
+      - name: Core Web Vitals monitoring
+        run: |
+          # Analyze Core Web Vitals from Lighthouse report
+          node -e "
+            const fs = require('fs');
+            try {
+              const report = JSON.parse(fs.readFileSync('lighthouse-report.json', 'utf8'));
+              const vitals = {
+                lcp: report.audits['largest-contentful-paint'].numericValue,
+                fid: report.audits['max-potential-fid'].numericValue,
+                cls: report.audits['cumulative-layout-shift'].numericValue,
+                fcp: report.audits['first-contentful-paint'].numericValue,
+                ttfb: report.audits['server-response-time'].numericValue
+              };
+
+              console.log('⚡ Core Web Vitals:');
+              console.log('   LCP: ' + (vitals.lcp/1000).toFixed(2) + 's (Good: <2.5s)');
+              console.log('   FID: ' + vitals.fid.toFixed(0) + 'ms (Good: <100ms)');
+              console.log('   CLS: ' + vitals.cls.toFixed(3) + ' (Good: <0.1)');
+              console.log('   FCP: ' + (vitals.fcp/1000).toFixed(2) + 's (Good: <1.8s)');
+              console.log('   TTFB: ' + (vitals.ttfb/1000).toFixed(2) + 's (Good: <800ms)');
+
+              // Check against thresholds
+              let issues = 0;
+              if (vitals.lcp > 2500) {
+                console.error('❌ LCP is too slow');
+                issues++;
+              }
+              if (vitals.fid > 100) {
+                console.error('❌ FID is too high');
+                issues++;
+              }
+              if (vitals.cls > 0.1) {
+                console.error('❌ CLS is too high');
+                issues++;
+              }
+              if (vitals.fcp > 1800) {
+                console.error('❌ FCP is too slow');
+                issues++;
+              }
+              if (vitals.ttfb > 800) {
+                console.error('❌ TTFB is too slow');
+                issues++;
+              }
+
+              if (issues > 0) {
+                console.error('❌ Core Web Vitals threshold violations: ' + issues);
+                process.exit(1);
+              }
+
+            } catch (e) {
+              console.error('❌ Could not analyze Core Web Vitals');
+              process.exit(1);
+            }
+          "
+
+      - name: Upload performance reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-reports
+          path: |
+            lighthouse-report.json
+            bundle-analysis.json
+            baseline-size.txt
+          retention-days: 30
+
+  # Accessibility Testing
+  accessibility-testing:
+    name: Accessibility Testing
+    runs-on: ubuntu-latest
+    outputs:
+      accessibility_score: ${{ steps.a11y.outputs.score }}
+      violations: ${{ steps.a11y.outputs.violations }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run accessibility tests
+        id: a11y
+        run: |
+          # Start application for testing
+          npm run preview &
+          APP_PID=$!
+          sleep 10
+
+          # Run accessibility tests with axe
+          npx axe http://localhost:4173 \
+            --tags wcag2a,wcag2aa,wcag21aa \
+            --include "iframe:not([src*='//'])" \
+            --format json \
+            --output accessibility-report.json || true
+
+          # Stop application
+          kill $APP_PID 2>/dev/null || true
+
+          # Analyze accessibility results
+          node -e "
+            const fs = require('fs');
+            try {
+              const report = JSON.parse(fs.readFileSync('accessibility-report.json', 'utf8'));
+              const violations = report.violations || [];
+              const passes = report.passes || [];
+              const incomplete = report.incomplete || [];
+
+              const total = violations.length + passes.length + incomplete.length;
+              const score = total > 0 ? Math.round((passes.length / total) * 100) : 100;
+
+              console.log('score=' + score);
+              console.log('violations=' + violations.length);
+
+              console.log('♿ Accessibility Results:');
+              console.log('   Score: ' + score + '/100');
+              console.log('   Violations: ' + violations.length);
+              console.log('   Passes: ' + passes.length);
+              console.log('   Incomplete: ' + incomplete.length);
+
+              // Categorize violations by severity
+              const critical = violations.filter(v => v.impact === 'critical').length;
+              const serious = violations.filter(v => v.impact === 'serious').length;
+              const moderate = violations.filter(v => v.impact === 'moderate').length;
+              const minor = violations.filter(v => v.impact === 'minor').length;
+
+              console.log('   Critical: ' + critical);
+              console.log('   Serious: ' + serious);
+              console.log('   Moderate: ' + moderate);
+              console.log('   Minor: ' + minor);
+
+              // Fail on critical or too many serious violations
+              if (critical > 0) {
+                console.error('❌ Critical accessibility violations found: ' + critical);
+                process.exit(1);
+              }
+              if (serious > 5) {
+                console.error('❌ Too many serious violations: ' + serious + ' (threshold: 5)');
+                process.exit(1);
+              }
+
+            } catch (e) {
+              console.log('score=0');
+              console.log('violations=999');
+              console.error('❌ Could not run accessibility tests');
+              process.exit(1);
+            }
+          " >> $GITHUB_OUTPUT
+
+      - name: Generate accessibility report
+        run: |
+          # Generate detailed HTML report
+          node scripts/generate-accessibility-report.js accessibility-report.json accessibility-report.html || true
+
+      - name: Upload accessibility reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-reports
+          path: |
+            accessibility-report.json
+            accessibility-report.html
+          retention-days: 30
+
+  # Quality Gate Summary
+  quality-gate-summary:
+    name: Quality Gate Summary
+    runs-on: ubuntu-latest
+    needs: [code-quality, coverage-analysis, performance-analysis, accessibility-testing]
+    if: always()
+    steps:
+      - name: Calculate overall quality score
+        id: overall
+        run: |
+          # Calculate weighted overall score
+          QUALITY_SCORE=${{ needs.code-quality.outputs.quality_score }}
+          COVERAGE_SCORE=${{ needs.coverage-analysis.outputs.line_coverage }}
+          PERFORMANCE_SCORE=${{ needs.performance-analysis.outputs.lighthouse_score }}
+          ACCESSIBILITY_SCORE=${{ needs.accessibility-testing.outputs.accessibility_score }}
+
+          # Weight: 30% code quality, 25% coverage, 30% performance, 15% accessibility
+          OVERALL_SCORE=$(( (QUALITY_SCORE * 30 + COVERAGE_SCORE * 25 + PERFORMANCE_SCORE * 30 + ACCESSIBILITY_SCORE * 15) / 100 ))
+
+          echo "score=$OVERALL_SCORE" >> $GITHUB_OUTPUT
+
+          echo "📊 Overall Quality Gate Results:"
+          echo "   Code Quality: $QUALITY_SCORE/100 (30% weight)"
+          echo "   Test Coverage: $COVERAGE_SCORE/100 (25% weight)"
+          echo "   Performance: $PERFORMANCE_SCORE/100 (30% weight)"
+          echo "   Accessibility: $ACCESSIBILITY_SCORE/100 (15% weight)"
+          echo "   Overall Score: $OVERALL_SCORE/100"
+
+          # Determine final status
+          if [[ $OVERALL_SCORE -ge 85 ]]; then
+            echo "status=excellent"
+            echo "emoji=🏆"
+          elif [[ $OVERALL_SCORE -ge 75 ]]; then
+            echo "status=good"
+            echo "emoji=✅"
+          elif [[ $OVERALL_SCORE -ge 65 ]]; then
+            echo "status=acceptable"
+            echo "emoji=⚠️"
+          else
+            echo "status=poor"
+            echo "emoji=❌"
+          fi >> $GITHUB_OUTPUT
+
+      - name: Generate quality dashboard
+        run: |
+          cat > quality-dashboard.md << EOF
+          # 📊 Quality Dashboard
+
+          **Overall Score**: ${{ steps.overall.outputs.score }}/100 ${{ steps.overall.outputs.emoji }}
+          **Status**: ${{ steps.overall.outputs.status }}
+          **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          ## Quality Metrics
+
+          | Metric | Score | Status | Threshold |
+          |--------|-------|--------|------------|
+          | Code Quality | ${{ needs.code-quality.outputs.quality_score }}/100 | ${{ needs.code-quality.outputs.quality_score >= 70 && '✅' || '❌' }} | ≥70 |
+          | Test Coverage | ${{ needs.coverage-analysis.outputs.line_coverage }}/100 | ${{ needs.coverage-analysis.outputs.line_coverage >= 80 && '✅' || '❌' }} | ≥80 |
+          | Performance | ${{ needs.performance-analysis.outputs.lighthouse_score }}/100 | ${{ needs.performance-analysis.outputs.lighthouse_score >= 90 && '✅' || '❌' }} | ≥90 |
+          | Accessibility | ${{ needs.accessibility-testing.outputs.accessibility_score }}/100 | ${{ needs.accessibility-testing.outputs.accessibility_score >= 90 && '✅' || '❌' }} | ≥90 |
+
+          ## Detailed Results
+
+          ### Code Quality
+          - ESLint Issues: ${{ needs.code-quality.outputs.lint_issues }}
+          - TypeScript Errors: ${{ needs.code-quality.outputs.type_errors }}
+          - Security Issues: ${{ needs.code-quality.outputs.security_issues }}
+
+          ### Test Coverage
+          - Lines: ${{ needs.coverage-analysis.outputs.line_coverage }}%
+          - Functions: ${{ needs.coverage-analysis.outputs.function_coverage }}%
+          - Branches: ${{ needs.coverage-analysis.outputs.branch_coverage }}%
+          - Statements: ${{ needs.coverage-analysis.outputs.statement_coverage }}%
+
+          ### Performance
+          - Bundle Size: ${{ needs.performance-analysis.outputs.bundle_size }}KB
+          - Bundle Change: ${{ needs.performance-analysis.outputs.bundle_change }}%
+          - Lighthouse Score: ${{ needs.performance-analysis.outputs.lighthouse_score }}/100
+          - Performance Regression: ${{ needs.performance-analysis.outputs.performance_regression }}
+
+          ### Accessibility
+          - Accessibility Score: ${{ needs.accessibility-testing.outputs.accessibility_score }}/100
+          - Violations: ${{ needs.accessibility-testing.outputs.violations }}
+
+          ## Recommendations
+
+          ${{ steps.overall.outputs.status == 'excellent' && 'Excellent quality! Maintain current standards.' || '' }}
+          ${{ steps.overall.outputs.status == 'good' && 'Good quality with room for improvement.' || '' }}
+          ${{ steps.overall.outputs.status == 'acceptable' && 'Acceptable quality but needs improvement in key areas.' || '' }}
+          ${{ steps.overall.outputs.status == 'poor' && 'Poor quality. Immediate action required.' || '' }}
+
+          ---
+
+          *Generated by CI/CD Pipeline on $(date -u +%Y-%m-%dT%H:%M:%SZ)*
+          EOF
+
+      - name: Comment PR with quality results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const dashboard = fs.readFileSync('quality-dashboard.md', 'utf8');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: dashboard
+            });
+
+      - name: Update quality badges
+        run: |
+          # Update quality badges (mock implementation)
+          echo "🏅 Updating quality badges..."
+          echo "Overall: ${{ steps.overall.outputs.score }}/100"
+          echo "Code Quality: ${{ needs.code-quality.outputs.quality_score }}/100"
+          echo "Coverage: ${{ needs.coverage-analysis.outputs.line_coverage }}/100"
+          echo "Performance: ${{ needs.performance-analysis.outputs.lighthouse_score }}/100"
+          echo "Accessibility: ${{ needs.accessibility-testing.outputs.accessibility_score }}/100"
+
+      - name: Upload quality dashboard
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-dashboard
+          path: |
+            quality-dashboard.md
+            *.json
+          retention-days: 30
+
+      - name: Final quality gate decision
+        run: |
+          OVERALL_SCORE=${{ steps.overall.outputs.score }}
+
+          if [[ $OVERALL_SCORE -lt 65 ]]; then
+            echo "❌ Quality gate failed: Overall score ($OVERALL_SCORE) is below minimum threshold (65)"
+            exit 1
+          else
+            echo "✅ Quality gate passed: Overall score ($OVERALL_SCORE) meets requirements"
+          fi

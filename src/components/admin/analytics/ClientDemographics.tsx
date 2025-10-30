@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
 
 interface DemographicData {
   ageGroup: string;
@@ -55,7 +55,7 @@ export function ClientDemographics({ dateRange }: ClientDemographicsProps) {
   const [newVsReturningData, setNewVsReturningData] = useState<NewVsReturningData[]>([]);
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState<'overview' | 'detailed'>('overview');
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
 
   useEffect(() => {
     fetchDemographicsData();
@@ -209,7 +209,7 @@ export function ClientDemographics({ dateRange }: ClientDemographicsProps) {
       await fetchNewVsReturning();
     } catch (error) {
       console.error('Error fetching demographics data:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error',
         description: 'Failed to fetch demographics data',
         variant: 'destructive',

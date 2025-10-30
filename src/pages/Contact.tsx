@@ -15,7 +15,7 @@ const Contact = () => {
         structuredData={generateLocalBusinessSchema()}
       />
       <Navigation />
-      <main className="section-standard">
+      <main role="main" className="section-standard">
         <ContactSection />
       </main>
       <Footer />

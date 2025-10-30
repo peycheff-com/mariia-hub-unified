@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Service, Location, Step1Data, Step2Data, Step3Data } from '@/types/booking';
 import { logger } from '@/lib/logger';
@@ -23,6 +23,7 @@ import { CapacityIndicator } from './CapacityIndicator';
 import { PricingDisplay } from './PricingDisplay';
 import { WaitlistOption } from './WaitlistOption';
 import { QuickRescheduleButton } from './QuickRescheduleButton';
+import { useLoyaltyContext } from '@/contexts/LoyaltyContext';
 
 
 interface BookingSheetProps {
@@ -32,15 +33,16 @@ interface BookingSheetProps {
   preselectedType?: 'beauty' | 'fitness';
 }
 
-const BookingSheet = ({ 
-  isOpen, 
-  onClose, 
+const BookingSheet = ({
+  isOpen,
+  onClose,
   preselectedService,
-  preselectedType 
+  preselectedType
 }: BookingSheetProps) => {
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
+  const { state: loyaltyState, actions: loyaltyActions } = useLoyaltyContext();
   const [step, setStep] = useState(1);
   const [services, setServices] = useState<Service[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
@@ -189,7 +191,7 @@ const BookingSheet = ({
 
       
       if (servicesRes.error) {
-          toast({
+          toast aria-live="polite" aria-atomic="true"({
           title: 'Error loading services',
           description: 'Please try again later.',
           variant: 'destructive',
@@ -201,7 +203,7 @@ const BookingSheet = ({
 
       // Check if services exist
       if (!servicesRes.data || servicesRes.data.length === 0) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: 'No services available',
           description: 'Please check back later as we are updating our service catalog.',
           variant: 'destructive',
@@ -210,7 +212,7 @@ const BookingSheet = ({
 
       // Check if locations exist
       if (!locationsRes.data || locationsRes.data.length === 0) {
-        toast({
+        toast aria-live="polite" aria-atomic="true"({
           title: 'No locations available',
           description: 'Please check back later as we are updating our studio locations.',
           variant: 'destructive',
@@ -218,7 +220,7 @@ const BookingSheet = ({
       }
     } catch (error) {
       logger.error('Error loading booking data:', error);
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Error loading booking data',
         description: 'Unable to load services and locations. Please refresh the page.',
         variant: 'destructive',
@@ -361,7 +363,7 @@ const BookingSheet = ({
   const handleStep4Complete = async (data: any) => {
     try {
       // Create booking
-      const { error } = await supabase.from('bookings').insert({
+      const { data: bookingData, error } = await supabase.from('bookings').insert({
         service_id: step1Data.serviceId,
         user_id: (await supabase.auth.getUser()).data.user?.id,
         date: step2Data.date,
@@ -373,11 +375,37 @@ const BookingSheet = ({
         client_email: reviewData?.email || step3Data?.email,
         client_phone: reviewData?.phone || step3Data?.phone,
         notes: reviewData?.notes || step3Data?.notes,
-      });
+      }).select().single();
 
       if (error) throw error;
 
-      toast({
+      // Award loyalty points for the booking
+      try {
+        const currentService = services.find(s => s.id === step1Data.serviceId);
+        if (currentService && loyaltyState.member) {
+          const basePoints = Math.floor(totalPrice * 10); // 10 points per PLN
+          const tierMultiplier = loyaltyState.member.tier?.points_multiplier || 1;
+          const serviceBonus = currentService.service_type === 'beauty' ? 20 : 15;
+          const totalPoints = Math.floor((basePoints + serviceBonus) * tierMultiplier);
+
+          await loyaltyActions.earnPoints(totalPoints, {
+            reference_type: 'booking',
+            reference_id: bookingData.id,
+            description: `Points earned from ${currentService.title} booking`
+          });
+
+          toast aria-live="polite" aria-atomic="true"({
+            title: 'Loyalty points earned!',
+            description: `You earned ${totalPoints.toLocaleString()} points from this booking.`,
+            variant: 'default',
+          });
+        }
+      } catch (loyaltyError) {
+        console.error('Failed to award loyalty points:', loyaltyError);
+        // Don't fail the booking if loyalty points fail
+      }
+
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Booking confirmed!',
         description: 'You will receive a confirmation email shortly.',
       });
@@ -389,6 +417,8 @@ const BookingSheet = ({
         time: step2Data.time,
         payment_method: data.paymentMethod,
         total_amount: totalPrice,
+        loyalty_member_id: loyaltyState.member?.id,
+        loyalty_tier: loyaltyState.member?.tier?.name,
       });
 
       onClose();
@@ -397,7 +427,7 @@ const BookingSheet = ({
         event: 'booking_failed',
         service_id: step1Data?.serviceId,
       });
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Booking failed',
         description: 'Please try again or contact support.',
         variant: 'destructive',
@@ -713,7 +743,7 @@ const BookingSheet = ({
                     bookingId={selectedTimeSlot.slotId}
                     onRescheduled={(success) => {
                       if (success) {
-                        toast({
+                        toast aria-live="polite" aria-atomic="true"({
                           title: 'Rescheduled successfully',
                           description: 'Your booking has been rescheduled.',
                         });

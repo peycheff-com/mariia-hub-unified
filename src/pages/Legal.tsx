@@ -13,7 +13,7 @@ const Legal = () => {
       />
       <Navigation />
       
-      <main className="py-20 pb-32 md:pb-20">
+      <main role="main" className="py-20 pb-32 md:pb-20">
         <div className="container mx-auto px-6 md:px-8 max-w-4xl">
           <h1 className="heading-serif text-4xl font-semibold mb-8">Legal Information</h1>
           

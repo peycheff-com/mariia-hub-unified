@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mariia-hub.serviceName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mariia-hub.labels" . | nindent 4 }}
+    app.kubernetes.io/component: service
+  {{- if .Values.service.annotations }}
+  annotations:
+    {{- toYaml .Values.service.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - name: http
+    port: {{ .Values.service.ports.http }}
+    targetPort: http
+    protocol: TCP
+  {{- if .Values.service.ports.https }}
+  - name: https
+    port: {{ .Values.service.ports.https }}
+    targetPort: https
+    protocol: TCP
+  {{- end }}
+  {{- if .Values.monitoring.enabled }}
+  - name: metrics
+    port: {{ .Values.service.ports.metrics }}
+    targetPort: metrics
+    protocol: TCP
+  {{- end }}
+  selector:
+    {{- include "mariia-hub.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: app
+    app.kubernetes.io/tier: frontend

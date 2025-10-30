@@ -8,17 +8,19 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { getStripe, createPaymentIntent } from '@/lib/stripe';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { logger } from '@/lib/logger';
 
 import { StripePaymentForm } from './StripePaymentForm';
+import { LoyaltyBookingIntegration } from './LoyaltyBookingIntegration';
 
 interface Service {
   id: string;
   title: string;
   price_from?: number;
   duration_minutes?: number;
+  service_type?: string;
 }
 
 interface Step4Props {
@@ -52,21 +54,46 @@ export const Step4Payment = ({
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [isLoadingStripe, setIsLoadingStripe] = useState(false);
-  const { toast } = useToast();
+  const { toast aria-live="polite" aria-atomic="true" } = useToast();
   const stripePromise = getStripe();
+
+  // Loyalty integration state
+  const [loyaltyDiscount, setLoyaltyDiscount] = useState(0);
+  const [appliedPoints, setAppliedPoints] = useState(0);
+  const [appliedReward, setAppliedReward] = useState<string | null>(null);
 
   const [agreedToTerms, setAgreedToTerms] = useState(true); // Already agreed in Step 3
 
   const basePrice = service.price_from || 0;
-  const convertedPrice = convertPrice(basePrice);
-  const formattedPrice = formatPrice(basePrice);
+  const discountedPrice = Math.max(0, basePrice - loyaltyDiscount);
+  const convertedPrice = convertPrice(discountedPrice);
+  const formattedPrice = formatPrice(discountedPrice);
+
+  // Loyalty discount handlers
+  const handlePointsApplied = (pointsUsed: number, discountAmount: number) => {
+    setAppliedPoints(pointsUsed);
+    setLoyaltyDiscount(prev => prev + discountAmount);
+
+    // Reset payment intent for new amount
+    setClientSecret(null);
+    setPaymentError(null);
+  };
+
+  const handleRewardApplied = (rewardId: string, discountAmount: number) => {
+    setAppliedReward(rewardId);
+    setLoyaltyDiscount(prev => prev + discountAmount);
+
+    // Reset payment intent for new amount
+    setClientSecret(null);
+    setPaymentError(null);
+  };
 
   // Create payment intent when card payment is selected
   useEffect(() => {
     if (paymentMethod === 'card' && !clientSecret && !paymentError) {
       initializePaymentIntent();
     }
-  }, [paymentMethod]);
+  }, [paymentMethod, discountedPrice]);
 
   const initializePaymentIntent = async () => {
     setIsLoadingStripe(true);
@@ -77,14 +104,17 @@ export const Step4Payment = ({
       logger.info('Initializing payment intent', {
         serviceId: service.id,
         serviceTitle: service.title,
-        amount: basePrice,
+        amount: discountedPrice,
         currency: 'pln',
         customerEmail: email,
         customerName: fullName,
+        loyaltyDiscount,
+        appliedPoints,
+        appliedReward,
       });
 
       const { clientSecret: secret, paymentIntentId } = await createPaymentIntent(
-        basePrice,
+        discountedPrice,
         'pln',
         {
           service_id: service.id,
@@ -121,7 +151,7 @@ export const Step4Payment = ({
         timestamp: new Date().toISOString(),
       });
 
-      toast({
+      toast aria-live="polite" aria-atomic="true"({
         title: 'Payment initialization failed',
         description: 'Unable to initialize payment. Please try again or contact support.',
         variant: 'destructive',
@@ -188,6 +218,16 @@ export const Step4Payment = ({
 
   return (
     <div className="space-y-6">
+      {/* Loyalty Integration */}
+      <LoyaltyBookingIntegration
+        service={service}
+        date={date}
+        time={time}
+        totalPrice={discountedPrice}
+        onPointsApplied={handlePointsApplied}
+        onRewardApplied={handleRewardApplied}
+      />
+
       {/* Booking Summary */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-pearl">Booking summary</h3>
@@ -225,13 +265,43 @@ export const Step4Payment = ({
               <span className="text-pearl">{phone}</span>
             </div>
           </div>
-          
-          {/* Total */}
-          <div className="pt-3 border-t border-pearl/10">
+
+          {/* Pricing Breakdown */}
+          <div className="pt-3 border-t border-pearl/10 space-y-2">
+            {loyaltyDiscount > 0 && (
+              <>
+                <div className="flex justify-between text-sm">
+                  <span className="text-pearl/60">Subtotal</span>
+                  <span className="text-pearl">{formatPrice(basePrice)}</span>
+                </div>
+
+                {appliedPoints > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-pearl/60">Points Discount ({appliedPoints.toLocaleString()} pts)</span>
+                    <span className="text-green-600">-{formatPrice(appliedPoints / 100)}</span>
+                  </div>
+                )}
+
+                {appliedReward && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-pearl/60">Reward Applied</span>
+                    <span className="text-green-600">-{formatPrice(loyaltyDiscount - (appliedPoints / 100))}</span>
+                  </div>
+                )}
+              </>
+            )}
+
             <div className="flex justify-between items-center">
               <span className="text-pearl font-semibold">Total</span>
               <span className="text-xl font-bold text-champagne">{formattedPrice}</span>
             </div>
+
+            {loyaltyDiscount > 0 && (
+              <div className="flex justify-between text-xs text-green-600">
+                <span>You saved</span>
+                <span className="font-semibold">{formatPrice(loyaltyDiscount)}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
