@@ -57,7 +57,7 @@ export default defineConfig(({ mode }) => ({
       "@/stores": path.resolve(__dirname, "./src/stores"),
       "@/contexts": path.resolve(__dirname, "./src/contexts"),
       "@/lib": path.resolve(__dirname, "./src/lib"),
-      "@/assets": path.resolve(__dirname, "./public/assets"),
+      "@/assets": path.resolve(__dirname, "./src/assets"),
       react: path.resolve(__dirname, "./node_modules/react"),
       "react/jsx-runtime": path.resolve(
         __dirname,
