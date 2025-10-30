@@ -14,20 +14,6 @@
       "VITE_BUILD_TARGET": "production"
     }
   },
-  "functions": {
-    "app/api/**/*.ts": {
-      "runtime": "edge",
-      "maxDuration": 30,
-      "memory": 512,
-      "includeFiles": "dist/**"
-    },
-    "app/edge/**/*.ts": {
-      "runtime": "edge",
-      "maxDuration": 60,
-      "memory": 1024,
-      "includeFiles": "dist/**"
-    }
-  },
   "headers": [
     {
       "source": "/api/(.*)",
