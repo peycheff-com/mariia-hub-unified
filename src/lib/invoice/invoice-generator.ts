@@ -135,7 +135,7 @@ export interface PaymentInfo {
  */
 export class PolishInvoiceGenerator {
   private static readonly SELLER_INFO: SellerInfo = {
-    name: 'Mariia Hub',
+    name: 'mariiaborysevych',
     address: {
       street: 'ul. Jana Pawła II',
       buildingNumber: '43',

@@ -182,10 +182,10 @@ const AftercareInstructions = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title={i18n.language === 'pl' ? 'Instrukcje Pielęgnacji | Mariia Hub' :
-              i18n.language === 'en' ? 'Aftercare Instructions | Mariia Hub' :
-              i18n.language === 'ua' ? 'Інструкції Догляду | Mariia Hub' :
-              'Инструкции Ухода | Mariia Hub'}
+        title={i18n.language === 'pl' ? 'Instrukcje Pielęgnacji | mariiaborysevych' :
+              i18n.language === 'en' ? 'Aftercare Instructions | mariiaborysevych' :
+              i18n.language === 'ua' ? 'Інструкції Догляду | mariiaborysevych' :
+              'Инструкции Ухода | mariiaborysevych'}
         description={i18n.language === 'pl' ?
               'Szczegółowe instrukcje pielęgnacji po zabiegach permanentnego makijażu i treningach fitness' :
               i18n.language === 'en' ?

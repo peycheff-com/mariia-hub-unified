@@ -1,7 +1,7 @@
 /**
  * Service Level Agreement (SLA) Management System
  * Comprehensive SLA configuration, monitoring, and compliance tracking
- * for Mariia Hub platform performance and availability guarantees
+ * for mariiaborysevych platform performance and availability guarantees
  */
 
 import { createClient } from '@supabase/supabase-js';

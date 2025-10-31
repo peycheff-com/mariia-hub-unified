@@ -1,6 +1,6 @@
 /**
  * Performance Hub - Central Integration Point
- * Coordinates all performance monitoring systems for the Mariia Hub luxury platform
+ * Coordinates all performance monitoring systems for the mariiaborysevych luxury platform
  */
 
 import RealUserMonitoring from './realUserMonitoring';
@@ -81,7 +81,7 @@ class PerformanceHub {
     if (this.isInitialized) return;
     this.isInitialized = true;
 
-    console.log('🚀 Initializing Mariia Hub Performance Monitoring System...');
+    console.log('🚀 Initializing mariiaborysevych Performance Monitoring System...');
     console.log('Target: Luxury Beauty Platform - Warsaw Market\n');
 
     try {

@@ -716,7 +716,7 @@ class MobilePaymentSecurity {
 
     // Get merchant information (simplified)
     const merchantInfo = {
-      name: 'Mariia Hub Luxury Beauty & Fitness',
+      name: 'mariiaborysevych Luxury Beauty & Fitness',
       address: 'ul. Jana Pawła II 43/15, 00-001 Warszawa, Polska',
       vat: 'PL1234567890'
     };

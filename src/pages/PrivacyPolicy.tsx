@@ -11,8 +11,8 @@ const PrivacyPolicy = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Privacy Policy — Data Protection & Privacy | Mariia Hub"
-        description="Privacy policy for Mariia Hub beauty and fitness services. Learn how we collect, use, and protect your personal data."
+        title="Privacy Policy — Data Protection & Privacy | mariiaborysevych"
+        description="Privacy policy for mariiaborysevych beauty and fitness services. Learn how we collect, use, and protect your personal data."
         keywords="privacy policy, data protection, GDPR compliance, personal data, privacy rights"
       />
       <Navigation />
@@ -47,12 +47,12 @@ const PrivacyPolicy = () => {
                 </h2>
                 <p className="leading-relaxed">
                   {i18n.language === 'pl'
-                    ? "Niniejsza Polityka Prywatności określa sposób przetwarzania danych osobowych przez Mariia Hub z siedzibą w Warszawie. Szanujemy prywatność naszych klientów i zobowiązujemy się do ochrony ich danych osobowych."
+                    ? "Niniejsza Polityka Prywatności określa sposób przetwarzania danych osobowych przez mariiaborysevych z siedzibą w Warszawie. Szanujemy prywatność naszych klientów i zobowiązujemy się do ochrony ich danych osobowych."
                     : i18n.language === 'en'
-                    ? "This Privacy Policy determines how personal data is processed by Mariia Hub, based in Warsaw. We respect the privacy of our clients and are committed to protecting their personal data."
+                    ? "This Privacy Policy determines how personal data is processed by mariiaborysevych, based in Warsaw. We respect the privacy of our clients and are committed to protecting their personal data."
                     : i18n.language === 'ua'
-                    ? "Ця Політика Конфіденційності визначає спосіб обробки персональних даних Mariia Hub, що знаходиться у Варшаві. Ми поважаємо приватність наших клієнтів і зобов'язуємося захищати їхні персональні дані."
-                    : "Настоящая Политика Конфиденциальности определяет порядок обработки персональных данных Mariia Hub, находящейся в Варшаве. Мы уважаем приватность наших клиентов и обязуемся защищать их персональные данные."}
+                    ? "Ця Політика Конфіденційності визначає спосіб обробки персональних даних mariiaborysevych, що знаходиться у Варшаві. Ми поважаємо приватність наших клієнтів і зобов'язуємося захищати їхні персональні дані."
+                    : "Настоящая Политика Конфиденциальности определяет порядок обработки персональных данных mariiaborysevych, находящейся в Варшаве. Мы уважаем приватность наших клиентов и обязуемся защищать их персональные данные."}
                 </p>
               </section>
 

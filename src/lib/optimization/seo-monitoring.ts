@@ -655,7 +655,7 @@ class SEOMonitoringSystem {
 
   private async generateMetaTagRecommendations(url: string): Promise<any> {
     return {
-      title: 'Beauty & Fitness Services in Warsaw | Mariia Hub',
+      title: 'Beauty & Fitness Services in Warsaw | mariiaborysevych',
       description: 'Premium beauty and fitness services in Warsaw. Book appointments online.',
       h1: 'Beauty & Fitness Services Warsaw',
       h2_tags: ['Our Services', 'Why Choose Us', 'Book Now']
@@ -674,7 +674,7 @@ class SEOMonitoringSystem {
   // Local SEO Management
   async analyzeLocalSEO(): Promise<LocalSEOData> {
     const localSEO = {
-      business_name: 'Mariia Hub',
+      business_name: 'mariiaborysevych',
       address: 'Jana PawBa II 43/15, 00-001 Warszawa, Polska',
       phone: '+48 123 456 789',
       website: 'https://mariaborysevych.com',
@@ -820,7 +820,7 @@ class SEOMonitoringSystem {
       const slug = url.replace('/services/', '');
 
       // Generate optimized meta tags
-      const metaTitle = 'Beauty & Fitness Services in Warsaw | Mariia Hub';
+      const metaTitle = 'Beauty & Fitness Services in Warsaw | mariiaborysevych';
       const metaDescription = 'Premium beauty and fitness services in Warsaw. Book appointments online for treatments, wellness, and fitness programs.';
 
       // Update service with optimized meta tags

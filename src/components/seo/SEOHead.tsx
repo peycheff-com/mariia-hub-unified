@@ -74,7 +74,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
   return (
     <Helmet>
       {/* Basic meta tags */}
-      <title>{title || 'Mariia Hub - Beauty & Fitness Services Warsaw'}</title>
+      <title>{title || 'mariiaborysevych - Beauty & Fitness Services Warsaw'}</title>
       {description && <meta name="description" content={description} />}
       {keywords && <meta name="keywords" content={keywords} />}
 
@@ -92,20 +92,20 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
       ))}
 
       {/* Open Graph tags */}
-      <meta property="og:title" content={title || 'Mariia Hub - Beauty & Fitness Services Warsaw'} />
+      <meta property="og:title" content={title || 'mariiaborysevych - Beauty & Fitness Services Warsaw'} />
       {description && <meta property="og:description" content={description} />}
       <meta property="og:type" content={ogType} />
       <meta property="og:url" content={currentUrl} />
-      <meta property="og:site_name" content="Mariia Hub" />
+      <meta property="og:site_name" content="mariiaborysevych" />
       {ogImage && <meta property="og:image" content={ogImage} />}
       <meta property="og:locale" content={currentLang === 'pl' ? 'pl_PL' : 'en_US'} />
 
       {/* Twitter Card tags */}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={title || 'Mariia Hub - Beauty & Fitness Services Warsaw'} />
+      <meta name="twitter:title" content={title || 'mariiaborysevych - Beauty & Fitness Services Warsaw'} />
       {description && <meta name="twitter:description" content={description} />}
       {ogImage && <meta name="twitter:image" content={ogImage} />}
-      <meta name="twitter:site" content="@mariiahub" />
+      <meta name="twitter:site" content="@mariiaborysevych" />
 
       {/* Robots meta */}
       {noindex && <meta name="robots" content="noindex,nofollow" />}

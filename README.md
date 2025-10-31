@@ -1,6 +1,6 @@
-# Mariia Hub - Premium Beauty & Fitness Booking Platform
+# mariiaborysevych - Premium Beauty & Fitness Booking Platform
 
-![Mariia Hub](/docs/assets/mariia-hub-banner.webp)
+![mariiaborysevych](/docs/assets/mariia-hub-banner.webp)
 
 A sophisticated, unified booking and management platform for beauty and fitness services, targeting the premium Warsaw market. Built with modern technologies and a focus on exceptional user experience.
 
@@ -91,19 +91,44 @@ VITE_GA_TRACKING_ID=your_ga_id
 
 ### Project Structure
 ```
-src/
-├── components/       # Reusable UI components
-│   ├── admin/       # Admin-specific components
-│   ├── booking/     # Booking flow components
-│   └── ui/          # Base UI components
-├── contexts/        # React contexts
-├── hooks/          # Custom React hooks
-├── lib/            # Utility functions
-├── pages/          # Route components
-├── services/       # API and business logic
-├── stores/         # State management
-└── types/          # TypeScript type definitions
+mariia-hub-unified/
+├── src/                    # Application source code
+│   ├── components/         # Reusable UI components
+│   │   ├── admin/         # Admin-specific components
+│   │   ├── booking/       # Booking flow components
+│   │   └── ui/            # Base UI components
+│   ├── contexts/          # React contexts
+│   ├── hooks/             # Custom React hooks
+│   ├── lib/               # Utility functions
+│   ├── pages/             # Route components
+│   ├── services/          # API and business logic
+│   ├── stores/            # State management
+│   └── types/             # TypeScript type definitions
+├── config/                # Consolidated configuration files
+│   ├── vite.config.ts     # Vite configuration
+│   ├── vitest.config.ts   # Vitest configuration
+│   ├── eslint.config.js   # ESLint configuration
+│   └── tailwind.config.ts # Tailwind configuration
+├── infra/                 # Infrastructure as Code
+│   ├── terraform/         # Terraform modules
+│   ├── nginx/             # Nginx configurations
+│   └── k8s/               # Kubernetes manifests
+├── scripts/               # Unified operational scripts (16 total)
+│   ├── deploy/            # Deployment scripts
+│   ├── utils/             # Utility scripts
+│   ├── devops/            # DevOps automation
+│   ├── security/          # Security scanning
+│   ├── testing/           # Testing automation
+│   └── backup/            # Backup & recovery
+└── docs/                  # Documentation
 ```
+
+### 🏗️ Refactored Infrastructure (October 2025)
+- **Scripts**: Consolidated from 100 to 16 unified scripts (84% reduction)
+- **Docker**: Reduced from 11 to 3 configuration files (73% reduction)
+- **Infrastructure**: Merged 4 directories into 1 unified structure (75% reduction)
+- **Configuration**: All configs organized in `config/` directory
+- **See**: `FINAL_REFACTORING_SUMMARY.md` for complete details
 
 ### Database Architecture
 - **PostgreSQL** with Row Level Security (RLS)
@@ -129,6 +154,25 @@ Comprehensive documentation is available in the `/docs` directory:
 
 ## 🧪 Testing
 
+### Using Unified Test Runner (Recommended)
+```bash
+# Run all test suites
+./scripts/testing/test-runner.sh --action run --suite all
+
+# Run specific test suite
+./scripts/testing/test-runner.sh --action run --suite unit
+./scripts/testing/test-runner.sh --action run --suite e2e
+./scripts/testing/test-runner.sh --action run --suite visual
+./scripts/testing/test-runner.sh --action run --suite accessibility
+
+# Generate coverage report
+./scripts/testing/test-runner.sh --action coverage
+
+# Watch mode for development
+./scripts/testing/test-runner.sh --action watch
+```
+
+### Standard Testing Commands
 ```bash
 # Run unit tests
 npm run test
@@ -145,6 +189,25 @@ npm run type-check
 
 ## 📦 Build & Deploy
 
+### Using Unified Scripts (Recommended)
+```bash
+# Build application
+./scripts/utils/build-manager.sh --action build
+
+# Deploy to production (Vercel)
+./scripts/deploy/unified-deploy.sh --action deploy --target vercel --env production
+
+# Deploy to Docker
+./scripts/deploy/unified-deploy.sh --action deploy --target docker --env staging
+
+# Run all tests
+./scripts/testing/test-runner.sh --action run --suite all
+
+# Security scan
+./scripts/security/security-monitor.sh --action scan --target all
+```
+
+### Standard Commands
 ```bash
 # Development build
 npm run build:dev
@@ -161,6 +224,8 @@ npm run lint
 # Fix linting issues
 npm run lint:fix
 ```
+
+See `CLAUDE.md` for complete documentation of all 16 unified scripts.
 
 ## 🔧 Development Workflow
 
@@ -227,4 +292,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ for the beauty and fitness industry**
 
-Last updated: 2025-01-24
+Last updated: 2025-10-31 (Refactoring Complete)

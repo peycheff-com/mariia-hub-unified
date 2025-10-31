@@ -15,7 +15,7 @@ const Error404 = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Page Not Found — 404 Error | Mariia Hub"
+        title="Page Not Found — 404 Error | mariiaborysevych"
         description="The page you're looking for doesn't exist. Check our services or return to the homepage."
         keywords="404, page not found, error, lost page"
       />

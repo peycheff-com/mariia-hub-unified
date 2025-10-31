@@ -1,7 +1,7 @@
 /**
  * Enterprise-Grade Performance Monitoring System
  * Real-time performance metrics collection, alerting, and SLA monitoring
- * for Mariia Hub platform
+ * for mariiaborysevych platform
  */
 
 import { createClient } from '@supabase/supabase-js';

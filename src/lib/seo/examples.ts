@@ -1,5 +1,5 @@
 /**
- * Example usage of the comprehensive SEO system for Mariia Hub
+ * Example usage of the comprehensive SEO system for mariiaborysevych
  *
  * This file demonstrates how to use various SEO components
  * in different scenarios throughout the application.
@@ -103,7 +103,7 @@ export const generateServiceMetaTags = (service: Service, language: string = 'pl
   return optimizer.generateMetaTags(
     `/beauty/services/${service.slug}`,
     {
-      title: `${service.name} | Mariia Hub`,
+      title: `${service.name} | mariiaborysevych`,
       description: service.description,
       keywords: service.tags || [],
       ogImage: service.images?.[0]?.url,

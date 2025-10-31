@@ -499,4 +499,4 @@ For monitoring system issues:
 
 ## 📄 License
 
-This monitoring system is part of the Mariia Hub project and follows the same licensing terms. Ensure compliance with all monitoring and privacy regulations when using this system.
+This monitoring system is part of the mariiaborysevych project and follows the same licensing terms. Ensure compliance with all monitoring and privacy regulations when using this system.

@@ -1,5 +1,5 @@
 export const generateRobotsTxt = (baseUrl: string = 'https://mariiahub.pl'): string => {
-  return `# Robot.txt for Mariia Hub
+  return `# Robot.txt for mariiaborysevych
 # Generated on ${new Date().toISOString()}
 
 User-agent: *

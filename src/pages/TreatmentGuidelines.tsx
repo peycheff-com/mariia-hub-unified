@@ -134,10 +134,10 @@ const TreatmentGuidelines = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title={i18n.language === 'pl' ? "Wytyczne Zabiegów | Mariia Hub" :
-              i18n.language === 'en' ? "Treatment Guidelines | Mariia Hub" :
-              i18n.language === 'ua' ? "Вказівки по Процедурах | Mariia Hub" :
-              "Рекомендации по Процедурам | Mariia Hub"}
+        title={i18n.language === 'pl' ? "Wytyczne Zabiegów | mariiaborysevych" :
+              i18n.language === 'en' ? "Treatment Guidelines | mariiaborysevych" :
+              i18n.language === 'ua' ? "Вказівки по Процедурах | mariiaborysevych" :
+              "Рекомендации по Процедурам | mariiaborysevych"}
         description={i18n.language === 'pl' ?
               "Kompleksowe wytyczne dotyczące przygotowania, przebiegu i pielęgnacji po zabiegach" :
               i18n.language === 'en' ?

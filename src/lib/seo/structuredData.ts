@@ -306,7 +306,7 @@ export class StructuredDataGenerator {
 
   constructor(businessInfo?: Partial<LocalBusinessSchema>) {
     this.businessInfo = {
-      name: 'Mariia Hub',
+      name: 'mariiaborysevych',
       description: 'Premium beauty and fitness services in Warsaw, Poland',
       url: 'https://mariia-hub.pl',
       telephone: '+48 123 456 789',
@@ -625,7 +625,7 @@ export class StructuredDataGenerator {
       endDate: event.endDate,
       location: {
         '@type': 'Place' as const,
-        name: 'Mariia Hub',
+        name: 'mariiaborysevych',
         address: {
           '@type': 'PostalAddress' as const,
           ...event.location || this.businessInfo.address

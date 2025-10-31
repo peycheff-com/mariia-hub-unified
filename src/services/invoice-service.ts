@@ -148,7 +148,7 @@ export class InvoiceService {
 
   private config: InvoiceConfig = {
     company: {
-      name: import.meta.env.VITE_COMPANY_NAME || 'Mariia Hub Sp. z o.o.',
+      name: import.meta.env.VITE_COMPANY_NAME || 'mariiaborysevych Sp. z o.o.',
       address: import.meta.env.VITE_COMPANY_ADDRESS || 'ul. Jana Pawła II 43/15',
       postalCode: import.meta.env.VITE_COMPANY_POSTAL_CODE || '00-001',
       city: import.meta.env.VITE_COMPANY_CITY || 'Warszawa',

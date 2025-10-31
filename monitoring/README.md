@@ -1,6 +1,6 @@
-# Mariia Hub Production Monitoring Setup
+# mariiaborysevych Production Monitoring Setup
 
-This directory contains the complete monitoring infrastructure for Mariia Hub production systems.
+This directory contains the complete monitoring infrastructure for mariiaborysevych production systems.
 
 ## 🏗️ Architecture Overview
 
@@ -42,7 +42,7 @@ monitoring/
 ### Prerequisites
 
 - Docker and Docker Compose installed
-- Access to Mariia Hub repositories
+- Access to mariiaborysevych repositories
 - Production environment variables configured
 
 ### 1. Clone and Navigate
@@ -324,4 +324,4 @@ docker-compose restart [service-name]
 
 ## 📄 License
 
-This monitoring configuration is proprietary to Mariia Hub.
+This monitoring configuration is proprietary to mariiaborysevych.

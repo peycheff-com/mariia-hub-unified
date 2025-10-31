@@ -671,7 +671,7 @@ class MobileAuthentication {
    * Generate TOTP QR code URL
    */
   private generateTOTPQRCode(userId: string, secret: string): string {
-    const issuer = encodeURIComponent('Mariia Hub');
+    const issuer = encodeURIComponent('mariiaborysevych');
     const account = encodeURIComponent(userId);
     return `otpauth://totp/${issuer}:${account}?secret=${secret}&issuer=${issuer}&algorithm=SHA1&digits=6&period=30`;
   }

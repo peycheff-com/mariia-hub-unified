@@ -25,7 +25,7 @@ export function setupRoutes(app: Application): void {
   // API information
   app.get('/api/v1', (req, res) => {
     res.json({
-      name: 'Mariia Hub API v1',
+      name: 'mariiaborysevych API v1',
       version: '1.0.0',
       description: 'Enterprise-grade API for beauty and fitness booking platform',
       endpoints: {

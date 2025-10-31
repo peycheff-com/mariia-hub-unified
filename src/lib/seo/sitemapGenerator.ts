@@ -294,7 +294,7 @@ export class SitemapGenerator {
         images,
         news: {
           publication: {
-            name: 'Mariia Hub Blog',
+            name: 'mariiaborysevych Blog',
             language: article.language
           },
           publication_date: article.publication_date,
@@ -372,7 +372,7 @@ export class SitemapGenerator {
       crawlDelay?: number;
     }>
   ): string {
-    let robots = '# Robots.txt for Mariia Hub\n';
+    let robots = '# Robots.txt for mariiaborysevych\n';
     robots += '# Generated automatically\n\n';
 
     // Default rules

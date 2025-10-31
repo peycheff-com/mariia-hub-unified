@@ -88,7 +88,7 @@ export function GiftCardPurchase({ onSuccess, onCancel, purchaserId }: GiftCardP
           Purchase Gift Card
         </CardTitle>
         <CardDescription>
-          Give the gift of beauty and wellness with a Mariia Hub gift card
+          Give the gift of beauty and wellness with a mariiaborysevych gift card
         </CardDescription>
       </CardHeader>
 

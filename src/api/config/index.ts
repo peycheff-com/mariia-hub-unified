@@ -123,7 +123,7 @@ export const swaggerConfig = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Mariia Hub API',
+      title: 'mariiaborysevych API',
       version: '1.0.0',
       description: 'Enterprise-grade API for beauty and fitness booking platform',
       contact: {

@@ -355,7 +355,7 @@ export class CommunicationService {
           }
           result = await this.emailProvider.sendEmail(
             recipient.email,
-            'Notification from Mariia Hub',
+            'Notification from mariiaborysevych',
             message.content
           );
           break;

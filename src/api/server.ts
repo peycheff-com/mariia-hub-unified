@@ -168,7 +168,7 @@ export class APIServer {
     this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
       explorer: true,
       customCss: '.swagger-ui .topbar { display: none }',
-      customSiteTitle: 'Mariia Hub API Documentation',
+      customSiteTitle: 'mariiaborysevych API Documentation',
     }));
 
     // JSON specification
@@ -193,7 +193,7 @@ export class APIServer {
     // API information endpoint
     this.app.get('/api', (req, res) => {
       res.json({
-        name: 'Mariia Hub API',
+        name: 'mariiaborysevych API',
         version: '1.0.0',
         description: 'Enterprise-grade API for beauty and fitness booking platform',
         endpoints: {

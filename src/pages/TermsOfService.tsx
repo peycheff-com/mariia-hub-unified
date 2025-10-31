@@ -11,8 +11,8 @@ const TermsOfService = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Terms of Service — Legal Terms & Conditions | Mariia Hub"
-        description="Terms of service and conditions for using Mariia Hub beauty and fitness services."
+        title="Terms of Service — Legal Terms & Conditions | mariiaborysevych"
+        description="Terms of service and conditions for using mariiaborysevych beauty and fitness services."
         keywords="terms of service, legal terms, conditions, agreement, policies"
       />
       <Navigation />
@@ -47,12 +47,12 @@ const TermsOfService = () => {
                 </h2>
                 <p className="leading-relaxed">
                   {i18n.language === 'pl'
-                    ? "Niniejszy regulamin określa zasady świadczenia usług przez Mariia Hub z siedzibą w Warszawie, zwaną dalej 'Salonem'. Korzystanie z usług Salonu jest równoznaczne z akceptacją niniejszego regulaminu."
+                    ? "Niniejszy regulamin określa zasady świadczenia usług przez mariiaborysevych z siedzibą w Warszawie, zwaną dalej 'Salonem'. Korzystanie z usług Salonu jest równoznaczne z akceptacją niniejszego regulaminu."
                     : i18n.language === 'en'
-                    ? "These terms and conditions define the rules for providing services by Mariia Hub, based in Warsaw, hereinafter referred to as the 'Salon'. Use of the Salon's services is equivalent to acceptance of these terms."
+                    ? "These terms and conditions define the rules for providing services by mariiaborysevych, based in Warsaw, hereinafter referred to as the 'Salon'. Use of the Salon's services is equivalent to acceptance of these terms."
                     : i18n.language === 'ua'
-                    ? "Цей регламент визначає правила надання послуг Mariia Hub, що знаходиться у Варшаві, надалі називаною 'Салоном'. Використання послуг Салону є рівнозначним прийняттю цього регламенту."
-                    : "Настоящие правила и условия определяют порядок оказания услуг Mariia Hub, находящейся в Варшаве, далее именуемой 'Салоном'. Использование услуг Салона равносильно принятию настоящих правил."}
+                    ? "Цей регламент визначає правила надання послуг mariiaborysevych, що знаходиться у Варшаві, надалі називаною 'Салоном'. Використання послуг Салону є рівнозначним прийняттю цього регламенту."
+                    : "Настоящие правила и условия определяют порядок оказания услуг mariiaborysevych, находящейся в Варшаве, далее именуемой 'Салоном'. Использование услуг Салона равносильно принятию настоящих правил."}
                 </p>
               </section>
 

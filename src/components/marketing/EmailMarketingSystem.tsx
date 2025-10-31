@@ -72,7 +72,7 @@ export const EmailMarketingSystem: React.FC<EmailMarketingSystemProps> = ({ clas
   const [campaignForm, setCampaignForm] = useState<EmailCampaignRequest>({
     name: '',
     subjectLine: '',
-    fromName: 'Mariia Hub',
+    fromName: 'mariiaborysevych',
     fromEmail: 'hello@mariaborysevych.com',
     contentHtml: '',
     contentText: '',
@@ -142,8 +142,8 @@ export const EmailMarketingSystem: React.FC<EmailMarketingSystemProps> = ({ clas
         description: 'Automated welcome email for new subscribers',
         category: 'automation',
         templateType: 'automation',
-        htmlContent: '<h1>Welcome to Mariia Hub!</h1><p>Thank you for joining our community...</p>',
-        textContent: 'Welcome to Mariia Hub! Thank you for joining...',
+        htmlContent: '<h1>Welcome to mariiaborysevych!</h1><p>Thank you for joining our community...</p>',
+        textContent: 'Welcome to mariiaborysevych! Thank you for joining...',
         usage_count: 45,
         is_active: true,
         created_by: 'user_1',
@@ -320,7 +320,7 @@ export const EmailMarketingSystem: React.FC<EmailMarketingSystemProps> = ({ clas
     setCampaignForm({
       name: '',
       subjectLine: '',
-      fromName: 'Mariia Hub',
+      fromName: 'mariiaborysevych',
       fromEmail: 'hello@mariaborysevych.com',
       contentHtml: '',
       contentText: '',

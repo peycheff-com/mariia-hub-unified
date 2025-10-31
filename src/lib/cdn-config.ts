@@ -229,7 +229,7 @@ export class CDNManager {
     });
 
     return `
-// Generated Service Worker for Mariia Hub
+// Generated Service Worker for mariiaborysevych
 const CACHE_NAME = 'mariia-hub-v1';
 const RUNTIME_CACHE = 'mariia-hub-runtime';
 

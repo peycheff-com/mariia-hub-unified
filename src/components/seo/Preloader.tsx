@@ -187,7 +187,7 @@ export function Preloader({
         {JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebApplication",
-          "name": "Mariia Hub",
+          "name": "mariiaborysevych",
           "description": "Premium beauty and fitness booking platform",
           "url": typeof window !== 'undefined' ? window.location.origin : '',
           "applicationCategory": "LifestyleApplication",

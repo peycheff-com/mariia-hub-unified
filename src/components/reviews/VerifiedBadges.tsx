@@ -194,7 +194,7 @@ export const SourcePlatformBadge = ({
       default:
         return {
           icon: "✨",
-          text: "Mariia Hub",
+          text: "mariiaborysevych",
           bgColor: "bg-champagne/20",
           textColor: "text-champagne",
           borderColor: "border-champagne/30"

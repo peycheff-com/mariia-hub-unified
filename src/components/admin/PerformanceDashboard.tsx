@@ -1,7 +1,7 @@
 /**
  * Enterprise Performance Dashboard
  * Real-time performance monitoring, SLA tracking, and alert management
- * for Mariia Hub platform
+ * for mariiaborysevych platform
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';

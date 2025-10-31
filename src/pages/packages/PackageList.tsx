@@ -156,7 +156,7 @@ const PackageList = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Service Packages — Beauty & Fitness Deals | Mariia Hub"
+        title="Service Packages — Beauty & Fitness Deals | mariiaborysevych"
         description={`Save up to ${stats.maxSavings.toFixed(0)}% on beauty and fitness packages. Special offers on microblading, training programs, and more.`}
         keywords="packages Warsaw, beauty deals, fitness packages, microblading package, personal training package"
       />

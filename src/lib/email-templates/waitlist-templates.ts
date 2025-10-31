@@ -3,7 +3,7 @@ import { Service } from '@/types/booking';
 export const waitlistNotificationTemplates = {
   // When customer joins waitlist
   joinConfirmation: {
-    subject: 'You\'re on the waitlist! - Mariia Hub',
+    subject: 'You\'re on the waitlist! - mariiaborysevych',
     html: (data: { service: Service; preferredDate: string; preferredTime: string }) => `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
@@ -43,7 +43,7 @@ export const waitlistNotificationTemplates = {
         </div>
 
         <div style="background: #f3f4f6; padding: 20px; text-align: center; border-radius: 0 0 10px 10px; font-size: 12px; color: #6b7280;">
-          <p>Mariia Hub - Premium Beauty & Fitness Services</p>
+          <p>mariiaborysevych - Premium Beauty & Fitness Services</p>
           <p>Need help? Contact us at hello@mariiahub.pl | +48 123 456 789</p>
           <p style="margin-top: 10px;">
             <a href="#" style="color: #8B4513;">Manage Waitlist</a> |
@@ -57,7 +57,7 @@ export const waitlistNotificationTemplates = {
 
   // When spot becomes available
   spotAvailable: {
-    subject: 'Good news! A spot opened up for your preferred service - Mariia Hub',
+    subject: 'Good news! A spot opened up for your preferred service - mariiaborysevych',
     html: (data: { service: Service; availableDate: string; availableTime: time; claimLink: string }) => `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
@@ -108,7 +108,7 @@ export const waitlistNotificationTemplates = {
         </div>
 
         <div style="background: #f3f4f6; padding: 20px; text-align: center; border-radius: 0 0 10px 10px; font-size: 12px; color: #6b7280;">
-          <p>Mariia Hub - Premium Beauty & Fitness Services</p>
+          <p>mariiaborysevych - Premium Beauty & Fitness Services</p>
           <p>Questions? Reply to this email or call us at +48 123 456 789</p>
         </div>
       </div>
@@ -117,7 +117,7 @@ export const waitlistNotificationTemplates = {
 
   // When promotion window expires
   promotionExpired: {
-    subject: 'The waitlist spot has been offered to someone else - Mariia Hub',
+    subject: 'The waitlist spot has been offered to someone else - mariiaborysevych',
     html: (data: { service: Service; requestedDate: string }) => `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
@@ -156,7 +156,7 @@ export const waitlistNotificationTemplates = {
         </div>
 
         <div style="background: #f3f4f6; padding: 20px; text-align: center; border-radius: 0 0 10px 10px; font-size: 12px; color: #6b7280;">
-          <p>Mariia Hub - Premium Beauty & Fitness Services</p>
+          <p>mariiaborysevych - Premium Beauty & Fitness Services</p>
         </div>
       </div>
     `,
@@ -164,7 +164,7 @@ export const waitlistNotificationTemplates = {
 
   // When successfully promoted and booked
   promotionSuccess: {
-    subject: 'Congratulations! Your booking is confirmed - Mariia Hub',
+    subject: 'Congratulations! Your booking is confirmed - mariiaborysevych',
     html: (data: { service: Service; bookingDate: string; bookingTime: string; bookingId: string }) => `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
@@ -209,7 +209,7 @@ export const waitlistNotificationTemplates = {
         </div>
 
         <div style="background: #f3f4f6; padding: 20px; text-align: center; border-radius: 0 0 10px 10px; font-size: 12px; color: #6b7280;">
-          <p>Mariia Hub - Premium Beauty & Fitness Services</p>
+          <p>mariiaborysevych - Premium Beauty & Fitness Services</p>
           <p>Questions? Reply to this email or call us at +48 123 456 789</p>
         </div>
       </div>

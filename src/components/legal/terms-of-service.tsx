@@ -43,13 +43,13 @@ export function TermsOfService() {
 ## ${t('terms.agreement', 'Service Agreement')}
 
 ${t('terms.agreement_text',
-  'By accessing and using Mariia Hub services, you accept and agree to be bound by the terms and provision of this agreement. ' +
+  'By accessing and using mariiaborysevych services, you accept and agree to be bound by the terms and provision of this agreement. ' +
   'If you do not agree to abide by the above, please do not use this service.')}
 
 ## ${t('terms.description', 'Service Description')}
 
 ${t('terms.service_description',
-  'Mariia Hub is a premium beauty and fitness booking platform that connects clients with professional service providers in Warsaw, Poland. ' +
+  'mariiaborysevych is a premium beauty and fitness booking platform that connects clients with professional service providers in Warsaw, Poland. ' +
   'We offer a curated selection of beauty treatments and fitness programs through our online booking system.')}
 
 ## ${t('terms.eligibility', 'Eligibility')}
@@ -85,7 +85,7 @@ ${t('terms.payment_text',
 ## ${t('terms.liability', 'Limitation of Liability')}
 
 ${t('terms.liability_text',
-  'Mariia Hub acts as an intermediary between service providers and clients. While we vet our service providers, we are not responsible for ' +
+  'mariiaborysevych acts as an intermediary between service providers and clients. While we vet our service providers, we are not responsible for ' +
   'the quality of services provided. Any claims regarding service quality should be addressed directly with the service provider.')}
 
 ## ${t('terms.refund_policy', 'Refund Policy')}
@@ -108,7 +108,7 @@ ${t('terms.governing_law_text',
 
 ## ${t('terms.contact', 'Contact Information')}
 
-**Mariia Hub Sp. z o.o.**
+**mariiaborysevych Sp. z o.o.**
 ${t('terms.address', 'ul. Jana Pawła II 43/15, 00-001 Warszawa, Polska')}
 ${t('terms.email', 'Email')}: legal@mariaborysevych.com
 ${t('terms.phone', 'Phone')}: +48 123 456 789
@@ -282,7 +282,7 @@ ${t('terms.fitness_attendance_text',
           </div>
           <p className="text-muted-foreground">
             {t('terms.description',
-              'Comprehensive terms and conditions for all beauty and fitness services offered through Mariia Hub platform.')}
+              'Comprehensive terms and conditions for all beauty and fitness services offered through mariiaborysevych platform.')}
           </p>
         </div>
 
@@ -381,7 +381,7 @@ ${t('terms.fitness_attendance_text',
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
                   {t('terms.legal_advice',
-                    'This document is a legal agreement between you and Mariia Hub Sp. z o.o. If you have any questions about these terms, ' +
+                    'This document is a legal agreement between you and mariiaborysevych Sp. z o.o. If you have any questions about these terms, ' +
                     'please contact our legal department at legal@mariaborysevych.com before using our services.')}
                 </AlertDescription>
               </Alert>

@@ -130,7 +130,7 @@ export const PaymentMethods = ({
         supportedNetworks: ['visa', 'masterCard', 'amex'],
         merchantCapabilities: ['supports3DS'],
         total: {
-          label: 'Mariia Hub',
+          label: 'mariiaborysevych',
           amount: amount.toString(),
         },
       };
@@ -207,7 +207,7 @@ export const PaymentMethods = ({
         apiVersionMinor: 0,
         merchantInfo: {
           merchantId: 'your-merchant-id',
-          merchantName: 'Mariia Hub',
+          merchantName: 'mariiaborysevych',
         },
         allowedPaymentMethods: [{
           type: 'CARD',

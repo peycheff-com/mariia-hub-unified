@@ -32,7 +32,7 @@ import { webSocketServiceAtomic } from './websocketServiceAtomic';
  * Integrates conflict resolution, real-time synchronization, and cache coherence
  * while maintaining backward compatibility with existing booking service interface
  *
- * @author Mariia Hub Team
+ * @author mariiaborysevych Team
  * @since 2.0.0
  */
 

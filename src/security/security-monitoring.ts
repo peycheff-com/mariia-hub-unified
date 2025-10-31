@@ -2,7 +2,7 @@
  * Security Monitoring and Incident Response System
  *
  * Comprehensive security monitoring with real-time alerts, incident response procedures,
-  automated threat detection, and security analytics for the Mariia Hub platform.
+  automated threat detection, and security analytics for the mariiaborysevych platform.
  */
 
 import { Context, Next } from 'hono';

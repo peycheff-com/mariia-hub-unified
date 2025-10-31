@@ -1,6 +1,6 @@
 /**
  * Advanced Performance Metrics Collection System
- * Enhanced RUM with business-specific metrics for Mariia Hub luxury platform
+ * Enhanced RUM with business-specific metrics for mariiaborysevych luxury platform
  */
 
 interface PerformanceMetric {

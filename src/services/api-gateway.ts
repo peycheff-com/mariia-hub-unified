@@ -99,7 +99,7 @@ api.route('/api/v1', v1Routes);
 // Root API endpoint
 api.get('/api', (c) => {
   return c.json({
-    name: 'Mariia Hub Booking API',
+    name: 'mariiaborysevych Booking API',
     version: '1.0.0',
     description: 'Complete booking and management platform for beauty and fitness services',
     status: 'operational',
@@ -237,7 +237,7 @@ export class ApiGateway {
         });
 
         // Log available routes
-        console.log('\n🚀 Mariia Hub API Gateway Started');
+        console.log('\n🚀 mariiaborysevych API Gateway Started');
         console.log(`📍 Server: http://${this.host}:${this.port}`);
         console.log(`📖 API Docs: http://${this.host}:${this.port}/api/v1`);
         console.log(`🔍 Health Check: http://${this.host}:${this.port}/api/v1/health`);

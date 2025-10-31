@@ -84,8 +84,8 @@ export class MetaOptimizer {
 
   constructor() {
     this.globalConfig = {
-      siteName: 'Mariia Hub',
-      defaultAuthor: 'Mariia Hub',
+      siteName: 'mariiaborysevych',
+      defaultAuthor: 'mariiaborysevych',
       defaultImage: '/assets/hero/hero-beauty-luxury.webp',
       twitterCreator: '@mariia_hub',
       twitterSite: '@mariia_hub',
@@ -109,7 +109,7 @@ export class MetaOptimizer {
     this.pageConfigs.set('/', {
       path: '/',
       template: 'homepage',
-      titleTemplate: '%s | Mariia Hub - Beauty & Fitness Warsaw',
+      titleTemplate: '%s | mariiaborysevych - Beauty & Fitness Warsaw',
       descriptionTemplate: '%s',
       keywords: ['beauty warszawa', 'fitness warszawa', 'permanentny makijaż', 'stylizacja brwi', 'trening personalny'],
       priority: 1.0,
@@ -120,7 +120,7 @@ export class MetaOptimizer {
     this.pageConfigs.set('/beauty', {
       path: '/beauty',
       template: 'service',
-      titleTemplate: '%s | Beauty Services Warsaw | Mariia Hub',
+      titleTemplate: '%s | Beauty Services Warsaw | mariiaborysevych',
       descriptionTemplate: 'Professional beauty services in Warsaw. %s. Book your appointment today.',
       keywords: ['beauty salon warszawa', 'kosmetyka warszawa', 'uroda warszawa', 'pielęgnacja'],
       priority: 0.9,
@@ -130,7 +130,7 @@ export class MetaOptimizer {
     this.pageConfigs.set('/fitness', {
       path: '/fitness',
       template: 'service',
-      titleTemplate: '%s | Personal Training Warsaw | Mariia Hub',
+      titleTemplate: '%s | Personal Training Warsaw | mariiaborysevych',
       descriptionTemplate: 'Certified personal training services in Warsaw. %s. Start your fitness journey today.',
       keywords: ['trening personalny warszawa', 'fitness klub warszawa', 'siłownia warszawa', 'trener osobisty'],
       priority: 0.9,
@@ -141,7 +141,7 @@ export class MetaOptimizer {
     this.pageConfigs.set('/blog', {
       path: '/blog',
       template: 'blog',
-      titleTemplate: '%s | Beauty & Fitness Blog | Mariia Hub',
+      titleTemplate: '%s | Beauty & Fitness Blog | mariiaborysevych',
       descriptionTemplate: 'Latest tips and trends in beauty and fitness. %s. Expert advice from professionals.',
       keywords: ['blog uroda', 'porady kosmetyczne', 'fitness porady', 'zdrowy styl życia'],
       priority: 0.8,
@@ -152,8 +152,8 @@ export class MetaOptimizer {
     this.pageConfigs.set('/contact', {
       path: '/contact',
       template: 'local',
-      titleTemplate: '%s | Contact Mariia Hub | Warsaw',
-      descriptionTemplate: 'Contact Mariia Hub beauty and fitness center in Warsaw. %s. Book your appointment.',
+      titleTemplate: '%s | Contact mariiaborysevych | Warsaw',
+      descriptionTemplate: 'Contact mariiaborysevych beauty and fitness center in Warsaw. %s. Book your appointment.',
       keywords: ['kontakt warszawa', 'rezerwacja wizyty', 'telefon salon urody', 'adres salonu'],
       priority: 0.7,
       changeFrequency: 'monthly'
@@ -219,7 +219,7 @@ export class MetaOptimizer {
       priceAmount: config.priceAmount,
       priceCurrency: config.priceCurrency || 'PLN',
       availability: config.availability || 'https://schema.org/InStock',
-      brand: config.brand || 'Mariia Hub',
+      brand: config.brand || 'mariiaborysevych',
 
       // Additional custom tags
       additionalTags: config.additionalTags || []

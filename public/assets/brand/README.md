@@ -1,6 +1,6 @@
 # Brand Assets
 
-This directory contains brand identity assets for Mariia Hub.
+This directory contains brand identity assets for mariiaborysevych.
 
 ## Contents
 

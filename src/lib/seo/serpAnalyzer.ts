@@ -374,7 +374,7 @@ export class SERPAnalyzer {
       },
       {
         position: 2,
-        title: `${keyword} Warszawa - Cennik i Opinie | Mariia Hub`,
+        title: `${keyword} Warszawa - Cennik i Opinie | mariiaborysevych`,
         url: 'https://mariaborysevych.com/services/permanentny-makijaz',
         description: `Profesjonalny ${keyword} w Warszawie. Microblading, ombre, powder brows. ✅ Bezpieczne pigmenty ✅ Efekt do 3 lat. Rezerwuj online!`,
         displayUrl: 'mariaborysevych.com',

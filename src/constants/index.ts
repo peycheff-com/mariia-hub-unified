@@ -1,5 +1,5 @@
 // Application constants
-export const APP_NAME = 'Mariia Hub';
+export const APP_NAME = 'mariiaborysevych';
 export const APP_VERSION = '1.0.0';
 export const APP_DESCRIPTION = 'Premium beauty and fitness booking platform';
 
@@ -140,15 +140,15 @@ export const SESSION_KEYS = {
 
 // Social Media URLs
 export const SOCIAL_MEDIA = {
-  INSTAGRAM: 'https://instagram.com/mariia',
-  FACEBOOK: 'https://facebook.com/mariia',
-  YOUTUBE: 'https://youtube.com/mariia',
-  LINKEDIN: 'https://linkedin.com/in/mariia',
+  INSTAGRAM: 'https://instagram.com/mariiaborysevych',
+  FACEBOOK: 'https://facebook.com/mariiaborysevych',
+  YOUTUBE: 'https://youtube.com/mariiaborysevych',
+  LINKEDIN: 'https://linkedin.com/in/mariiaborysevych',
 } as const;
 
 // Contact Information
 export const CONTACT = {
-  EMAIL: 'kontakt@mariia.pl',
+  EMAIL: 'hi@mariiaborysevych.com',
   PHONE: '+48 123 456 789',
   ADDRESS: 'Warsaw, Poland',
 } as const;

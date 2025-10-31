@@ -371,7 +371,7 @@ Return as JSON with schema markup and instructions.`;
       previousRank: Math.floor(Math.random() * 100) + 1,
       change: Math.floor(Math.random() * 20) - 10,
       url: `https://example.com/${keyword.replace(/\s+/g, '-')}`,
-      title: `${keyword} - Mariia Hub`,
+      title: `${keyword} - mariiaborysevych`,
     }));
 
     return {

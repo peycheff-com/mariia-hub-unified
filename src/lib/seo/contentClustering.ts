@@ -288,7 +288,7 @@ export class ContentClusteringSystem {
   private createPermanentMakeupCluster(): ContentCluster {
     const pillarPage: PillarPage = {
       url: '/services/permanentny-makijaz',
-      title: 'Permanentny Makijaż Warszawa - Kompleksowy Poradnik 2024 | Mariia Hub',
+      title: 'Permanentny Makijaż Warszawa - Kompleksowy Poradnik 2024 | mariiaborysevych',
       metaDescription: 'Profesjonalny permanentny makijaż w Warszawie. Microblading, ombre, powder brows. ✅ Certyfikowani specjaliści ✅ Bezpieczne pigmenty ✅ Efekt do 3 lat. Umów online!',
       targetKeywords: ['permanentny makijaż warszawa', 'pmu warszawa', 'microblading warszawa'],
       secondaryKeywords: [
@@ -328,7 +328,7 @@ export class ContentClusteringSystem {
   private createBrowStylingCluster(): ContentCluster {
     const pillarPage: PillarPage = {
       url: '/services/stylizacja-brwi',
-      title: 'Stylizacja Brwi Warszawa - Laminowanie, Farbowanie, Regulacja | Mariia Hub',
+      title: 'Stylizacja Brwi Warszawa - Laminowanie, Farbowanie, Regulacja | mariiaborysevych',
       metaDescription: 'Profesjonalna stylizacja brwi w Warszawie. Laminowanie brwi, farbowanie, regulacja, architektura. ✅ Efekt do 6 tygodni ✅ Najwyższej jakości produkty. Rezerwuj online!',
       targetKeywords: ['stylizacja brwi warszawa', 'laminowanie brwi warszawa', 'lamówka brwi warszawa'],
       secondaryKeywords: [
@@ -367,7 +367,7 @@ export class ContentClusteringSystem {
   private createPersonalTrainingCluster(): ContentCluster {
     const pillarPage: PillarPage = {
       url: '/services/trening-personalny',
-      title: 'Trening Personalny Warszawa - Indywidualne Treningi | Mariia Hub',
+      title: 'Trening Personalny Warszawa - Indywidualne Treningi | mariiaborysevych',
       metaDescription: 'Profesjonalny trening personalny w Warszawie. Indywidualne programy, trenerzy personalni, cele fitness. ✅ Dostosowane do Ciebie ✅ Miesięczne pakiety. Zacznij dziś!',
       targetKeywords: ['trening personalny warszawa', 'trener personalny warszawa', 'treningi personalne warszawa'],
       secondaryKeywords: [
@@ -416,7 +416,7 @@ export class ContentClusteringSystem {
 
     const pillarPage: PillarPage = {
       url: `/warszawa/${district}`,
-      title: `Salon Urody ${districtName} Warszawa - Beauty & Fitness | Mariia Hub`,
+      title: `Salon Urody ${districtName} Warszawa - Beauty & Fitness | mariiaborysevych`,
       metaDescription: `Profesjonalny salon urody w ${districtName}. Permanentny makijaż, stylizacja brwi, trening personalny. ✅ Dogodna lokalizacja ✅ Konkurencyjne ceny. Umów online!`,
       targetKeywords: [`salon urody ${districtName}`, `permanentny makijaż ${districtName}`, `stylizacja brwi ${districtName}`],
       secondaryKeywords: [
@@ -570,7 +570,7 @@ export class ContentClusteringSystem {
         url: `/warszawa/${district}/jak-dojechac`,
         title: `Jak Dojechać do Salonu w ${districtName} - Komunikacja, Parking`,
         pillarPageId: `${district}-cluster`,
-        targetKeyword: `jak dojechać ${districtName} mariia hub`,
+        targetKeyword: `jak dojechać ${districtName} mariiaborysevych`,
         contentType: 'location',
         contentBrief: {
           targetAudience: 'Lokalni mieszkańcy i osoby spoza dzielnicy',
@@ -638,7 +638,7 @@ export class ContentClusteringSystem {
             description: 'Profesjonalny permanentny makijaż w Warszawie',
             provider: {
               '@type': 'LocalBusiness',
-              name: 'Mariia Hub'
+              name: 'mariiaborysevych'
             }
           },
           placement: 'body'
@@ -686,7 +686,7 @@ export class ContentClusteringSystem {
       questions: [
         {
           question: 'Ile kosztuje permanentny makijaż w Warszawie?',
-          answer: 'Cena permanentnego makijażu w Mariia Hub zaczyna się od 800 zł za brwi, 1000 zł za usta i 1200 zł za powieki. Cena obejmuje pierwszy zabieg i korektę po 4-6 tygodniach.',
+          answer: 'Cena permanentnego makijażu w mariiaborysevych zaczyna się od 800 zł za brwi, 1000 zł za usta i 1200 zł za powieki. Cena obejmuje pierwszy zabieg i korektę po 4-6 tygodniach.',
           targetKeyword: 'permanentny makijaż cena',
           schemaType: 'Question'
         },
@@ -820,7 +820,7 @@ export class ContentClusteringSystem {
 
   private createPricingOutline(service: string): ContentOutline {
     return {
-      introduction: `Transparentny cennik ${service} w Mariia Hub`,
+      introduction: `Transparentny cennik ${service} w mariiaborysevych`,
       mainSections: [
         {
           title: 'Cennik podstawowy',
@@ -967,7 +967,7 @@ export class ContentClusteringSystem {
       questions: [
         {
           question: 'Ile kosztuje laminowanie brwi w Warszawie?',
-          answer: 'Cena laminowania brwi w Mariia Hub wynosi 150-200 zł w zależności od wybranego pakietu.',
+          answer: 'Cena laminowania brwi w mariiaborysevych wynosi 150-200 zł w zależności od wybranego pakietu.',
           targetKeyword: 'laminowanie brwi cena',
           schemaType: 'Question'
         }

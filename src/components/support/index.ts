@@ -1,5 +1,5 @@
 // Luxury Support System Integration
-// World-class support experience for Mariia Hub
+// World-class support experience for mariiaborysevych
 
 export { default as LuxurySupportOrchestrator } from './LuxurySupportOrchestrator';
 export { default as UnifiedSupportDashboard } from './UnifiedSupportDashboard';

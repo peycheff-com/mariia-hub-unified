@@ -278,7 +278,7 @@ class MobilePrivacyCompliance {
       {
         version: '1.0',
         effectiveDate: Date.now(),
-        summary: 'Initial privacy policy for Mariia Hub mobile applications',
+        summary: 'Initial privacy policy for mariiaborysevych mobile applications',
         changes: [
           'Initial privacy policy implementation',
           'GDPR compliance measures',

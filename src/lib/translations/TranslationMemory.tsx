@@ -470,7 +470,7 @@ export class TranslationMemory {
     return `<?xml version="1.0" encoding="UTF-8"?>
 <tmx version="1.4">
   <header role="banner"
-    creationtool="Mariia Hub Translation Memory"
+    creationtool="mariiaborysevych Translation Memory"
     creationtoolversion="1.0"
     datatype="plaintext"
     segtype="sentence"
@@ -516,13 +516,13 @@ ${translations.map(t => `    <tu tuid="${t.id}">
     target-language="${targetLang}"
     datatype="plaintext"
     original="not.available"
-    product-name="Mariia Hub"
+    product-name="mariiaborysevych"
     product-version="1.0"
     build-num="1"
     date="${now}"
   >
     <header>
-      <tool tool-id="mariia-hub" tool-name="Mariia Hub Translation System" tool-version="1.0" />
+      <tool tool-id="mariia-hub" tool-name="mariiaborysevych Translation System" tool-version="1.0" />
     </header>
     <body>
 ${pairTranslations.map((t, index) => `      <trans-unit id="${t.id}" approved="${t.approved ? 'yes' : 'no'}">

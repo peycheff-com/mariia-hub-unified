@@ -349,22 +349,22 @@ export class ResendEmailProvider extends BaseProvider implements EmailProvider {
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Mariia Hub</title>
+        <title>mariiaborysevych</title>
         ${styles}
       </head>
       <body>
         <div class="header">
-          <h1>Mariia Hub</h1>
+          <h1>mariiaborysevych</h1>
           <p>Luxury Beauty & Fitness Services</p>
         </div>
         <div class="content">
           ${content}
           <div class="signature">
-            <p>Best regards,<br>The Mariia Hub Team</p>
+            <p>Best regards,<br>The mariiaborysevych Team</p>
           </div>
         </div>
         <div class="footer">
-          <p>&copy; 2024 Mariia Hub. All rights reserved.</p>
+          <p>&copy; 2024 mariiaborysevych. All rights reserved.</p>
           <p>If you no longer wish to receive these emails, please <a href="{{unsubscribe_url}}">unsubscribe</a>.</p>
         </div>
       </body>
@@ -374,16 +374,16 @@ export class ResendEmailProvider extends BaseProvider implements EmailProvider {
 
   static generatePlainTextContent(content: string): string {
     return `
-Mariia Hub - Luxury Beauty & Fitness Services
+mariiaborysevych - Luxury Beauty & Fitness Services
 ===============================================
 
 ${content}
 
 Best regards,
-The Mariia Hub Team
+The mariiaborysevych Team
 
 ---
-© 2024 Mariia Hub. All rights reserved.
+© 2024 mariiaborysevych. All rights reserved.
     `.trim();
   }
 }

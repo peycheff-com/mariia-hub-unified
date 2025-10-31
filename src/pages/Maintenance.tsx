@@ -114,10 +114,10 @@ const Maintenance = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title={i18n.language === 'pl' ? "Konserwacja - Przerwa Techniczna | Mariia Hub" :
-              i18n.language === 'en' ? "Maintenance - Technical Break | Mariia Hub" :
-              i18n.language === 'ua' ? "Обслуговування - Технічна Перерва | Mariia Hub" :
-              "Обслуживание - Технический Перерыв | Mariia Hub"}
+        title={i18n.language === 'pl' ? "Konserwacja - Przerwa Techniczna | mariiaborysevych" :
+              i18n.language === 'en' ? "Maintenance - Technical Break | mariiaborysevych" :
+              i18n.language === 'ua' ? "Обслуговування - Технічна Перерва | mariiaborysevych" :
+              "Обслуживание - Технический Перерыв | mariiaborysevych"}
         description={i18n.language === 'pl' ?
               "Chwilowa przerwa techniczna. Wrócimy wkrótce z ulepszoną wersją serwisu." :
               i18n.language === 'en' ?

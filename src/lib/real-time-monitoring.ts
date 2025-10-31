@@ -1,7 +1,7 @@
 /**
  * Real-Time Monitoring Service
  * Provides real-time monitoring with WebSocket connections and live data streaming
- * for Mariia Hub platform
+ * for mariiaborysevych platform
  */
 
 import { createClient } from '@supabase/supabase-js';

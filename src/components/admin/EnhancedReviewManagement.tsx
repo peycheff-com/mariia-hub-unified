@@ -508,7 +508,7 @@ const EnhancedReviewManagement = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Platforms</SelectItem>
-                  <SelectItem value="mariia_hub">Mariia Hub</SelectItem>
+                  <SelectItem value="mariia_hub">mariiaborysevych</SelectItem>
                   <SelectItem value="google">Google</SelectItem>
                   <SelectItem value="booksy">Booksy</SelectItem>
                   <SelectItem value="instagram">Instagram</SelectItem>

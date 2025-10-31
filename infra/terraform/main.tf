@@ -192,7 +192,7 @@ resource "vercel_project" "mariia_hub" {
     },
     {
       key = "VITE_APP_NAME"
-      value = "Mariia Hub"
+      value = "mariiaborysevych"
       target = ["production", "preview", "development"]
     },
     {
@@ -223,7 +223,7 @@ resource "vercel_project" "mariia_hub" {
     },
     {
       key = "VITE_APP_NAME"
-      value = "Mariia Hub"
+      value = "mariiaborysevych"
       target = ["development"]
     },
     {

@@ -197,7 +197,7 @@ export const Middleware = {
 
 // Initialize function to set up all services
 export function initializeServices() {
-  console.log('🚀 Initializing Mariia Hub Services...');
+  console.log('🚀 Initializing mariiaborysevych Services...');
 
   // Start rate limit cleanup
   RateLimitMiddleware.startCleanupInterval();
@@ -222,7 +222,7 @@ export function initializeServices() {
 
 // Cleanup function to gracefully shutdown all services
 export function cleanupServices() {
-  console.log('🛑 Cleaning up Mariia Hub Services...');
+  console.log('🛑 Cleaning up mariiaborysevych Services...');
 
   // Stop rate limit cleanup
   RateLimitMiddleware.stopCleanupInterval();

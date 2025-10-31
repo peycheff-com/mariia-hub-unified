@@ -1,5 +1,5 @@
 /**
- * Structured logging for Mariia Hub
+ * Structured logging for mariiaborysevych
  * Integrates with Loki for log aggregation
  */
 

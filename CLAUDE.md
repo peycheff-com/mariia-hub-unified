@@ -35,6 +35,123 @@ npm run test         # Run tests with Vitest
 - Path alias `@/` points to `src/` directory
 - TypeScript configured with relaxed rules for flexibility
 
+## 🏗️ Refactored Infrastructure (October 2025)
+
+### 📁 Consolidated Structure
+The repository has been refactored with significant consolidation:
+
+#### **Script Organization (100 → 16 scripts, 84% reduction)**
+```bash
+scripts/
+├── deploy/
+│   ├── unified-deploy.sh       # Deploy to vercel/docker/k8s
+│   └── environment-manager.sh  # Environment setup
+├── utils/
+│   ├── build-manager.sh        # Build & optimization
+│   ├── validation-suite.sh     # Type/translation validation
+│   ├── fix-issues.sh          # Code fixes
+│   ├── optimize-images.sh     # Image optimization
+│   └── calculate-accessibility-score.js
+├── devops/
+│   └── devops-manager.sh       # Build/deploy/verify/monitor
+├── security/
+│   └── security-monitor.sh     # Security scanning
+├── testing/
+│   └── test-runner.sh          # All testing operations
+├── backup/
+│   └── backup-system.sh        # Backup & disaster recovery
+├── database/
+│   └── database-optimize.sh    # Database optimization
+├── environment/
+│   └── environment-control.sh  # Environment control
+├── accessibility/
+│   └── accessibility-suite.sh  # Accessibility testing
+└── optimization/
+    └── performance-optimizer.sh # Performance analysis
+```
+
+#### **Docker Consolidation (11 → 3 files, 73% reduction)**
+- `docker-compose.yml` - Single file with profiles (dev, production, test)
+- `docker-compose.test.yml` - Separate for CI testing
+- `Dockerfile` - Single multi-stage Dockerfile with targets
+
+#### **Infrastructure Consolidation (4 → 1 directory, 75% reduction)**
+- `infra/` - Unified infrastructure directory
+  - `infra/terraform/` - Terraform modules
+  - `infra/nginx/` - Nginx configurations
+  - `infra/k8s/` - Kubernetes manifests
+
+#### **Configuration Organization (100% organized)**
+- `config/` - All configuration files consolidated here
+  - `config/vite.config.ts` - Vite configuration
+  - `config/vitest.config.ts` - Vitest configuration
+  - `config/eslint.config.js` - ESLint configuration
+  - `config/tailwind.config.ts` - Tailwind configuration
+  - And all other config files
+
+### 🚀 Quick Reference - Common Operations
+
+#### **Deployment**
+```bash
+# Deploy to production (Vercel)
+./scripts/deploy/unified-deploy.sh --action deploy --target vercel --env production
+
+# Deploy to Docker
+./scripts/deploy/unified-deploy.sh --action deploy --target docker --env staging
+
+# Setup staging environment
+./scripts/deploy/environment-manager.sh --action setup-staging --env staging --service all
+```
+
+#### **Testing & Quality**
+```bash
+# Run all tests
+./scripts/testing/test-runner.sh --action run --suite all
+
+# Security scan
+./scripts/security/security-monitor.sh --action scan --target all
+
+# Accessibility audit
+./scripts/accessibility/accessibility-suite.sh --action audit --target all
+
+# Build and validate
+./scripts/utils/build-manager.sh --action build
+```
+
+#### **Development & Operations**
+```bash
+# Monitor environment
+./scripts/environment/environment-control.sh --action status
+
+# Performance analysis
+./scripts/optimization/performance-optimizer.sh --action analyze --target bundles
+
+# Database optimization
+./scripts/database/database-optimize.sh --level production
+
+# Environment health check
+./scripts/environment/environment-control.sh --action health
+```
+
+#### **Backup & Recovery**
+```bash
+# Create full backup
+./scripts/backup/backup-system.sh --action backup --type full --destination s3
+
+# Restore from backup
+./scripts/backup/backup-system.sh --action restore --source /path/to/backup.tar.gz
+
+# List existing backups
+./scripts/backup/backup-system.sh --action list
+```
+
+### 📚 Documentation
+All refactoring documentation is available:
+- `FINAL_REFACTORING_SUMMARY.md` - Executive summary
+- `REFACTORING_COMPLETION_REPORT.md` - Detailed completion report
+- `SCRIPT_CONSOLIDATION_COMPLETE.md` - Script consolidation details
+- `INFRASTRUCTURE_AUDIT.md` - Infrastructure merger strategy
+
 ## Architecture Overview
 
 ### Application Structure
@@ -61,6 +178,21 @@ npm run test         # Run tests with Vitest
 #### **Data Layer** (`src/integrations/`)
 - **Supabase client**: Typed database client with comprehensive schema
 - **Database schema**: Extensive schema covering bookings, services, users, content, and analytics
+
+#### **Configuration** (`config/`)
+- **Build configs**: Vite, Vitest, ESLint, Tailwind, Playwright
+- **Deployment configs**: Vercel, Lighthouse, Jest
+- **All configs consolidated** in single directory for easy management
+
+#### **Infrastructure** (`infra/`)
+- **Terraform modules**: Complete IaC for cloud resources
+- **Nginx configs**: Load balancer, autoscaling, SSL/TLS
+- **Kubernetes manifests**: Deployments, services, ingress, monitoring
+
+#### **Scripts** (`scripts/`)
+- **Unified scripts**: 16 consolidated scripts (down from 100)
+- **Organized by category**: deploy/, utils/, devops/, security/, testing/, etc.
+- **See "Refactored Infrastructure" section for details
 
 ### Key Architectural Patterns
 
@@ -347,7 +479,7 @@ STRIPE_WEBHOOK_ENDPOINT="https://your-domain.com/api/stripe/webhook"
 
 # Polish VAT Configuration
 VITE_COMPANY_NIP="1234567890"
-VITE_COMPANY_NAME="Mariia Hub Sp. z o.o."
+VITE_COMPANY_NAME="mariiaborysevych Sp. z o.o."
 VITE_COMPANY_ADDRESS="ul. Jana Pawła II 43/15, 00-001 Warszawa, Polska"
 VITE_COMPANY_BANK_ACCOUNT="PL123456789012345678901234567890"
 VITE_TAX_OFFICE_CODE="1411"
@@ -405,10 +537,11 @@ vercel inspect
 
 #### Production Deployment Scripts
 ```bash
-# Using project scripts (recommended)
-npm run deploy:staging    # Deploy to staging environment
-./scripts/deploy.sh      # General deployment script
-./scripts/deploy-production.sh  # Production deployment with security checks
+# Using unified deployment script (recommended)
+./scripts/deploy/unified-deploy.sh --action deploy --target vercel --env production
+
+# Setup staging environment
+./scripts/deploy/environment-manager.sh --action setup-staging --env staging
 
 # Manual deployment
 vercel --scope $VERCEL_ORG --confirm
@@ -462,24 +595,51 @@ docker-compose exec db psql -U postgres -d mariia_hub
 
 #### Production
 ```bash
-# Build production image
-docker build -t mariia-hub:latest .
+# Build production image (using unified deploy script)
+./scripts/deploy/unified-deploy.sh --action deploy --target docker --env production
+
+# Or manually:
+docker build -t mariia-hub:production .
 
 # Run production container
 docker run -d \
-  --name mariia-hub \
-  -p 3000:3000 \
+  --name mariia-hub-prod \
+  -p 8080:8080 \
   --env-file .env.production \
-  mariia-hub:latest
+  mariia-hub:production
 
-# Using production compose
-docker-compose -f docker-compose.prod.yml up -d
+# Using Docker Compose with profiles
+docker-compose --profile production up -d
 
 # Cleanup unused images
 docker image prune -f
 ```
 
 ### Testing CLI Commands
+
+#### Unified Test Runner (Recommended)
+```bash
+# Run all test suites
+./scripts/testing/test-runner.sh --action run --suite all
+
+# Run specific test suite
+./scripts/testing/test-runner.sh --action run --suite unit
+./scripts/testing/test-runner.sh --action run --suite e2e
+./scripts/testing/test-runner.sh --action run --suite visual
+./scripts/testing/test-runner.sh --action run --suite accessibility
+
+# Run with specific browser
+./scripts/testing/test-runner.sh --action run --suite e2e --browser chromium
+
+# Generate coverage report
+./scripts/testing/test-runner.sh --action coverage
+
+# Watch mode
+./scripts/testing/test-runner.sh --action watch
+
+# Debug mode
+./scripts/testing/test-runner.sh --action debug
+```
 
 #### Vitest (Unit/Integration Tests)
 ```bash

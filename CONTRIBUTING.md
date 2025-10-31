@@ -1,6 +1,6 @@
-# Contributing to Mariia Hub
+# Contributing to mariiaborysevych
 
-Thank you for your interest in contributing to Mariia Hub! This guide will help you get started with contributing to our premium beauty and fitness booking platform.
+Thank you for your interest in contributing to mariiaborysevych! This guide will help you get started with contributing to our premium beauty and fitness booking platform.
 
 ## 📋 Table of Contents
 
@@ -413,8 +413,8 @@ Contributors will be recognized in:
 
 ## 📜 License
 
-By contributing to Mariia Hub, you agree that your contributions will be licensed under the MIT License.
+By contributing to mariiaborysevych, you agree that your contributions will be licensed under the MIT License.
 
 ---
 
-Thank you for contributing to Mariia Hub! Your contributions help make beauty and fitness services more accessible and enjoyable for everyone. 💅💪
+Thank you for contributing to mariiaborysevych! Your contributions help make beauty and fitness services more accessible and enjoyable for everyone. 💅💪

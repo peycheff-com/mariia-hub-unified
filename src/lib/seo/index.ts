@@ -79,7 +79,7 @@ export { generateSlug, generateLocalizedSlugs, createUniqueSlug, validateSlug } 
 export type { SlugOptions } from './slugGenerator';
 
 /**
- * Comprehensive SEO toolkit for Mariia Hub
+ * Comprehensive SEO toolkit for mariiaborysevych
  *
  * This module provides advanced SEO features including:
  * - Hreflang generation for multi-language SEO

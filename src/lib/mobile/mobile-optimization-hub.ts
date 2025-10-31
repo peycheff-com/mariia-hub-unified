@@ -99,7 +99,7 @@ class MobileOptimizationHub {
       return;
     }
 
-    console.log('🚀 Initializing Mobile Optimization Hub for Mariia Hub Luxury Platform');
+    console.log('🚀 Initializing Mobile Optimization Hub for mariiaborysevych Luxury Platform');
 
     // Apply custom configuration
     if (customConfig) {

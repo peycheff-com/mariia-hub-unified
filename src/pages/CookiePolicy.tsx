@@ -11,8 +11,8 @@ const CookiePolicy = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Cookie Policy — How We Use Cookies | Mariia Hub"
-        description="Learn how Mariia Hub uses cookies and similar technologies to enhance your experience on our website."
+        title="Cookie Policy — How We Use Cookies | mariiaborysevych"
+        description="Learn how mariiaborysevych uses cookies and similar technologies to enhance your experience on our website."
         keywords="cookie policy, cookies, privacy, tracking, GDPR compliance"
       />
       <Navigation />

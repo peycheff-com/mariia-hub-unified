@@ -10,7 +10,7 @@ import { BaseService } from './api/base.service';
  * Handles availability checking, time slot management, booking creation, and user portal features
  * Integrates with Supabase for data persistence and external booking systems for synchronization
  *
- * @author Mariia Hub Team
+ * @author mariiaborysevych Team
  * @since 1.0.0
  * @version 1.0.0
  */

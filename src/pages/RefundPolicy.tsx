@@ -12,17 +12,17 @@ const RefundPolicy = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title={i18n.language === 'pl' ? "Polityka Zwrotów | Mariia Hub" :
-              i18n.language === 'en' ? "Refund Policy | Mariia Hub" :
-              i18n.language === 'ua' ? "Політика Повернень | Mariia Hub" :
-              "Политика Возвратов | Mariia Hub"}
+        title={i18n.language === 'pl' ? "Polityka Zwrotów | mariiaborysevych" :
+              i18n.language === 'en' ? "Refund Policy | mariiaborysevych" :
+              i18n.language === 'ua' ? "Політика Повернень | mariiaborysevych" :
+              "Политика Возвратов | mariiaborysevych"}
         description={i18n.language === 'pl' ?
-              "Szczegółowa polityka zwrotów i rekompensat dla usług beauty i fitness w Mariia Hub" :
+              "Szczegółowa polityka zwrotów i rekompensat dla usług beauty i fitness w mariiaborysevych" :
               i18n.language === 'en' ?
-              "Detailed refund and compensation policy for beauty and fitness services at Mariia Hub" :
+              "Detailed refund and compensation policy for beauty and fitness services at mariiaborysevych" :
               i18n.language === 'ua' ?
-              "Детальна політика повернень та компенсацій для послуг beauty та fitness в Mariia Hub" :
-              "Детальная политика возвратов и компенсаций для услуг beauty и fitness в Mariia Hub"}
+              "Детальна політика повернень та компенсацій для послуг beauty та fitness в mariiaborysevych" :
+              "Детальная политика возвратов и компенсаций для услуг beauty и fitness в mariiaborysevych"}
         keywords="refund policy, returns, money back, cancellation, service refunds"
       />
       <Navigation />
@@ -68,12 +68,12 @@ const RefundPolicy = () => {
                 </h2>
                 <p className="text-pearl/80 font-body leading-relaxed">
                   {i18n.language === 'pl'
-                    ? "W Mariia Hub pragniemy, aby każdy Klient był w pełni zadowolony z naszych usług. W przypadku, gdy usługa nie spełnia Twoich oczekiwań, oferujemy elastyczną politykę zwrotów."
+                    ? "W mariiaborysevych pragniemy, aby każdy Klient był w pełni zadowolony z naszych usług. W przypadku, gdy usługa nie spełnia Twoich oczekiwań, oferujemy elastyczną politykę zwrotów."
                     : i18n.language === 'en'
-                    ? "At Mariia Hub, we want every Client to be fully satisfied with our services. If a service does not meet your expectations, we offer a flexible refund policy."
+                    ? "At mariiaborysevych, we want every Client to be fully satisfied with our services. If a service does not meet your expectations, we offer a flexible refund policy."
                     : i18n.language === 'ua'
-                    ? "У Mariia Hub ми хочемо, щоб кожен Клієнт був повністю задоволений нашими послугами. Якщо послуга не відповідає вашим очікуванням, ми пропонуємо гнучку політику повернень."
-                    : "В Mariia Hub мы хотим, чтобы каждый Клиент был полностью удовлетворен нашими услугами. Если услуга не соответствует вашим ожиданиям, мы предлагаем гибкую политику возвратов."}
+                    ? "У mariiaborysevych ми хочемо, щоб кожен Клієнт був повністю задоволений нашими послугами. Якщо послуга не відповідає вашим очікуванням, ми пропонуємо гнучку політику повернень."
+                    : "В mariiaborysevych мы хотим, чтобы каждый Клиент был полностью удовлетворен нашими услугами. Если услуга не соответствует вашим ожиданиям, мы предлагаем гибкую политику возвратов."}
                 </p>
               </div>
             </div>

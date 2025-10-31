@@ -340,14 +340,14 @@ export function useSEOMeta(props: Omit<SEOMetaProps, 'jsonLd'> & { jsonLd?: Reco
 export const defaultSEO = {
   home: {
     title: 'Professional Beauty & Fitness Services in Warsaw',
-    description: 'Discover premium beauty treatments and fitness programs at Mariia Hub. Book appointments online and transform your well-being.',
+    description: 'Discover premium beauty treatments and fitness programs at mariiaborysevych. Book appointments online and transform your well-being.',
     keywords: ['beauty', 'fitness', 'warsaw', 'booking', 'wellness', 'spa', 'gym', 'personal training', 'cosmetics'],
     type: 'website' as const,
   },
 
   beauty: {
     title: 'Beauty Services - Premium Treatments in Warsaw',
-    description: 'Experience luxury beauty services including lip enhancements, brow lamination, PMU, and more at Mariia Hub Warsaw.',
+    description: 'Experience luxury beauty services including lip enhancements, brow lamination, PMU, and more at mariiaborysevych Warsaw.',
     keywords: ['beauty', 'cosmetics', 'lip blush', 'brow lamination', 'PMU', 'warsaw beauty salon', 'permanent makeup'],
     type: 'website' as const,
     category: 'Beauty',
@@ -355,22 +355,22 @@ export const defaultSEO = {
 
   fitness: {
     title: 'Fitness Programs - Personal Training in Warsaw',
-    description: 'Achieve your fitness goals with personalized training programs at Mariia Hub. Expert trainers and modern equipment.',
+    description: 'Achieve your fitness goals with personalized training programs at mariiaborysevych. Expert trainers and modern equipment.',
     keywords: ['fitness', 'gym', 'personal training', 'warsaw gym', 'fitness classes', 'wellness', 'training'],
     type: 'website' as const,
     category: 'Fitness',
   },
 
   booking: {
-    title: 'Book Your Appointment - Mariia Hub',
-    description: 'Book your beauty or fitness appointment online at Mariia Hub Warsaw. Easy booking, instant confirmation.',
+    title: 'Book Your Appointment - mariiaborysevych',
+    description: 'Book your beauty or fitness appointment online at mariiaborysevych Warsaw. Easy booking, instant confirmation.',
     keywords: ['booking', 'appointment', 'reservation', 'online booking', 'warsaw'],
     type: 'booking' as const,
   },
 
   blog: {
-    title: 'Beauty & Fitness Blog - Mariia Hub',
-    description: 'Read our latest articles about beauty tips, fitness advice, and wellness trends from Mariia Hub experts.',
+    title: 'Beauty & Fitness Blog - mariiaborysevych',
+    description: 'Read our latest articles about beauty tips, fitness advice, and wellness trends from mariiaborysevych experts.',
     keywords: ['blog', 'beauty tips', 'fitness advice', 'wellness', 'tutorials'],
     type: 'article' as const,
   },

@@ -173,7 +173,7 @@ export function VIPExperience({ className }: VIPExperienceProps) {
       id: '1',
       title: 'Luxury Beauty Workshop',
       date: '2024-02-15T18:00:00',
-      location: 'Mariia Hub Studio',
+      location: 'mariiaborysevych Studio',
       description: 'Exclusive workshop featuring latest beauty trends and techniques',
       maxAttendees: 20,
       currentAttendees: 12,

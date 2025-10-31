@@ -119,7 +119,7 @@ export class UserSatisfactionAnalytics {
     this.surveyConfigs.set(SatisfactionType.NPS, {
       type: SatisfactionType.NPS,
       title: 'How likely are you to recommend our services?',
-      description: 'On a scale of 0-10, how likely are you to recommend Mariia Hub to friends or colleagues?',
+      description: 'On a scale of 0-10, how likely are you to recommend mariiaborysevych to friends or colleagues?',
       scale: 10,
       lowLabel: 'Not likely',
       highLabel: 'Very likely',

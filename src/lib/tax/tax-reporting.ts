@@ -448,7 +448,7 @@ export class JPKGenerator {
         },
         company: {
           nip: '1234567890', // Replace with actual company NIP
-          name: 'Mariia Hub',
+          name: 'mariiaborysevych',
           address: {
             country: 'PL',
             voivodeship: 'Mazowieckie',

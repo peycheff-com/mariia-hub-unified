@@ -4,7 +4,7 @@ import { z } from 'zod';
 const envSchema = z.object({
   // Application
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  VITE_APP_NAME: z.string().default('Mariia Hub'),
+  VITE_APP_NAME: z.string().default('mariiaborysevych'),
   VITE_APP_VERSION: z.string().default('1.0.0'),
   VITE_APP_URL: z.string().url().default('http://localhost:8080'),
 

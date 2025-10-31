@@ -41,7 +41,7 @@ const DemoSEO: React.FC = () => {
   const structuredDataExample = {
     "@context": "https://schema.org",
     "@type": "BeautySalon",
-    "name": "Mariia Hub",
+    "name": "mariiaborysevych",
     "description": "Premium beauty and fitness services in Warsaw",
     "url": window.location.origin,
     "telephone": "+48 123 456 789",
@@ -58,7 +58,7 @@ const DemoSEO: React.FC = () => {
   return (
     <>
       <SEOHead
-        title="SEO & Translation Demo - Mariia Hub"
+        title="SEO & Translation Demo - mariiaborysevych"
         description="Demo page showcasing SEO optimization and translation management features"
         keywords="SEO, translation, i18n, structured data, hreflang"
         structuredData={structuredDataExample}
@@ -68,7 +68,7 @@ const DemoSEO: React.FC = () => {
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold">SEO & Translation System Demo</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Explore the comprehensive SEO optimization and translation management features implemented in Mariia Hub
+            Explore the comprehensive SEO optimization and translation management features implemented in mariiaborysevych
           </p>
         </div>
 

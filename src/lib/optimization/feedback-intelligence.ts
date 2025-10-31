@@ -586,7 +586,7 @@ class FeedbackIntelligenceSystem {
       sentiment_label: feedback.sentiment_label,
       service_mentioned: analysis.entities_mentioned.find(e => e.type === 'service')?.entity || 'our services',
       response_date: new Date().toLocaleDateString(),
-      business_name: 'Mariia Hub'
+      business_name: 'mariiaborysevych'
     };
 
     let content = template.content_template;
@@ -981,7 +981,7 @@ class FeedbackIntelligenceSystem {
           sentiment_range: [0.5, 1.0] as [number, number],
           feedback_types: ['review', 'compliment']
         },
-        content_template: 'Dear {{user_name}},\n\nThank you so much for your wonderful feedback! We\'re thrilled that you had a great experience with {{service_mentioned}}.\n\nYour satisfaction is our top priority, and we appreciate you taking the time to share your positive experience.\n\nWe look forward to welcoming you back to Mariia Hub soon!\n\nBest regards,\nThe Mariia Hub Team',
+        content_template: 'Dear {{user_name}},\n\nThank you so much for your wonderful feedback! We\'re thrilled that you had a great experience with {{service_mentioned}}.\n\nYour satisfaction is our top priority, and we appreciate you taking the time to share your positive experience.\n\nWe look forward to welcoming you back to mariiaborysevych soon!\n\nBest regards,\nThe mariiaborysevych Team',
         personalization_rules: [
           { variable: 'user_name', source: 'user_profile' as const, fallback: 'Valued Customer' },
           { variable: 'service_mentioned', source: 'feedback_content' as const, fallback: 'our services' }
@@ -1000,7 +1000,7 @@ class FeedbackIntelligenceSystem {
           sentiment_range: [-1.0, -0.3] as [number, number],
           feedback_types: ['review', 'complaint']
         },
-        content_template: 'Dear {{user_name}},\n\nI\'m truly sorry to hear about your experience with {{service_mentioned}}. This is not the standard of service we aim to provide at Mariia Hub.\n\nWe take your feedback seriously and would like to make things right. Could you please contact us directly at [contact info] so we can address your concerns personally?\n\nWe value your business and hope to have the opportunity to restore your faith in our services.\n\nSincerely,\nThe Management Team\nMariia Hub',
+        content_template: 'Dear {{user_name}},\n\nI\'m truly sorry to hear about your experience with {{service_mentioned}}. This is not the standard of service we aim to provide at mariiaborysevych.\n\nWe take your feedback seriously and would like to make things right. Could you please contact us directly at [contact info] so we can address your concerns personally?\n\nWe value your business and hope to have the opportunity to restore your faith in our services.\n\nSincerely,\nThe Management Team\nmariiaborysevych',
         personalization_rules: [
           { variable: 'user_name', source: 'user_profile' as const, fallback: 'Valued Customer' },
           { variable: 'service_mentioned', source: 'feedback_content' as const, fallback: 'our services' }

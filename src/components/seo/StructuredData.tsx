@@ -35,7 +35,7 @@ export const LocalBusinessSchema = ({
 
   const baseSchema = {
     '@type': 'LocalBusiness',
-    name: 'Mariia Hub',
+    name: 'mariiaborysevych',
     description: t('seo.businessDescription', 'Premium beauty and fitness services in Warsaw, Poland'),
     url: window.location.origin,
     telephone: '+48 123 456 789',
@@ -133,7 +133,7 @@ interface ServiceSchemaProps {
   provider?: string;
 }
 
-export const ServiceSchema = ({ service, provider = 'Mariia Hub' }: ServiceSchemaProps) => {
+export const ServiceSchema = ({ service, provider = 'mariiaborysevych' }: ServiceSchemaProps) => {
   const schema = {
     '@type': 'Service',
     name: service.name,

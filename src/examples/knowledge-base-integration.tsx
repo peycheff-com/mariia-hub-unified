@@ -123,7 +123,7 @@ export const WebsiteLayout: React.FC<{ children: React.ReactNode }> = ({ childre
         <div className="container mx-auto px-4 py-4">
           <nav aria-label="Main navigation" className="flex items-center justify-between">
             <div className="flex items-center gap-8">
-              <h1 className="text-2xl font-bold text-blue-600">Mariia Hub</h1>
+              <h1 className="text-2xl font-bold text-blue-600">mariiaborysevych</h1>
               <div className="flex gap-6">
                 <a href="/services" className="text-gray-700 hover:text-blue-600">Services</a>
                 <a href="/booking" className="text-gray-700 hover:text-blue-600">Book</a>

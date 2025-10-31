@@ -76,7 +76,7 @@ export const useStructuredData = (options: UseStructuredDataOptions = {}): Struc
 
   const generator = useMemo(() => {
     const businessInfo = {
-      name: 'Mariia Hub',
+      name: 'mariiaborysevych',
       description: t('seo.businessDescription', 'Premium beauty and fitness services in Warsaw, Poland'),
       url: window.location.origin,
       address: {
@@ -150,7 +150,7 @@ export const useStructuredData = (options: UseStructuredDataOptions = {}): Struc
     if (options.service) {
       const serviceSchema = generator.generateServiceSchema(
         options.service,
-        'Mariia Hub'
+        'mariiaborysevych'
       );
       allSchemas.push(serviceSchema);
     }
@@ -191,7 +191,7 @@ export const useStructuredData = (options: UseStructuredDataOptions = {}): Struc
       allSchemas.push({
         '@context': 'https://schema.org',
         '@type': 'Organization',
-        name: 'Mariia Hub',
+        name: 'mariiaborysevych',
         description: t('seo.businessDescription', 'Premium beauty and fitness services in Warsaw, Poland'),
         url: window.location.origin,
         logo: `${window.location.origin}/logo.png`,
@@ -289,7 +289,7 @@ export const useServiceStructuredData = (service: Service, reviews?: Review[]) =
     breadcrumbs,
     businessType: service.category === 'beauty' ? 'BeautySalon' : 'HealthAndBeautyBusiness',
     pageInfo: {
-      name: `${service.name} | Mariia Hub`,
+      name: `${service.name} | mariiaborysevych`,
       description: service.description,
       url: window.location.href,
       primaryImage: service.images?.[0]?.url
@@ -357,7 +357,7 @@ export const useHomepageStructuredData = (reviews?: Review[]) => {
     reviews,
     faqs,
     pageInfo: {
-      name: t('seo.homepage.title', 'Mariia Hub - Beauty & Fitness Services Warsaw'),
+      name: t('seo.homepage.title', 'mariiaborysevych - Beauty & Fitness Services Warsaw'),
       description: t('seo.homepage.description', 'Premium beauty and fitness services in Warsaw. Professional permanent makeup and certified personal training.'),
       url: window.location.href
     }
@@ -376,7 +376,7 @@ export const useLocalStructuredData = (location: {
   return useStructuredData({
     businessType: 'LocalBusiness',
     pageInfo: {
-      name: `Mariia Hub - ${location.city}`,
+      name: `mariiaborysevych - ${location.city}`,
       description: `Premium beauty and fitness services in ${location.city}${location.district ? `, ${location.district}` : ''}`,
       url: window.location.href
     }

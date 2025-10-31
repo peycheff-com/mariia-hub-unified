@@ -1023,7 +1023,7 @@ export class ContentPerformanceTracker extends EventEmitter {
             {
               element: 'meta_title',
               currentValue: metrics.title,
-              suggestedValue: `${metrics.title} | Mariia Hub Warsaw`,
+              suggestedValue: `${metrics.title} | mariiaborysevych Warsaw`,
               reason: 'Better title includes brand and location'
             }
           ]

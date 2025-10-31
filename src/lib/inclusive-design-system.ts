@@ -1,5 +1,5 @@
 /**
- * Comprehensive Inclusive Design System for Mariia Hub
+ * Comprehensive Inclusive Design System for mariiaborysevych
  * Implements WCAG 2.2 AAA standards with luxury aesthetic
  * Supports diverse users with cognitive, motor, visual, and hearing accessibility needs
  */

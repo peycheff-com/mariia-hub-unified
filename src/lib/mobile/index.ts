@@ -1,6 +1,6 @@
 /**
  * Mobile Performance Optimization System
- * Complete mobile optimization suite for the Mariia Hub luxury beauty/fitness platform
+ * Complete mobile optimization suite for the mariiaborysevych luxury beauty/fitness platform
  */
 
 // Core optimization systems
@@ -114,7 +114,7 @@ export async function initializeMobilePerformanceSuite(config?: {
   luxuryMode?: boolean;
   performanceProfile?: 'high' | 'medium' | 'low';
 }): Promise<void> {
-  console.log('🚀 Initializing Mobile Performance Suite for Mariia Hub Luxury Platform');
+  console.log('🚀 Initializing Mobile Performance Suite for mariiaborysevych Luxury Platform');
 
   try {
     // Initialize device performance profiler first

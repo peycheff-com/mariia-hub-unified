@@ -165,7 +165,7 @@ const FAQ = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="FAQ — Frequently Asked Questions | Mariia Hub"
+        title="FAQ — Frequently Asked Questions | mariiaborysevych"
         description="Find answers to common questions about our beauty and fitness services, booking, and policies."
         keywords="FAQ, questions, answers, beauty, fitness, booking, policies"
       />

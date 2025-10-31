@@ -42,7 +42,7 @@ app.use('*', cors({
  */
 app.get('/', (c) => {
   return c.json({
-    name: 'Mariia Hub Booking API',
+    name: 'mariiaborysevych Booking API',
     version: '1.0.0',
     status: 'operational',
     timestamp: new Date().toISOString(),

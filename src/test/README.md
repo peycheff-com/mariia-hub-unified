@@ -1,6 +1,6 @@
 # Testing Infrastructure
 
-This directory contains the comprehensive testing infrastructure for Mariia Hub, designed to achieve 90% test coverage with robust unit, integration, and end-to-end testing.
+This directory contains the comprehensive testing infrastructure for mariiaborysevych, designed to achieve 90% test coverage with robust unit, integration, and end-to-end testing.
 
 ## 📁 Directory Structure
 

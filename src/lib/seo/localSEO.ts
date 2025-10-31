@@ -220,7 +220,7 @@ export class LocalSEOGenerator {
     reviews?: Array<{ author: string; rating: number; comment: string; date: string }>
   ): GoogleBusinessProfile {
     return {
-      name: 'Mariia Hub',
+      name: 'mariiaborysevych',
       categories: [
         'Beauty Salon',
         'Permanent Makeup Clinic',
@@ -357,17 +357,17 @@ export class LocalSEOGenerator {
     const targetDistrict = district ? WARSAW_DISTRICTS[district] : this.businessLocation;
 
     return {
-      title: `Salon Urody ${targetDistrict.district} - Mariia Hub | Warszawa`,
+      title: `Salon Urody ${targetDistrict.district} - mariiaborysevych | Warszawa`,
       description: `Profesjonalny salon urody w dzielnicy ${targetDistrict.district}. Oferujemy permanentny makijaż, stylizację brwi i treningi personalne w sercu Warszawy.`,
       headings: [
         `Salon Urody ${targetDistrict.district} - Najlepsze Usługi w Warszawie`,
         `Nasze Usługi w ${targetDistrict.district}`,
-        `Dlaczego warto wybrać Mariia Hub w ${targetDistrict.district}?`,
+        `Dlaczego warto wybrać mariiaborysevych w ${targetDistrict.district}?`,
         `Lokalizacja i Dojazd do ${targetDistrict.district}`,
         `Opinie Klientów z ${targetDistrict.district}`
       ],
       content: [
-        `Mariia Hub to premium salon urody zlokalizowany w sercu ${targetDistrict.district}. Specjalizujemy się w profesjonalnym permanentnym makijażu i stylizacji brwi.`,
+        `mariiaborysevych to premium salon urody zlokalizowany w sercu ${targetDistrict.district}. Specjalizujemy się w profesjonalnym permanentnym makijażu i stylizacji brwi.`,
         `Nasza lokalizacja w ${targetDistrict.district} sprawia, że jesteśmy łatwo dostępni dla mieszkańców całej Warszawy.`,
         `W naszym salonie w ${targetDistrict.district} używamy tylko najwyższej jakości produktów i najnowocześniejszych technik.`,
         `Bliskość ${targetDistrict.landmarks.join(', ')} sprawia, że nasz salon jest idealnie połączony z komunikacją miejską.`
@@ -389,7 +389,7 @@ export class LocalSEOGenerator {
     return {
       '@context': 'https://schema.org',
       '@type': 'LocalBusiness',
-      name: 'Mariia Hub',
+      name: 'mariiaborysevych',
       description: 'Premium beauty and fitness services in Warsaw',
       url: 'https://mariia-hub.pl',
       telephone: '+48 123 456 789',
@@ -485,7 +485,7 @@ export class LocalSEOGenerator {
     const targetDistrict = district ? WARSAW_DISTRICTS[district] : this.businessLocation;
 
     return {
-      title: `${pageTitle} | ${targetDistrict.district} | Mariia Hub`,
+      title: `${pageTitle} | ${targetDistrict.district} | mariiaborysevych`,
       description: `${pageDescription} | Lokalizacja: ${targetDistrict.district}, Warszawa`,
       keywords: [
         ...this.generateLocalKeywords(['permanentny makijaż', 'stylizacja brwi', 'trening personalny']),

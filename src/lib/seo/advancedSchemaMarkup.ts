@@ -336,7 +336,7 @@ export class AdvancedSchemaMarkupGenerator {
   constructor() {
     this.baseUrl = 'https://mariaborysevych.com';
     this.businessInfo = {
-      name: 'Mariia Hub',
+      name: 'mariiaborysevych',
       address: 'ul. Smolna 8, 00-001 Warszawa',
       phone: '+48 123 456 789',
       coordinates: { lat: 52.2297, lng: 21.0122 },
@@ -546,7 +546,7 @@ export class AdvancedSchemaMarkupGenerator {
         },
         location: {
           '@type': 'Place',
-          name: 'Mariia Hub',
+          name: 'mariiaborysevych',
           address: {
             '@type': 'PostalAddress',
             streetAddress: 'ul. Smolna 8',
@@ -706,12 +706,12 @@ export class AdvancedSchemaMarkupGenerator {
       inLanguage: 'pl-PL',
       isPartOf: {
         '@type': 'WebSite',
-        name: 'Mariia Hub',
+        name: 'mariiaborysevych',
         url: this.baseUrl
       },
       reviewedBy: {
         '@type': 'Organization',
-        name: 'Mariia Hub SEO Team'
+        name: 'mariiaborysevych SEO Team'
       }
     };
   }
@@ -748,7 +748,7 @@ export class AdvancedSchemaMarkupGenerator {
 
     // Main WebPage schema
     schemas.push(this.generateWebPageSchema({
-      title: `${serviceData.serviceName} Warszawa - Mariia Hub`,
+      title: `${serviceData.serviceName} Warszawa - mariiaborysevych`,
       description: serviceData.description,
       url: `/services/${serviceData.serviceName.toLowerCase().replace(/\s+/g, '-')}`,
       primaryImage: serviceData.images[0],
@@ -924,7 +924,7 @@ export class AdvancedSchemaMarkupGenerator {
 
     // WebPage schema for event page
     schemas.push(this.generateWebPageSchema({
-      title: `${eventData.title} - Wydarzenie Mariia Hub`,
+      title: `${eventData.title} - Wydarzenie mariiaborysevych`,
       description: eventData.description,
       url: `/events/${eventData.title.toLowerCase().replace(/\s+/g, '-')}`,
       datePublished: new Date().toISOString(),
@@ -1025,7 +1025,7 @@ export class AdvancedSchemaMarkupGenerator {
     schemas.push({
       '@context': 'https://schema.org',
       '@type': 'LocalBusiness',
-      name: `Mariia Hub ${districtData.district}`,
+      name: `mariiaborysevych ${districtData.district}`,
       description: `Premium beauty and fitness services in ${districtData.district}, Warsaw. Professional permanent makeup, brow styling, and personal training.`,
       image: `${this.baseUrl}/assets/locations/${districtData.district.toLowerCase()}.webp`,
       url: `${this.baseUrl}/warszawa/${districtData.district.toLowerCase()}`,

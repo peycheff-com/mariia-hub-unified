@@ -2,7 +2,7 @@
  * Luxury Component Library Exports
  *
  * Premium React components with glass morphism effects, 60fps animations,
- * and WCAG AAA accessibility compliance for the Mariia Hub platform.
+ * and WCAG AAA accessibility compliance for the mariiaborysevych platform.
  */
 
 // Core luxury components

@@ -137,7 +137,7 @@ export const CommunityEngagement: React.FC<CommunityEngagementProps> = ({ classN
         id: 'ugc_1',
         user_id: 'user_1',
         content_type: 'review',
-        content: 'Amazing experience at Mariia Hub! The facial treatment was incredible and my skin has never looked better. The staff is so professional and caring.',
+        content: 'Amazing experience at mariiaborysevych! The facial treatment was incredible and my skin has never looked better. The staff is so professional and caring.',
         media_urls: ['https://example.com/review1.jpg'],
         platform: 'instagram',
         platform_post_id: 'post_123',

@@ -126,7 +126,7 @@ export class EmailMarketingService {
     const defaultTemplates = [
       {
         name: 'Welcome Email',
-        subject: 'Witaj w Mariia Hub! Zacznij swoją podróż piękna',
+        subject: 'Witaj w mariiaborysevych! Zacznij swoją podróż piękna',
         template_type: 'automated' as EmailCampaignType,
         html_content: this.getWelcomeEmailTemplate(),
         text_content: this.getWelcomeEmailTextTemplate(),
@@ -150,7 +150,7 @@ export class EmailMarketingService {
       },
       {
         name: 'Monthly Newsletter',
-        subject: 'Mariia Hub - {{month}} nowości i promocje',
+        subject: 'mariiaborysevych - {{month}} nowości i promocje',
         template_type: 'newsletter' as EmailCampaignType,
         html_content: this.getNewsletterTemplate(),
         text_content: this.getNewsletterTextTemplate(),
@@ -651,7 +651,7 @@ export class EmailMarketingService {
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Witaj w Mariia Hub</title>
+        <title>Witaj w mariiaborysevych</title>
       </head>
       <body style="font-family: Inter, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
         <table width="100%" cellpadding="0" cellspacing="0">
@@ -662,7 +662,7 @@ export class EmailMarketingService {
                 <tr>
                   <td style="padding: 30px; text-align: center; border-bottom: 1px solid #f0f0f0;">
                     <h1 style="color: ${this.BRAND_COLORS.primary}; margin: 0; font-size: 32px;">Witaj {{first_name}}!</h1>
-                    <p style="color: #666; margin: 10px 0 0; font-size: 18px;">Dziękujemy za dołączenie do Mariia Hub</p>
+                    <p style="color: #666; margin: 10px 0 0; font-size: 18px;">Dziękujemy za dołączenie do mariiaborysevych</p>
                   </td>
                 </tr>
 
@@ -688,7 +688,7 @@ export class EmailMarketingService {
                 <!-- Footer -->
                 <tr>
                   <td style="padding: 30px; text-align: center; border-top: 1px solid #f0f0f0; color: #666; font-size: 14px;">
-                    <p>Mariia Hub<br>ul. Jana Pawła II 43/15, 00-001 Warszawa</p>
+                    <p>mariiaborysevych<br>ul. Jana Pawła II 43/15, 00-001 Warszawa</p>
                     <p style="margin: 15px 0 0;">Do zobaczenia wkrótce!</p>
                   </td>
                 </tr>
@@ -705,7 +705,7 @@ export class EmailMarketingService {
     return `
 Witaj {{first_name}}!
 
-Dziękujemy za dołączenie do Mariia Hub. Jesteśmy szczęśliwi, że możesz stać się częścią naszej społeczności skupionej na pięknie i dobrym samopoczuciu.
+Dziękujemy za dołączenie do mariiaborysevych. Jesteśmy szczęśliwi, że możesz stać się częścią naszej społeczności skupionej na pięknie i dobrym samopoczuciu.
 
 Co czeka na Ciebie?
 - Profesjonalne usługi kosmetyczne i fitness
@@ -716,7 +716,7 @@ Co czeka na Ciebie?
 Umów swoją pierwszą wizytę już dziś: {{booking_url}}
 
 Do zobaczenia wkrótce!
-Zespół Mariia Hub
+Zespół mariiaborysevych
     `;
   }
 
@@ -768,7 +768,7 @@ Zespół Mariia Hub
                 <tr>
                   <td style="padding: 30px; text-align: center; border-top: 1px solid #f0f0f0; color: #666; font-size: 14px;">
                     <p>Czekamy na Ciebie!</p>
-                    <p style="margin: 10px 0;">Zespół Mariia Hub</p>
+                    <p style="margin: 10px 0;">Zespół mariiaborysevych</p>
                   </td>
                 </tr>
               </table>
@@ -801,7 +801,7 @@ Ważne informacje:
 - Płatność można uregulować gotówką lub kartą w dniu wizyty
 
 Czekamy na Ciebie!
-Zespół Mariia Hub
+Zespół mariiaborysevych
     `;
   }
 
@@ -891,7 +891,7 @@ Następna wizyta: {{next_appointment_date}}
 Masz pytania? Skontaktuj się z nami!
 {{contact_info}}
 
-Zespół Mariia Hub
+Zespół mariiaborysevych
     `;
   }
 
@@ -902,7 +902,7 @@ Zespół Mariia Hub
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Mariia Hub - {{month}} Newsletter</title>
+        <title>mariiaborysevych - {{month}} Newsletter</title>
       </head>
       <body style="font-family: Inter, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
         <table width="100%" cellpadding="0" cellspacing="0">
@@ -912,7 +912,7 @@ Zespół Mariia Hub
                 <!-- Header -->
                 <tr>
                   <td style="padding: 30px; text-align: center; border-bottom: 1px solid #f0f0f0;">
-                    <h1 style="color: ${this.BRAND_COLORS.primary}; margin: 0; font-size: 32px;">{{month}} w Mariia Hub</h1>
+                    <h1 style="color: ${this.BRAND_COLORS.primary}; margin: 0; font-size: 32px;">{{month}} w mariiaborysevych</h1>
                     <p style="color: #666; margin: 10px 0 0; font-size: 18px;">Nowości, promocje i porady ekspertów</p>
                   </td>
                 </tr>
@@ -956,7 +956,7 @@ Zespół Mariia Hub
                 <tr>
                   <td style="padding: 30px; text-align: center; border-top: 1px solid #f0f0f0; color: #666; font-size: 14px;">
                     <p>Do zobaczenia wkrótce!</p>
-                    <p style="margin: 10px 0;">Zespół Mariia Hub</p>
+                    <p style="margin: 10px 0;">Zespół mariiaborysevych</p>
                   </td>
                 </tr>
               </table>
@@ -970,7 +970,7 @@ Zespół Mariia Hub
 
   private getNewsletterTextTemplate(): string {
     return `
-Mariia Hub - {{month}} Newsletter
+mariiaborysevych - {{month}} Newsletter
 
 Cześć {{first_name}},
 
@@ -991,7 +991,7 @@ Nowości na blogu:
 Umów swoją wizytę już dziś: https://mariaborysevych.com/booking
 
 Do zobaczenia wkrótce!
-Zespół Mariia Hub
+Zespół mariiaborysevych
     `;
   }
 
@@ -1042,7 +1042,7 @@ Zespół Mariia Hub
                 <tr>
                   <td style="padding: 30px; text-align: center; border-top: 1px solid #f0f0f0; color: #666; font-size: 14px;">
                     <p>Nie przegap tej okazji!</p>
-                    <p style="margin: 10px 0;">Zespół Mariia Hub</p>
+                    <p style="margin: 10px 0;">Zespół mariiaborysevych</p>
                   </td>
                 </tr>
               </table>
@@ -1073,7 +1073,7 @@ https://mariaborysevych.com/booking?promo={{promotion_code}}
 
 *Oferta ważna do wyczerpania miejsc. Nie łączy się z innymi promocjami.
 
-Zespół Mariia Hub
+Zespół mariiaborysevych
     `;
   }
 
@@ -1095,7 +1095,7 @@ Zespół Mariia Hub
                 <tr>
                   <td style="padding: 30px; text-align: center; border-bottom: 1px solid #f0f0f0;">
                     <h1 style="color: ${this.BRAND_COLORS.primary}; margin: 0; font-size: 32px;">Tęsknimy za Tobą! 💕</h1>
-                    <p style="color: #666; margin: 10px 0 0; font-size: 18px;">Czas na odnowę i relaks w Mariia Hub</p>
+                    <p style="color: #666; margin: 10px 0 0; font-size: 18px;">Czas na odnowę i relaks w mariiaborysevych</p>
                   </td>
                 </tr>
 
@@ -1124,7 +1124,7 @@ Zespół Mariia Hub
                 <tr>
                   <td style="padding: 30px; text-align: center; border-top: 1px solid #f0f0f0; color: #666; font-size: 14px;">
                     <p>Czekamy na Ciebie z niecierpliwością!</p>
-                    <p style="margin: 10px 0;">Zespół Mariia Hub</p>
+                    <p style="margin: 10px 0;">Zespół mariiaborysevych</p>
                   </td>
                 </tr>
               </table>
@@ -1154,7 +1154,7 @@ Nie czekaj太久! Umów wizytę już dziś:
 https://mariaborysevych.com/booking?welcome_back={{promotion_code}}
 
 Czekamy na Ciebie z niecierpliwością!
-Zespół Mariia Hub
+Zespół mariiaborysevych
     `;
   }
 

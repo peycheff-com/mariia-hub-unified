@@ -83,7 +83,7 @@ export const useStructuredData = () => {
   const generateServiceSchema = (service: any) => {
     return ServiceSchema({
       service,
-      provider: 'Mariia Hub'
+      provider: 'mariiaborysevych'
     });
   };
 
@@ -115,7 +115,7 @@ export const useStructuredData = () => {
       endDate: event.endDate,
       location: {
         '@type': 'Place',
-        name: 'Mariia Hub',
+        name: 'mariiaborysevych',
         address: {
           '@type': 'PostalAddress',
           streetAddress: 'ul. Marszałkowska 123',
@@ -142,11 +142,11 @@ export const useStructuredData = () => {
       dateModified: article.updatedAt,
       author: {
         '@type': 'Person',
-        name: article.author?.name || 'Mariia Hub Team'
+        name: article.author?.name || 'mariiaborysevych Team'
       },
       publisher: {
         '@type': 'Organization',
-        name: 'Mariia Hub',
+        name: 'mariiaborysevych',
         logo: {
           '@type': 'ImageObject',
           url: `${window.location.origin}/logo.png`
@@ -167,7 +167,7 @@ export const useStructuredData = () => {
       image: product.images || [],
       brand: {
         '@type': 'Brand',
-        name: 'Mariia Hub'
+        name: 'mariiaborysevych'
       },
       offers: {
         '@type': 'Offer',

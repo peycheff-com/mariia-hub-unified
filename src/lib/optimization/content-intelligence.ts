@@ -825,12 +825,12 @@ class ContentPerformanceIntelligence {
     return {
       alt_text: `Professional beauty and fitness services in Warsaw - high quality ${asset.asset_type}`,
       file_name: `mariia-hub-${asset.asset_type}-warsaw.${asset.original_url.split('.').pop()}`,
-      title: `Premium ${asset.asset_type} - Mariia Hub Warsaw`,
+      title: `Premium ${asset.asset_type} - mariiaborysevych Warsaw`,
       caption: 'Professional beauty and fitness services in the heart of Warsaw',
       structured_data: {
         '@context': 'https://schema.org',
         '@type': 'ImageObject',
-        name: 'Mariia Hub Services',
+        name: 'mariiaborysevych Services',
         description: 'Premium beauty and fitness services'
       }
     };

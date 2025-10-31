@@ -125,8 +125,8 @@ const GDPRCompliance = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="GDPR Compliance — Data Protection Rights | Mariia Hub"
-        description="Learn about your rights under GDPR and how Mariia Hub protects your personal data in compliance with EU regulations."
+        title="GDPR Compliance — Data Protection Rights | mariiaborysevych"
+        description="Learn about your rights under GDPR and how mariiaborysevych protects your personal data in compliance with EU regulations."
         keywords="GDPR, data protection, privacy rights, EU regulations, personal data, compliance"
       />
       <Navigation />
@@ -313,12 +313,12 @@ const GDPRCompliance = () => {
             <div className="prose prose-invert max-w-none">
               <p className="text-pearl/80 font-body leading-relaxed mb-4">
                 {i18n.language === 'pl'
-                  ? "Mariia Hub zobowiązuje się do ochrony prywatności i bezpieczeństwa danych osobowych zgodnie z Rozporządzeniem (UE) 2016/679 (RODO). Wdrożyliśmy odpowiednie środki techniczne i organizacyjne, aby zapewnić najwyższy poziom ochrony danych. Regularnie przeglądamy i aktualizujemy nasze procedury, aby zapewnić ciągłą zgodność z obowiązującymi przepisami."
+                  ? "mariiaborysevych zobowiązuje się do ochrony prywatności i bezpieczeństwa danych osobowych zgodnie z Rozporządzeniem (UE) 2016/679 (RODO). Wdrożyliśmy odpowiednie środki techniczne i organizacyjne, aby zapewnić najwyższy poziom ochrony danych. Regularnie przeglądamy i aktualizujemy nasze procedury, aby zapewnić ciągłą zgodność z obowiązującymi przepisami."
                   : i18n.language === 'en'
-                  ? "Mariia Hub is committed to protecting privacy and security of personal data in accordance with Regulation (EU) 2016/679 (GDPR). We have implemented appropriate technical and organizational measures to ensure the highest level of data protection. We regularly review and update our procedures to ensure continuous compliance with applicable regulations."
+                  ? "mariiaborysevych is committed to protecting privacy and security of personal data in accordance with Regulation (EU) 2016/679 (GDPR). We have implemented appropriate technical and organizational measures to ensure the highest level of data protection. We regularly review and update our procedures to ensure continuous compliance with applicable regulations."
                   : i18n.language === 'ua'
-                  ? "Mariia Hub зобов'язується захищати приватність і безпеку персональних даних відповідно до Регламенту (ЄС) 2016/679 (GDPR). Ми впровадили відповідні технічні та організаційні заходи, щоб забезпечити найвищий рівень захисту даних. Ми регулярно переглядаємо та оновлюємо наші процедури, щоб забезпечити постійну відповідність чинному законодавству."
-                  : "Mariia Hub обязуется защищать конфиденциальность и безопасность персональных данных в соответствии с Регламентом (ЕС) 2016/679 (GDPR). Мы внедрили соответствующие технические и организационные меры для обеспечения высочайшего уровня защиты данных. Мы регулярно пересматриваем и обновляем наши процедуры для обеспечения постоянного соответствия применимым нормам."}
+                  ? "mariiaborysevych зобов'язується захищати приватність і безпеку персональних даних відповідно до Регламенту (ЄС) 2016/679 (GDPR). Ми впровадили відповідні технічні та організаційні заходи, щоб забезпечити найвищий рівень захисту даних. Ми регулярно переглядаємо та оновлюємо наші процедури, щоб забезпечити постійну відповідність чинному законодавству."
+                  : "mariiaborysevych обязуется защищать конфиденциальность и безопасность персональных данных в соответствии с Регламентом (ЕС) 2016/679 (GDPR). Мы внедрили соответствующие технические и организационные меры для обеспечения высочайшего уровня защиты данных. Мы регулярно пересматриваем и обновляем наши процедуры для обеспечения постоянного соответствия применимым нормам."}
               </p>
               <p className="text-pearl/60 font-body text-sm italic">
                 {i18n.language === 'pl'

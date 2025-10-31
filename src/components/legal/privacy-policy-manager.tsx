@@ -584,7 +584,7 @@ export function PrivacyPolicyManager() {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-sm">
                       <Users className="w-4 h-4 text-muted-foreground" />
-                      <span>{t('privacy.company_name', 'Mariia Hub Sp. z o.o.')}</span>
+                      <span>{t('privacy.company_name', 'mariiaborysevych Sp. z o.o.')}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <MapPin className="w-4 h-4 text-muted-foreground" />

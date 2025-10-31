@@ -399,7 +399,7 @@ export class PolishKeywordResearchSystem {
     if (!keywordData) return this.generateDefaultOptimization(keyword);
 
     return {
-      title: `${keywordData.keyword} | Mariia Hub Warszawa`,
+      title: `${keywordData.keyword} | mariiaborysevych Warszawa`,
       metaDescription: `Profesjonalne usługi ${keywordData.keyword} w Warszawie. ✅ Najwyższa jakość ✅ Certyfikowani specjaliści ✅ Konkurencyjne ceny. Umów wizytę online!`,
       headings: this.generateHeadings(keywordData),
       semanticKeywords: keywordData.semanticVariations,
@@ -442,7 +442,7 @@ export class PolishKeywordResearchSystem {
     return [
       {
         url: 'https://booksy.com/pl/pl/102783/mariia-hub',
-        title: `Mariia Hub - ${keyword} | Booksy`,
+        title: `mariiaborysevych - ${keyword} | Booksy`,
         description: `Profesjonalne usługi ${keyword} w Warszawie. Rezerwacja online 24/7.`,
         position: 1,
         domainAuthority: 75,
@@ -550,7 +550,7 @@ export class PolishKeywordResearchSystem {
 
   private generateDefaultOptimization(keyword: string) {
     return {
-      title: `${keyword} | Mariia Hub Warszawa`,
+      title: `${keyword} | mariiaborysevych Warszawa`,
       metaDescription: `Profesjonalne usługi ${keyword} w Warszawie. Umów wizytę online!`,
       headings: [`Co to jest ${keyword}`, `Zabiegi ${keyword}`, `Cennik ${keyword}`, `Opinie`],
       semanticKeywords: [],

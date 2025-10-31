@@ -1,6 +1,6 @@
 /**
  * Business Metrics Service
- * Tracks and analyzes business-critical metrics for Mariia Hub platform
+ * Tracks and analyzes business-critical metrics for mariiaborysevych platform
  * Including revenue, conversion rates, customer acquisition, and retention
  */
 

@@ -111,16 +111,16 @@ export function ReferralSystem({ className }: ReferralSystemProps) {
   };
 
   const handleShareViaEmail = (referralCode: string) => {
-    const subject = encodeURIComponent('Join me at Mariia Hub - Exclusive Beauty & Fitness Services');
+    const subject = encodeURIComponent('Join me at mariiaborysevych - Exclusive Beauty & Fitness Services');
     const body = encodeURIComponent(
-      `Hi!\n\nI'd love to invite you to experience the premium beauty and fitness services at Mariia Hub. As a member, I know you'll love their luxury treatments and personalized care.\n\nUse my referral code: ${referralCode}\n\nYou'll get exclusive welcome benefits, and I'll earn rewards too!\n\nBook your appointment here: https://mariaborysevych.com\n\nLooking forward to seeing you there!`
+      `Hi!\n\nI'd love to invite you to experience the premium beauty and fitness services at mariiaborysevych. As a member, I know you'll love their luxury treatments and personalized care.\n\nUse my referral code: ${referralCode}\n\nYou'll get exclusive welcome benefits, and I'll earn rewards too!\n\nBook your appointment here: https://mariaborysevych.com\n\nLooking forward to seeing you there!`
     );
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
   const handleShareViaSMS = (referralCode: string) => {
     const message = encodeURIComponent(
-      `Join me at Mariia Hub! 🌟 Use code ${referralCode} for exclusive welcome benefits. Book now: https://mariaborysevych.com`
+      `Join me at mariiaborysevych! 🌟 Use code ${referralCode} for exclusive welcome benefits. Book now: https://mariaborysevych.com`
     );
     window.location.href = `sms:?&body=${message}`;
   };
@@ -361,7 +361,7 @@ export function ReferralSystem({ className }: ReferralSystemProps) {
                         onClick={() => {
                           if (navigator.share) {
                             navigator.share({
-                              title: 'Join me at Mariia Hub',
+                              title: 'Join me at mariiaborysevych',
                               text: `Use my referral code ${latestReferralCode} for exclusive benefits!`,
                               url: 'https://mariaborysevych.com'
                             });

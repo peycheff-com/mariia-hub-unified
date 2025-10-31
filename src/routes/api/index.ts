@@ -110,7 +110,7 @@ api.route('/analytics', analyticsRoutes);
 // API documentation
 api.get('/docs', (c) => {
   return c.json({
-    title: 'Mariia Hub API',
+    title: 'mariiaborysevych API',
     version: '1.0.0',
     endpoints: {
       health: '/health',
@@ -133,7 +133,7 @@ api.doc('/openapi.json', {
   openapi: '3.0.0',
   info: {
     version: '1.0.0',
-    title: 'Mariia Hub API',
+    title: 'mariiaborysevych API',
     description: 'Unified booking and management platform for beauty and fitness services'
   },
   servers: [

@@ -169,7 +169,7 @@ const BeautyServiceDetail = () => {
       description: service.description,
       provider: {
         "@type": "BeautySalon",
-        name: "Mariia Hub",
+        name: "mariiaborysevych",
         address: {
           "@type": "PostalAddress",
           streetAddress: "ul. Marszałkowska 123",
@@ -198,9 +198,9 @@ const BeautyServiceDetail = () => {
       {/* SEO Meta Tags */}
       {service && service.title && (
         <SEOHead
-          title={`${service.title} - Beauty Service | Mariia Hub Warsaw`}
+          title={`${service.title} - Beauty Service | mariiaborysevych Warsaw`}
           description={service.description}
-          keywords={`${service.title}, beauty service Warsaw, ${service.category || 'beauty treatment'}, PMU, brow lamination, lip enhancements, Mariia Hub`}
+          keywords={`${service.title}, beauty service Warsaw, ${service.category || 'beauty treatment'}, PMU, brow lamination, lip enhancements, mariiaborysevych`}
           ogImage={storageFallback || '/og-default-service.webp'}
           ogType="article"
           structuredData={serviceStructuredData}

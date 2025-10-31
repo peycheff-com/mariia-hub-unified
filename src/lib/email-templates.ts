@@ -124,7 +124,7 @@ export const emailTemplates: LocalizedTemplates = {
         `,
       },
       'invoice.issued': {
-        subject: (data: { invoiceNumber: string }) => `Invoice #${data.invoiceNumber} from Mariia Hub`,
+        subject: (data: { invoiceNumber: string }) => `Invoice #${data.invoiceNumber} from mariiaborysevych`,
         html: (data: any) => `
           <!-- Invoice issued email template -->
           <p>Dear ${data.customerName},</p>
@@ -192,7 +192,7 @@ export const emailTemplates: LocalizedTemplates = {
         `,
       },
       'invoice.issued': {
-        subject: (data: { invoiceNumber: string }) => `Faktura nr ${data.invoiceNumber} od Mariia Hub`,
+        subject: (data: { invoiceNumber: string }) => `Faktura nr ${data.invoiceNumber} od mariiaborysevych`,
         html: (data: any) => `
           <p>Dzień dobry ${data.customerName},</p>
           <p>Dziękujemy za zaufanie. Poniżej znajdują się szczegóły faktury:</p>

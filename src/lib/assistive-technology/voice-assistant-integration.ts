@@ -559,7 +559,7 @@ export const useVoiceAssistant = create<VoiceAssistantStore>()(
         const schema = {
           '@context': 'https://schema.org',
           '@type': 'BeautySalon',
-          name: 'Mariia Hub - Beauty & Fitness',
+          name: 'mariiaborysevych - Beauty & Fitness',
           url: 'https://mariaborysevych.com',
           telephone: '+48 123 456 789',
           address: {
@@ -772,8 +772,8 @@ export const useVoiceAssistant = create<VoiceAssistantStore>()(
       updateWebAppManifest: () => {
         // Update web app manifest for voice assistant registration
         const manifest = {
-          name: 'Mariia Hub - Voice Assistant',
-          short_name: 'Mariia Hub',
+          name: 'mariiaborysevych - Voice Assistant',
+          short_name: 'mariiaborysevych',
           description: 'Beauty and fitness services with voice assistant integration',
           lang: 'pl',
           start_url: '/',

@@ -269,7 +269,7 @@ export class PolishPaymentGateway implements PaymentProvider {
           accountDetails: {
             bank: 'mBank S.A.',
             accountNumber: 'PL 1234 5678 9012 3456 7890 1234 5678',
-            recipient: 'Mariia Hub Sp. z o.o.',
+            recipient: 'mariiaborysevych Sp. z o.o.',
             address: 'ul. Jana Pawła II 43/15, 00-001 Warszawa'
           }
         }
@@ -792,7 +792,7 @@ export class PolishPaymentGateway implements PaymentProvider {
       // Create payment
       const paymentData: PayUPayment = {
         payMethodId: params.metadata?.payMethodId,
-        description: params.description || 'Płatność za usługę w Mariia Hub',
+        description: params.description || 'Płatność za usługę w mariiaborysevych',
         customerIp: params.metadata?.customerIp || '127.0.0.1',
         continueUrl: params.returnUrl
       };
@@ -947,7 +947,7 @@ export class PolishPaymentGateway implements PaymentProvider {
     try {
       const paymentData: Przelewy24Payment = {
         methodId: params.metadata?.methodId || 0, // Default to bank transfer selection
-        description: params.description || 'Płatność za usługę w Mariia Hub',
+        description: params.description || 'Płatność za usługę w mariiaborysevych',
         email: params.metadata?.customerEmail,
         country: 'PL',
         language: 'pl',
@@ -1136,7 +1136,7 @@ export class PolishPaymentGateway implements PaymentProvider {
       metadata: {
         paymentType: 'bank_transfer',
         accountDetails: bankTransferMethod?.metadata?.accountDetails,
-        reference: `Mariia Hub - Rezerwacja ${params.bookingId}`,
+        reference: `mariiaborysevych - Rezerwacja ${params.bookingId}`,
         deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
       }
     };

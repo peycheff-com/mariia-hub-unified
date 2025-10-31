@@ -75,7 +75,7 @@ const Index = () => {
     ...structuredDataGenerator.generateBreadcrumbSchema,
     mainEntity: {
       "@type": "BeautySalon",
-      name: "Mariia Hub",
+      name: "mariiaborysevych",
       description: "Premium beauty and fitness services in Warsaw",
       url: window.location.origin,
       telephone: "+48 123 456 789",
@@ -108,7 +108,7 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <SEOHead
-        title="Mariia Hub — Premium Beauty & Fitness Services in Warsaw"
+        title="mariiaborysevych — Premium Beauty & Fitness Services in Warsaw"
         description="BM BEAUTY studio + evidence-aligned coaching. Book in 60s. EN/PL/UA. PMU, brow lamination, personal training, and more."
         keywords="PMU Warsaw, brow lamination Warsaw, glute program women, personal trainer Warsaw, makijaż permanentny Warszawa, laminacja brwi Warszawa, trening pośladków, trener personalny Warszawa, beauty salon Warsaw, fitness center"
         ogImage="/og-homepage.webp"

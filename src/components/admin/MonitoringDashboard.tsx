@@ -1,5 +1,5 @@
 /**
- * Comprehensive Monitoring Dashboard for Mariia Hub
+ * Comprehensive Monitoring Dashboard for mariiaborysevych
  * Provides real-time insights into system health, performance, and business metrics
  */
 
@@ -226,7 +226,7 @@ const MonitoringDashboard: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold">Monitoring Dashboard</h1>
           <p className="text-muted-foreground">
-            Real-time system monitoring and alerting for Mariia Hub
+            Real-time system monitoring and alerting for mariiaborysevych
           </p>
         </div>
         <div className="flex items-center space-x-2">

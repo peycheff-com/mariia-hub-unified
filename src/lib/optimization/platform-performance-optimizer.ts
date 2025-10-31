@@ -893,7 +893,7 @@ class PlatformPerformanceOptimizer {
           supportedNetworks: ['visa', 'masterCard', 'amex'],
           merchantCapabilities: ['supports3DS'],
           total: {
-            label: 'Mariia Hub',
+            label: 'mariiaborysevych',
             amount: '0.00'
           }
         });
@@ -2265,7 +2265,7 @@ class PlatformPerformanceOptimizer {
       button.addEventListener('click', () => {
         if (navigator.share) {
           navigator.share({
-            title: 'Mariia Hub - Beauty & Fitness Booking',
+            title: 'mariiaborysevych - Beauty & Fitness Booking',
             text: 'Book luxury beauty and fitness services in Warsaw',
             url: window.location.href
           });

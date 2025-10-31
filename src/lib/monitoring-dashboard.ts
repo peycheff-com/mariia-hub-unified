@@ -1,7 +1,7 @@
 /**
  * Monitoring Dashboard Service
  * Provides comprehensive dashboard data and visualization capabilities
- * for the Mariia Hub platform monitoring system
+ * for the mariiaborysevych platform monitoring system
  */
 
 import { createClient } from '@supabase/supabase-js';

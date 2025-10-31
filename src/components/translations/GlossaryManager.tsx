@@ -221,9 +221,9 @@ export const GlossaryManager: React.FC = () => {
     return `<?xml version="1.0" encoding="UTF-8"?>
 <tbx version="TBX-Basic">
   <header role="banner">
-    <title>Mariia Hub Translation Glossary</title>
+    <title>mariiaborysevych Translation Glossary</title>
     <description>Company-specific terminology</description>
-    <creationTool>Mariia Hub</creationTool>
+    <creationTool>mariiaborysevych</creationTool>
     <creationDate>${now}</creationDate>
   </header>
   <body>

@@ -373,4 +373,4 @@ function SuccessStories() {
 
 ## License
 
-These components are part of the Mariia Hub project and follow the project's licensing terms.
+These components are part of the mariiaborysevych project and follow the project's licensing terms.

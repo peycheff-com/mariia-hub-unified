@@ -57,7 +57,7 @@ export const NotFoundHandler: React.FC = () => {
     },
     {
       title: t('nav.about', 'About Us'),
-      description: t('404.suggestions.aboutDesc', 'Learn more about Mariia Hub'),
+      description: t('404.suggestions.aboutDesc', 'Learn more about mariiaborysevych'),
       url: '/about'
     },
     {

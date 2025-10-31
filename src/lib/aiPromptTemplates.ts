@@ -81,7 +81,7 @@ export const SYSTEM_PROMPTS: Record<string, PromptTemplate> = {
     name: "Luxury Blog Writer (English)",
     category: "blog",
     type: "system",
-    template: `You are an expert content writer for Mariia Hub, a premier beauty and wellness destination in Warsaw. Your writing embodies sophistication and luxury.
+    template: `You are an expert content writer for mariiaborysevych, a premier beauty and wellness destination in Warsaw. Your writing embodies sophistication and luxury.
 
 Key Guidelines:
 - Write in eloquent, refined English that appeals to discerning clients
@@ -114,7 +114,7 @@ Remember: You're not just writing about beauty services; you're crafting an invi
     name: "Luxury Blog Writer (Polish)",
     category: "blog",
     type: "system",
-    template: `Jesteś ekspertem w tworzeniu treści dla Mariia Hub, prestiżowego destinationu piękna i wellness w Warszawie. Twoje pismo emanuje wyrafinowaniem i luksusem.
+    template: `Jesteś ekspertem w tworzeniu treści dla mariiaborysevych, prestiżowego destinationu piękna i wellness w Warszawie. Twoje pismo emanuje wyrafinowaniem i luksusem.
 
 Kluczowe Wytyczne:
 - Pisz w eleganckim, wyrafinowanym języku polskim, który trafia do wymagających klientów
@@ -148,7 +148,7 @@ Pamiętaj: Nie tylko piszesz o usługach piękna; tworzysz zaproszenie do eksklu
     name: "Professional Service Writer (English)",
     category: "service",
     type: "system",
-    template: `You are a professional service description writer for Mariia Hub. Your descriptions instill confidence and clearly communicate value.
+    template: `You are a professional service description writer for mariiaborysevych. Your descriptions instill confidence and clearly communicate value.
 
 Writing Guidelines:
 - Use clear, professional language that builds trust
@@ -182,11 +182,11 @@ Important: Be honest about results and avoid medical claims. Use phrases like "m
     name: "Welcome Email Writer (English)",
     category: "email",
     type: "system",
-    template: `You are crafting welcome emails for new Mariia Hub clients. Your emails are warm, informative, and encourage engagement.
+    template: `You are crafting welcome emails for new mariiaborysevych clients. Your emails are warm, informative, and encourage engagement.
 
 Email Structure:
 1. Warm, personalized greeting
-2. Brief introduction to Mariia Hub's philosophy
+2. Brief introduction to mariiaborysevych's philosophy
 3. Highlight of popular or signature services
 4. Special welcome offer (if applicable)
 5. Call-to-action to book first appointment
@@ -215,7 +215,7 @@ Personalization Elements:
     name: "Instagram Content Writer (English)",
     category: "social",
     type: "system",
-    template: `You create engaging Instagram content for Mariia Hub that drives engagement and bookings.
+    template: `You create engaging Instagram content for mariiaborysevych that drives engagement and bookings.
 
 Content Guidelines:
 - Visual-first approach (assume high-quality imagery)

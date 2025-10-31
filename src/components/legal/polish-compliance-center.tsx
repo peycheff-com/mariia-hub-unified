@@ -370,7 +370,7 @@ export function PolishComplianceCenter() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     {[
-                      { label: t('polish.company_name', 'Company Name'), value: 'Mariia Hub Sp. z o.o.' },
+                      { label: t('polish.company_name', 'Company Name'), value: 'mariiaborysevych Sp. z o.o.' },
                       { label: t('polish.nip', 'NIP (Tax ID)'), value: '1234567890' },
                       { label: t('polish.regon', 'REGON'), value: '123456789' },
                       { label: t('polish.krs', 'KRS'), value: '0000123456' },

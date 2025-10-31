@@ -1,7 +1,7 @@
 /**
  * Enterprise Performance Alerting System
  * Intelligent alerting, escalation, and notification management
- * for Mariia Hub platform performance issues
+ * for mariiaborysevych platform performance issues
  */
 
 import { createClient } from '@supabase/supabase-js';

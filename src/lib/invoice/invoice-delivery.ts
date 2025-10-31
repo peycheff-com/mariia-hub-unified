@@ -453,8 +453,8 @@ export class InvoiceDeliveryService {
     const currency = invoice.totals.currency;
 
     const subject = isPolish
-      ? `Faktura nr ${invoice.invoiceNumber} od Mariia Hub`
-      : `Invoice #${invoice.invoiceNumber} from Mariia Hub`;
+      ? `Faktura nr ${invoice.invoiceNumber} od mariiaborysevych`
+      : `Invoice #${invoice.invoiceNumber} from mariiaborysevych`;
 
     const paymentDueDate = invoice.paymentInfo.dueDate.toLocaleDateString(
       isPolish ? 'pl-PL' : 'en-US'
@@ -479,7 +479,7 @@ export class InvoiceDeliveryService {
       </head>
       <body>
         <div class="header">
-          <h1>Mariia Hub</h1>
+          <h1>mariiaborysevych</h1>
           <p>${isPolish ? 'Piękno i fitness w luksusowym wydaniu' : 'Beauty and fitness in luxury'}</p>
         </div>
 
@@ -513,7 +513,7 @@ export class InvoiceDeliveryService {
 
         <div class="footer">
           <p>${isPolish ? 'Ta wiadomość została wygenerowana automatycznie.' : 'This message was generated automatically.'}</p>
-          <p>© 2024 Mariia Hub. ${isPolish ? 'Wszelkie prawa zastrzeżone.' : 'All rights reserved.'}</p>
+          <p>© 2024 mariiaborysevych. ${isPolish ? 'Wszelkie prawa zastrzeżone.' : 'All rights reserved.'}</p>
         </div>
       </body>
       </html>
@@ -536,7 +536,7 @@ export class InvoiceDeliveryService {
       ${isPolish ? 'Tytuł' : 'Reference'}: Faktura ${invoice.invoiceNumber}
 
       ${isPolish ? 'Ta wiadomość została wygenerowana automatycznie.' : 'This message was generated automatically.'}
-      © 2024 Mariia Hub. ${isPolish ? 'Wszelkie prawa zastrzeżone.' : 'All rights reserved.'}
+      © 2024 mariiaborysevych. ${isPolish ? 'Wszelkie prawa zastrzeżone.' : 'All rights reserved.'}
     `;
 
     return { subject, html, text };
@@ -553,8 +553,8 @@ export class InvoiceDeliveryService {
     const currency = invoice.totals.currency;
 
     return isPolish
-      ? `Mariia Hub: Faktura nr ${invoice.invoiceNumber} na kwotę ${invoice.totals.grossTotal.toFixed(2)} ${currency}. Termin płatności: ${invoice.paymentInfo.dueDate.toLocaleDateString('pl-PL')}. Faktura została wysłana na email.`
-      : `Mariia Hub: Invoice #${invoice.invoiceNumber} for ${invoice.totals.grossTotal.toFixed(2)} ${currency}. Due: ${invoice.paymentInfo.dueDate.toLocaleDateString('en-US')}. Invoice sent to your email.`;
+      ? `mariiaborysevych: Faktura nr ${invoice.invoiceNumber} na kwotę ${invoice.totals.grossTotal.toFixed(2)} ${currency}. Termin płatności: ${invoice.paymentInfo.dueDate.toLocaleDateString('pl-PL')}. Faktura została wysłana na email.`
+      : `mariiaborysevych: Invoice #${invoice.invoiceNumber} for ${invoice.totals.grossTotal.toFixed(2)} ${currency}. Due: ${invoice.paymentInfo.dueDate.toLocaleDateString('en-US')}. Invoice sent to your email.`;
   }
 
   /**

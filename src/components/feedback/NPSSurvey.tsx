@@ -194,7 +194,7 @@ export const NPSSurvey: React.FC<NPSSurveyProps> = ({
           How likely are you to recommend us?
         </h3>
         <p className="text-gray-600">
-          On a scale of 0 to 10, how likely are you to recommend Mariia Hub to friends and colleagues?
+          On a scale of 0 to 10, how likely are you to recommend mariiaborysevych to friends and colleagues?
         </p>
       </div>
 

@@ -227,7 +227,7 @@ export class WarsawSEOSystem {
       language: 'pl',
       device: 'desktop',
       businessInfo: {
-        name: 'Mariia Hub',
+        name: 'mariiaborysevych',
         phone: '+48 123 456 789',
         address: 'ul. Smolna 8, 00-001 Warszawa',
         coordinates: { lat: 52.2297, lng: 21.0122 }

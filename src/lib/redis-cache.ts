@@ -400,7 +400,7 @@ export class RedisCacheManager {
 }
 
 /**
- * Specialized cache helpers for Mariia Hub
+ * Specialized cache helpers for mariiaborysevych
  */
 export class CacheHelpers {
   private cache = RedisCacheManager.getInstance();

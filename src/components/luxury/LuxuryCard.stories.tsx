@@ -158,7 +158,7 @@ export const WithAvatar: Story = {
     return (
       <LuxuryCard variant="luxury" className="w-80">
         <LuxuryCardHeader
-          title="Mariia Hub"
+          title="mariiaborysevych"
           subtitle="Premium Beauty Services"
           avatar={Avatar}
           actions={Actions}

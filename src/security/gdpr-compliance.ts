@@ -1,7 +1,7 @@
 /**
  * GDPR Compliance System
  *
- * Comprehensive GDPR compliance implementation for Mariia Hub platform
+ * Comprehensive GDPR compliance implementation for mariiaborysevych platform
  * including consent management, data retention, anonymization, and audit logging.
  */
 

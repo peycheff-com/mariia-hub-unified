@@ -1,5 +1,5 @@
 /**
- * AI Types and Interfaces for Mariia Hub Platform
+ * AI Types and Interfaces for mariiaborysevych Platform
  */
 
 export interface BaseModelConfig {

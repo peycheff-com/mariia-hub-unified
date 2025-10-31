@@ -1,5 +1,5 @@
 /**
- * Health Check System for Mariia Hub
+ * Health Check System for mariiaborysevych
  * Monitors system health, performance, and business metrics
  */
 

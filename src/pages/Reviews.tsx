@@ -230,8 +230,8 @@ export default function ReviewsPage() {
   return (
     <>
       <SEOHead
-        title="Customer Reviews - Mariia Hub"
-        description="Read authentic reviews from our satisfied customers. Discover why Mariia Hub is Warsaw's premier destination for beauty and fitness services."
+        title="Customer Reviews - mariiaborysevych"
+        description="Read authentic reviews from our satisfied customers. Discover why mariiaborysevych is Warsaw's premier destination for beauty and fitness services."
         keywords="customer reviews, testimonials, beauty reviews, fitness reviews, Warsaw"
       />
 

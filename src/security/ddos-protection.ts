@@ -1,7 +1,7 @@
 /**
  * DDoS Protection and Advanced Rate Limiting System
  *
- * Enterprise-grade DDoS protection for Mariia Hub platform
+ * Enterprise-grade DDoS protection for mariiaborysevych platform
  * with intelligent bot detection and traffic pattern analysis.
  */
 

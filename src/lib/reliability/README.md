@@ -1,6 +1,6 @@
 # Reliability Engineering System
 
-This comprehensive reliability engineering system provides health monitoring, alerting, automated recovery, audit logging, and SLO tracking for the Mariia Hub application.
+This comprehensive reliability engineering system provides health monitoring, alerting, automated recovery, audit logging, and SLO tracking for the mariiaborysevych application.
 
 ## Features
 
@@ -370,4 +370,4 @@ When adding new reliability features:
 
 ## License
 
-This reliability system is part of the Mariia Hub project and follows the same license terms.
+This reliability system is part of the mariiaborysevych project and follows the same license terms.

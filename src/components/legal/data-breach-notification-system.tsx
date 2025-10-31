@@ -169,7 +169,7 @@ This notification aria-live="polite" aria-atomic="true" is being sent within 72 
 Sincerely,
 {{dpo_name}}
 Data Protection Officer
-Mariia Hub Sp. z o.o.`,
+mariiaborysevych Sp. z o.o.`,
       requiredFields: ['breach_date', 'discovery_date', 'breach_type', 'data_categories', 'affected_count'],
     },
     {
@@ -202,7 +202,7 @@ Phone: +48 123 456 789
 We sincerely apologize for any inconvenience this may cause.
 
 Sincerely,
-The Mariia Hub Team`,
+The mariiaborysevych Team`,
       requiredFields: ['customer_name', 'incident_description', 'affected_data', 'protective_measures'],
     },
   ];
