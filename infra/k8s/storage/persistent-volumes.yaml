@@ -1,0 +1,256 @@
+# Persistent Volume Claims for Mariia Hub Application
+# ================================================
+
+# Production PostgreSQL Primary Database
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariia-hub-postgres-primary-pvc
+  namespace: mariia-hub
+  labels:
+    app: mariia-hub
+    component: postgres
+    tier: primary
+    environment: production
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: mariia-hub-ssd-premium
+  resources:
+    requests:
+      storage: 100Gi
+  selector:
+    matchLabels:
+      app: mariia-hub
+      component: postgres
+      tier: primary
+
+# Production PostgreSQL Replica
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariia-hub-postgres-replica-pvc
+  namespace: mariia-hub
+  labels:
+    app: mariia-hub
+    component: postgres
+    tier: replica
+    environment: production
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: mariia-hub-ssd-standard
+  resources:
+    requests:
+      storage: 100Gi
+  selector:
+    matchLabels:
+      app: mariia-hub
+      component: postgres
+      tier: replica
+
+# Redis Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariia-hub-redis-pvc
+  namespace: mariia-hub
+  labels:
+    app: mariia-hub
+    component: redis
+    environment: production
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: mariia-hub-redis-io-optimized
+  resources:
+    requests:
+      storage: 20Gi
+  selector:
+    matchLabels:
+      app: mariia-hub
+      component: redis
+
+# Application Logs Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariia-hub-app-logs-pvc
+  namespace: mariia-hub
+  labels:
+    app: mariia-hub
+    component: app
+    type: logs
+    environment: production
+spec:
+  accessModes:
+  - ReadWriteMany
+  storageClassName: mariia-hub-ssd-standard
+  resources:
+    requests:
+      storage: 50Gi
+  selector:
+    matchLabels:
+      app: mariia-hub
+      component: app
+      type: logs
+
+# Nginx Cache Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariia-hub-nginx-cache-pvc
+  namespace: mariia-hub
+  labels:
+    app: mariia-hub
+    component: nginx
+    type: cache
+    environment: production
+spec:
+  accessModes:
+  - ReadWriteMany
+  storageClassName: mariia-hub-ssd-standard
+  resources:
+    requests:
+      storage: 30Gi
+  selector:
+    matchLabels:
+      app: mariia-hub
+      component: nginx
+      type: cache
+
+# Backup Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariia-hub-backup-pvc
+  namespace: mariia-hub
+  labels:
+    app: mariia-hub
+    component: backup
+    environment: production
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: mariia-hub-backup-storage
+  resources:
+    requests:
+      storage: 500Gi
+  selector:
+    matchLabels:
+      app: mariia-hub
+      component: backup
+
+# Monitoring Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariia-hub-prometheus-pvc
+  namespace: mariia-hub-monitoring
+  labels:
+    app: mariia-hub
+    component: prometheus
+    environment: production
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: mariia-hub-ssd-standard
+  resources:
+    requests:
+      storage: 100Gi
+  selector:
+    matchLabels:
+      app: mariia-hub
+      component: prometheus
+
+# Grafana Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariia-hub-grafana-pvc
+  namespace: mariia-hub-monitoring
+  labels:
+    app: mariia-hub
+    component: grafana
+    environment: production
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: mariia-hub-ssd-standard
+  resources:
+    requests:
+      storage: 20Gi
+  selector:
+    matchLabels:
+      app: mariia-hub
+      component: grafana
+
+# Loki Log Storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariia-hub-loki-pvc
+  namespace: mariia-hub-monitoring
+  labels:
+    app: mariia-hub
+    component: loki
+    environment: production
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: mariia-hub-backup-storage
+  resources:
+    requests:
+      storage: 200Gi
+  selector:
+    matchLabels:
+      app: mariia-hub
+      component: loki
+
+# Staging Environment PVCs
+---
+# Staging PostgreSQL
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariia-hub-postgres-staging-pvc
+  namespace: mariia-hub-staging
+  labels:
+    app: mariia-hub
+    component: postgres
+    environment: staging
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: mariia-hub-staging-standard
+  resources:
+    requests:
+      storage: 50Gi
+  selector:
+    matchLabels:
+      app: mariia-hub
+      component: postgres
+      environment: staging
+
+# Staging Redis
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariia-hub-redis-staging-pvc
+  namespace: mariia-hub-staging
+  labels:
+    app: mariia-hub
+    component: redis
+    environment: staging
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: mariia-hub-staging-standard
+  resources:
+    requests:
+      storage: 10Gi
+  selector:
+    matchLabels:
+      app: mariia-hub
+      component: redis
+      environment: staging

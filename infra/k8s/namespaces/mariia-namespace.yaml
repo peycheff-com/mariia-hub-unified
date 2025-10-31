@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mariia-platform
+  labels:
+    name: mariia-platform
+    environment: production
+    app: mariia-hub
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mariia-monitoring
+  labels:
+    name: mariia-monitoring
+    environment: production
+    app: mariia-hub
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mariia-infra
+  labels:
+    name: mariia-infra
+    environment: production
+    app: mariia-hub

@@ -1,0 +1,141 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mariia-app-ingress
+  namespace: mariia-platform
+  labels:
+    app: mariia-hub
+    component: frontend
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.2 TLSv1.3"
+    nginx.ingress.kubernetes.io/ssl-ciphers: "ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384"
+    nginx.ingress.kubernetes.io/ssl-prefer-server-ciphers: "on"
+    nginx.ingress.kubernetes.io/hsts: "max-age=31536000; includeSubDomains; preload"
+    nginx.ingress.kubernetes.io/hsts-max-age: "31536000"
+    nginx.ingress.kubernetes.io/hsts-include-subdomains: "true"
+    nginx.ingress.kubernetes.io/hsts-preload: "true"
+    nginx.ingress.kubernetes.io/content-security-policy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.supabase.co https://js.stripe.com https://www.google-analytics.com; frame-src https://js.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self';"
+    nginx.ingress.kubernetes.io/x-frame-options: "DENY"
+    nginx.ingress.kubernetes.io/x-content-type-options: "nosniff"
+    nginx.ingress.kubernetes.io/x-xss-protection: "1; mode=block"
+    nginx.ingress.kubernetes.io/referrer-policy: "strict-origin-when-cross-origin"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/rate-limit-connections: "10"
+    nginx.ingress.kubernetes.io/rate-limit-status-code: "429"
+    nginx.ingress.kubernetes.io/rate-limit-headers: "true"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      # Custom rate limiting for API endpoints
+      location ~* ^/api/ {
+        limit_req zone=api burst=20 nodelay;
+        proxy_pass http://mariia-app-service;
+      }
+
+      # Stricter rate limiting for auth endpoints
+      location ~* ^/(auth|login|signin|register|signup) {
+        limit_req zone=auth burst=5 nodelay;
+        proxy_pass http://mariia-app-service;
+      }
+
+      # Cache static assets
+      location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        proxy_pass http://mariia-app-service;
+      }
+
+      # No cache for service worker
+      location = /sw.js {
+        expires 0;
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        proxy_pass http://mariia-app-service;
+      }
+
+      # Health check
+      location = /health {
+        access_log off;
+        return 200 "healthy\n";
+        add_header Content-Type text/plain;
+      }
+spec:
+  tls:
+  - hosts:
+    - mariia.pl
+    - www.mariia.pl
+    - api.mariia.pl
+    secretName: mariia-tls-secret
+  rules:
+  - host: mariia.pl
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mariia-app-service
+            port:
+              number: 80
+  - host: www.mariia.pl
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mariia-app-service
+            port:
+              number: 80
+  - host: api.mariia.pl
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mariia-app-service
+            port:
+              number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: monitoring-ingress
+  namespace: mariia-monitoring
+  labels:
+    app: mariia-hub
+    component: monitoring
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+    nginx.ingress.kubernetes.io/auth-type: "basic"
+    nginx.ingress.kubernetes.io/auth-secret: "monitoring-basic-auth"
+    nginx.ingress.kubernetes.io/auth-realm: "Monitoring Access"
+spec:
+  tls:
+  - hosts:
+    - monitoring.mariia.pl
+    secretName: monitoring-tls-secret
+  rules:
+  - host: monitoring.mariia.pl
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana-service
+            port:
+              number: 3000
+      - path: /prometheus
+        pathType: Prefix
+        backend:
+          service:
+            name: prometheus-service
+            port:
+              number: 9090
