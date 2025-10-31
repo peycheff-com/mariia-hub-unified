@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 import {
   Loader2,
   Save,
@@ -180,7 +180,7 @@ Include:
 
   const handleSavePrompt = () => {
     if (!formData.name || !formData.template) {
-      toast aria-live="polite" aria-atomic="true".error('Please fill in all required fields');
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -190,7 +190,7 @@ Include:
           ? { ...p, ...formData, updatedAt: new Date().toISOString() }
           : p
       ));
-      toast aria-live="polite" aria-atomic="true".success('Prompt template updated');
+      toast.success('Prompt template updated');
     } else {
       const newPrompt: PromptTemplate = {
         id: Date.now().toString(),
@@ -207,7 +207,7 @@ Include:
         updatedAt: new Date().toISOString(),
       };
       setPrompts([...prompts, newPrompt]);
-      toast aria-live="polite" aria-atomic="true".success('Prompt template created');
+      toast.success('Prompt template created');
     }
 
     setIsCreateDialogOpen(false);
@@ -224,7 +224,7 @@ Include:
 
   const handleDeletePrompt = (id: string) => {
     setPrompts(prompts.filter(p => p.id !== id));
-    toast aria-live="polite" aria-atomic="true".success('Prompt template deleted');
+    toast.success('Prompt template deleted');
   };
 
   const handleToggleFavorite = (id: string) => {
@@ -242,7 +242,7 @@ Include:
 
   const handleCopyPrompt = (template: string) => {
     navigator.clipboard.writeText(template);
-    toast aria-live="polite" aria-atomic="true".success('Prompt copied to clipboard');
+    toast.success('Prompt copied to clipboard');
   };
 
   const extractVariables = (template: string): string[] => {

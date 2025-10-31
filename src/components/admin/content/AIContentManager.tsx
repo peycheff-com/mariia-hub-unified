@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 import {
   Settings,
   Sparkles,
@@ -87,7 +87,7 @@ export const AIContentManager = ({ className }: AIContentManagerProps) => {
   const handleLanguageChange = (languageCode: string) => {
     setSelectedLanguage(languageCode);
     i18n.changeLanguage(languageCode);
-    toast aria-live="polite" aria-atomic="true".success(t('admin.ai.contentManager.languageChanged'));
+    toast.success(t('admin.ai.contentManager.languageChanged'));
   };
 
   return (

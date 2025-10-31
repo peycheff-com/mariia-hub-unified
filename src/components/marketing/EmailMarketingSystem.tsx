@@ -49,7 +49,7 @@ import {
   EmailCampaignMetrics
 } from '@/types/marketing';
 import { format } from 'date-fns';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 interface EmailMarketingSystemProps {
   className?: string;
@@ -127,7 +127,7 @@ export const EmailMarketingSystem: React.FC<EmailMarketingSystemProps> = ({ clas
       setLists(listsData);
     } catch (error) {
       console.error('Error loading email marketing data:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to load email marketing data');
+      toast.error('Failed to load email marketing data');
     } finally {
       setIsLoading(false);
     }
@@ -202,10 +202,10 @@ export const EmailMarketingSystem: React.FC<EmailMarketingSystemProps> = ({ clas
       setCampaigns([campaign, ...campaigns]);
       setIsCreateCampaignDialogOpen(false);
       resetCampaignForm();
-      toast aria-live="polite" aria-atomic="true".success('Email campaign created successfully');
+      toast.success('Email campaign created successfully');
     } catch (error) {
       console.error('Error creating campaign:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to create campaign');
+      toast.error('Failed to create campaign');
     }
   };
 
@@ -213,10 +213,10 @@ export const EmailMarketingSystem: React.FC<EmailMarketingSystemProps> = ({ clas
     try {
       await marketingService.sendEmailCampaign(campaignId);
       await loadData();
-      toast aria-live="polite" aria-atomic="true".success('Campaign sent successfully');
+      toast.success('Campaign sent successfully');
     } catch (error) {
       console.error('Error sending campaign:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to send campaign');
+      toast.error('Failed to send campaign');
     }
   };
 
@@ -244,10 +244,10 @@ export const EmailMarketingSystem: React.FC<EmailMarketingSystemProps> = ({ clas
       setTemplates([newTemplate, ...templates]);
       setIsCreateTemplateDialogOpen(false);
       resetTemplateForm();
-      toast aria-live="polite" aria-atomic="true".success('Email template created successfully');
+      toast.success('Email template created successfully');
     } catch (error) {
       console.error('Error creating template:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to create template');
+      toast.error('Failed to create template');
     }
   };
 
@@ -271,10 +271,10 @@ export const EmailMarketingSystem: React.FC<EmailMarketingSystemProps> = ({ clas
       setLists([newList, ...lists]);
       setIsCreateListDialogOpen(false);
       resetListForm();
-      toast aria-live="polite" aria-atomic="true".success('Email list created successfully');
+      toast.success('Email list created successfully');
     } catch (error) {
       console.error('Error creating list:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to create list');
+      toast.error('Failed to create list');
     }
   };
 
@@ -299,10 +299,10 @@ export const EmailMarketingSystem: React.FC<EmailMarketingSystemProps> = ({ clas
 
       setSubscribers([newSubscriber, ...subscribers]);
       resetSubscriberForm();
-      toast aria-live="polite" aria-atomic="true".success('Subscriber added successfully');
+      toast.success('Subscriber added successfully');
     } catch (error) {
       console.error('Error adding subscriber:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to add subscriber');
+      toast.error('Failed to add subscriber');
     }
   };
 
@@ -312,7 +312,7 @@ export const EmailMarketingSystem: React.FC<EmailMarketingSystemProps> = ({ clas
       setCampaignMetrics(metrics);
     } catch (error) {
       console.error('Error loading campaign metrics:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to load campaign metrics');
+      toast.error('Failed to load campaign metrics');
     }
   };
 

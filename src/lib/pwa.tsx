@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { toast aria-live="polite" aria-atomic="true" } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { toast } from '@/components/ui/use-toast';
 
 // PWA types
 export interface PushSubscriptionData {
@@ -82,7 +82,7 @@ export class PWAUtils {
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               // New version available
-              toast aria-live="polite" aria-atomic="true"({
+              toast({
                 title: 'Update Available',
                 description: 'A new version is available. Refresh to update.',
                 action: {
@@ -233,9 +233,9 @@ export class PWAUtils {
       actions: options.actions,
     });
 
-    notification aria-live="polite" aria-atomic="true".onclick = (event) => {
+    notification.onclick = (event) => {
       event.preventDefault();
-      notification aria-live="polite" aria-atomic="true".close();
+      notification.close();
       window.focus();
     };
 

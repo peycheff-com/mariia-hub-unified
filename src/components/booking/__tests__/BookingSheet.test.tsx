@@ -54,10 +54,10 @@ vi.mock('@/integrations/supabase/client', () => ({
   }
 }));
 
-// Mock toast aria-live="polite" aria-atomic="true"
-vi.mock('@/components/ui/use-toast aria-live="polite" aria-atomic="true"', () => ({
+// Mock toast
+vi.mock('@/components/ui/use-toast', () => ({
   useToast: () => ({
-    toast aria-live="polite" aria-atomic="true": vi.fn()
+    toast: vi.fn()
   })
 }));
 

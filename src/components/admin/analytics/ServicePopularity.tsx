@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 interface ServiceData {
   id: string;
@@ -41,7 +41,7 @@ export function ServicePopularity({ dateRange }: ServicePopularityProps) {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'chart'>('list');
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchServiceData();
@@ -178,7 +178,7 @@ export function ServicePopularity({ dateRange }: ServicePopularityProps) {
       setCategoryData(categoryArray);
     } catch (error) {
       console.error('Error fetching service data:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to fetch service popularity data',
         variant: 'destructive',

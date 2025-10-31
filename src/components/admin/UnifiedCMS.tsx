@@ -17,7 +17,7 @@ import ServiceGalleryManagement from "./ServiceGalleryManagement";
 import BlogManagement from "./BlogManagement";
 import ServiceContentManagement from "./ServiceContentManagement";
 import ServiceFAQManagement from "./ServiceFAQManagement";
-import AIContentGenerator from "./AIContentGenerator";
+import { AIContentGenerator } from "./content/AIContentGenerator";
 import MediaStudio from "./MediaStudio";
 import RichTextEditor from "./content/RichTextEditor";
 import ContentWorkflow from "./content/ContentWorkflow";

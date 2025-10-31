@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 // UI Components
@@ -445,7 +445,7 @@ export function ChatbotInterface({
 
   const handleFeedback = (messageId: string, type: 'like' | 'dislike') => {
     setFeedback({ ...feedback, [messageId]: type });
-    toast aria-live="polite" aria-atomic="true".success(t('chatbot.feedbackThanks'));
+    toast.success(t('chatbot.feedbackThanks'));
   };
 
   const handleTransferToHuman = () => {
@@ -515,7 +515,7 @@ export function ChatbotInterface({
 
   const copyMessage = (content: string) => {
     navigator.clipboard.writeText(content);
-    toast aria-live="polite" aria-atomic="true".success(t('chatbot.copied'));
+    toast.success(t('chatbot.copied'));
   };
 
   if (!isOpen) {

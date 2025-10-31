@@ -25,7 +25,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useLoyaltyContext } from '@/contexts/LoyaltyContext';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import { format, differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Reward, PointsTransaction } from '@/contexts/LoyaltyContext';
@@ -66,7 +66,7 @@ interface BonusOpportunity {
 
 export function PersonalizedRewardsEngine({ className }: PersonalizedRewardsEngineProps) {
   const { state, earnPoints } = useLoyaltyContext();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState('recommendations');
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
@@ -110,7 +110,7 @@ export function PersonalizedRewardsEngine({ className }: PersonalizedRewardsEngi
       setRecommendations(userRecommendations.slice(0, 6));
     } catch (error) {
       console.error('Error generating recommendations:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Failed to generate personalized recommendations",
         variant: "destructive"
@@ -489,12 +489,12 @@ export function PersonalizedRewardsEngine({ className }: PersonalizedRewardsEngi
         opportunity.id
       );
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Bonus Points Earned!",
         description: `You earned ${opportunity.points} bonus points!`,
       });
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Failed to claim bonus points",
         variant: "destructive"

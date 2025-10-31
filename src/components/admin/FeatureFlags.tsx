@@ -40,7 +40,7 @@ import { Slider } from "@/components/ui/slider";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 
 
 import type {
@@ -65,7 +65,7 @@ const FeatureFlags: React.FC = () => {
   const [showExperimentDialog, setShowExperimentDialog] = useState(false);
   const [selectedFlag, setSelectedFlag] = useState<FeatureFlag | null>(null);
   const [activeTab, setActiveTab] = useState("flags");
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // Form states
   const [formData, setFormData] = useState<FeatureFlagFormData>({
@@ -111,7 +111,7 @@ const FeatureFlags: React.FC = () => {
       setFlags(data || []);
     } catch (error) {
       console.error("Error loading feature flags:", error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Failed to load feature flags",
         variant: "destructive"
@@ -192,13 +192,13 @@ const FeatureFlags: React.FC = () => {
       setShowCreateDialog(false);
       resetFormData();
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Success",
         description: "Feature flag created successfully"
       });
     } catch (error) {
       console.error("Error creating feature flag:", error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Failed to create feature flag",
         variant: "destructive"
@@ -219,13 +219,13 @@ const FeatureFlags: React.FC = () => {
 
       setFlags(prev => prev.map(f => f.flag_key === flagKey ? data : f));
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Success",
         description: "Feature flag updated successfully"
       });
     } catch (error) {
       console.error("Error updating feature flag:", error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Failed to update feature flag",
         variant: "destructive"
@@ -256,13 +256,13 @@ const FeatureFlags: React.FC = () => {
 
       setFlags(prev => prev.filter(f => f.flag_key !== flagKey));
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Success",
         description: "Feature flag deleted successfully"
       });
     } catch (error) {
       console.error("Error deleting feature flag:", error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Failed to delete feature flag",
         variant: "destructive"
@@ -306,13 +306,13 @@ const FeatureFlags: React.FC = () => {
       setShowExperimentDialog(false);
       resetExperimentData();
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Success",
         description: "Experiment created successfully"
       });
     } catch (error) {
       console.error("Error creating experiment:", error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Failed to create experiment",
         variant: "destructive"

@@ -27,7 +27,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 
@@ -79,7 +79,7 @@ const AIContentReview = () => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("queue");
   const [qualityMetrics, setQualityMetrics] = useState<QualityMetrics | null>(null);
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // Load content queue on mount
   useEffect(() => {
@@ -123,7 +123,7 @@ const AIContentReview = () => {
       setContentQueue(formattedData);
     } catch (error) {
       logger.error('Error loading content queue:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Failed to load content queue",
         variant: "destructive"
@@ -204,7 +204,7 @@ const AIContentReview = () => {
         await sendRevisionRequest(selectedContent, reviewAction);
       }
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Success",
         description: `Content ${action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'sent for revision'}`
       });
@@ -217,7 +217,7 @@ const AIContentReview = () => {
 
     } catch (error) {
       logger.error('Error submitting review:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Failed to submit review",
         variant: "destructive"

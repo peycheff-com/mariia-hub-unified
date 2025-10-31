@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 import { useConversionOptimization } from '@/lib/conversion-optimization';
 import { conversionTester, useConversionTesting } from '@/lib/conversion-optimization-testing';
 
@@ -20,7 +20,7 @@ interface ConversionMetrics {
 }
 
 export const ConversionOptimizationDashboard = () => {
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const { getMetrics } = useConversionOptimization();
   const { validateFeatures, runTests, generateReport } = useConversionTesting();
 
@@ -57,7 +57,7 @@ export const ConversionOptimizationDashboard = () => {
       setMetrics(conversionMetrics);
     } catch (error) {
       console.error('Failed to load conversion metrics:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error Loading Metrics',
         description: 'Unable to load conversion optimization metrics.',
         variant: 'destructive',
@@ -144,19 +144,19 @@ export const ConversionOptimizationDashboard = () => {
       const averageImprovement = successfulTests.reduce((sum, test) => sum + (test.actualImprovement || 0), 0) / successfulTests.length;
 
       if (averageImprovement >= 25) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Tests Successful!',
           description: `Average improvement: ${averageImprovement.toFixed(1)}%`,
         });
       } else {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Tests Completed',
           description: `Average improvement: ${averageImprovement.toFixed(1)}%. Target not met.`,
           variant: 'destructive',
         });
       }
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Test Failed',
         description: 'Unable to run conversion tests.',
         variant: 'destructive',
@@ -180,12 +180,12 @@ export const ConversionOptimizationDashboard = () => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Report Generated',
         description: 'Conversion optimization report downloaded successfully.',
       });
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Report Generation Failed',
         description: 'Unable to generate conversion optimization report.',
         variant: 'destructive',
@@ -198,19 +198,19 @@ export const ConversionOptimizationDashboard = () => {
       const isValid = await validateFeatures();
 
       if (isValid) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Features Validated',
           description: 'All optimization features are working correctly.',
         });
       } else {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Validation Failed',
           description: 'Some optimization features need attention.',
           variant: 'destructive',
         });
       }
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Validation Failed',
         description: 'Unable to validate optimization features.',
         variant: 'destructive',

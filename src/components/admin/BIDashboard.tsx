@@ -66,7 +66,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 // Types for BI Analytics
 interface BIKPIData {
@@ -171,7 +171,7 @@ const BIDashboard: React.FC = () => {
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [forecastingEnabled, setForecastingEnabled] = useState(true);
   const [selectedMetric, setSelectedMetric] = useState('revenue');
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // Color palette for charts
   const COLORS = ['#8B4513', '#F5DEB3', '#D2691E', '#DEB887', '#BC8F8F', '#F4A460'];
@@ -193,7 +193,7 @@ const BIDashboard: React.FC = () => {
       ]);
     } catch (error) {
       console.error('Error loading BI data:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to load business intelligence data',
         variant: 'destructive'
@@ -485,12 +485,12 @@ const BIDashboard: React.FC = () => {
       a.click();
       URL.revokeObjectURL(url);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: 'Business Intelligence report exported successfully'
       });
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to export report',
         variant: 'destructive'

@@ -76,7 +76,7 @@ interface AlertRule {
   threshold: number;
   severity: 'low' | 'medium' | 'high' | 'critical';
   enabled: boolean;
-  notification aria-live="polite" aria-atomic="true"Channels: string[];
+  notificationChannels: string[];
   cooldownPeriod: number;
   lastTriggered?: string;
   triggerCount: number;
@@ -209,7 +209,7 @@ const AlertNotificationSystem: React.FC = () => {
       threshold: 90,
       severity: 'critical',
       enabled: true,
-      notification aria-live="polite" aria-atomic="true"Channels: ['email', 'slack', 'sms'],
+      notificationChannels: ['email', 'slack', 'sms'],
       cooldownPeriod: 300,
       triggerCount: 12,
       lastTriggered: '2024-01-15T09:30:00Z'
@@ -223,7 +223,7 @@ const AlertNotificationSystem: React.FC = () => {
       threshold: 30,
       severity: 'high',
       enabled: true,
-      notification aria-live="polite" aria-atomic="true"Channels: ['email', 'slack'],
+      notificationChannels: ['email', 'slack'],
       cooldownPeriod: 600,
       triggerCount: 8,
       lastTriggered: '2024-01-15T10:00:00Z'
@@ -237,7 +237,7 @@ const AlertNotificationSystem: React.FC = () => {
       threshold: 50,
       severity: 'medium',
       enabled: true,
-      notification aria-live="polite" aria-atomic="true"Channels: ['slack', 'in_app'],
+      notificationChannels: ['slack', 'in_app'],
       cooldownPeriod: 900,
       triggerCount: 3,
       lastTriggered: '2024-01-15T11:00:00Z'

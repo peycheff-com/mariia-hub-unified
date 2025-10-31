@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 import { format, subDays, subMonths, startOfDay, endOfDay } from 'date-fns';
 
 import { cn } from '@/lib/utils';
@@ -283,7 +283,7 @@ export const ContentAnalytics = ({
       setContentOptimizations(mockOptimizations);
     } catch (error) {
       console.error('Failed to load analytics data:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to load analytics data');
+      toast.error('Failed to load analytics data');
     } finally {
       setLoading(false);
     }
@@ -1080,7 +1080,7 @@ export const ContentAnalytics = ({
               Cancel
             </Button>
             <Button onClick={() => {
-              toast aria-live="polite" aria-atomic="true".success('Optimization analysis started');
+              toast.success('Optimization analysis started');
               setShowOptimizationDialog(false);
             }}>
               Generate Optimizations

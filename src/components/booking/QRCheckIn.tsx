@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 
@@ -36,7 +36,7 @@ interface BookingDetails {
 
 export function QRCheckIn({ bookingId, onCheckInComplete }: QRCheckInProps) {
   const { t } = useTranslation();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const [qrData, setQrData] = useState<string>('');
   const [scannerOpen, setScannerOpen] = useState(false);
   const [scanning, setScanning] = useState(false);
@@ -150,7 +150,7 @@ export function QRCheckIn({ bookingId, onCheckInComplete }: QRCheckInProps) {
       console.error('Error starting scanner:', error);
       setScanning(false);
       setScannerOpen(false);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('qr.scanError'),
         description: t('qr.scanErrorDesc'),
         variant: 'destructive',
@@ -199,7 +199,7 @@ export function QRCheckIn({ bookingId, onCheckInComplete }: QRCheckInProps) {
       await processCheckIn(data.bookingId);
       setCheckInStatus('success');
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('qr.checkInSuccess'),
         description: t('qr.checkInSuccessDesc'),
       });
@@ -209,7 +209,7 @@ export function QRCheckIn({ bookingId, onCheckInComplete }: QRCheckInProps) {
       console.error('Check-in error:', error);
       setCheckInStatus('error');
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('qr.checkInError'),
         description: error instanceof Error ? error.message : t('qr.checkInErrorDesc'),
         variant: 'destructive',

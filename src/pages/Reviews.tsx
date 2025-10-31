@@ -27,7 +27,7 @@ import { ReviewCard } from "@/components/reviews/ReviewCard";
 import ReviewForm from "@/components/reviews/ReviewForm";
 import { ReviewBadges } from "@/components/reviews/VerifiedBadges";
 import { SEOHead } from "@/components/seo/SEOHead";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
 interface Review {
@@ -66,7 +66,7 @@ interface Stats {
 
 export default function ReviewsPage() {
   const { user } = useAuth();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -99,7 +99,7 @@ export default function ReviewsPage() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Failed to load reviews",
         variant: "destructive",

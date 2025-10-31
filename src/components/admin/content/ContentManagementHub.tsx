@@ -27,7 +27,7 @@ import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 // Import our new components
 import RichTextEditor from './RichTextEditor';
@@ -118,7 +118,7 @@ const ContentManagementHub: React.FC = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showContentEditor, setShowContentEditor] = useState(false);
   const [editingContent, setEditingContent] = useState<ContentItem | null>(null);
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // Mock data
   useEffect(() => {

@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { useTranslation } from 'react-i18next';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import {
   Crown,
   Diamond,
@@ -721,7 +721,7 @@ interface VIPClientProfile {
     contactFrequency: string;
     communicationStyle: string;
     privacyLevel: string;
-    notification aria-live="polite" aria-atomic="true"Preferences: Record<string, boolean>;
+    notificationPreferences: Record<string, boolean>;
   };
   businessInfo?: {
     industry: string;
@@ -855,7 +855,7 @@ const VIPExperienceEnhancement: React.FC<VIPExperienceEnhancementProps> = ({
   viewMode = 'concierge'
 }) => {
   const { t } = useTranslation();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // State management
   const [activeTab, setActiveTab] = useState('profile');
@@ -916,7 +916,7 @@ const VIPExperienceEnhancement: React.FC<VIPExperienceEnhancementProps> = ({
 
     } catch (error) {
       console.error('Failed to initialize VIP system:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "VIP System Initialization Failed",
         description: "Unable to load VIP experience data",
         variant: "destructive"
@@ -964,7 +964,7 @@ const VIPExperienceEnhancement: React.FC<VIPExperienceEnhancementProps> = ({
           contactFrequency: 'weekly',
           communicationStyle: 'formal',
           privacyLevel: 'high',
-          notification aria-live="polite" aria-atomic="true"Preferences: {
+          notificationPreferences: {
             appointments: true,
             promotions: false,
             birthday: true,
@@ -1127,7 +1127,7 @@ const VIPExperienceEnhancement: React.FC<VIPExperienceEnhancementProps> = ({
         satisfaction: 5,
         feedback: 'Absolutely perfect! Made our anniversary unforgettable.',
         photos: ['/photos/anniversary1.jpg', '/photos/anniversary2.jpg'],
-        memories: ['Champagne toast aria-live="polite" aria-atomic="true"', 'Personalized music playlist', 'Surprise gift'],
+        memories: ['Champagne toast', 'Personalized music playlist', 'Surprise gift'],
         tags: ['anniversary', 'couple', 'celebration', 'makeover'],
         createdAt: '2024-01-15T10:00:00Z',
         updatedAt: '2024-01-20T18:00:00Z'
@@ -1244,7 +1244,7 @@ const VIPExperienceEnhancement: React.FC<VIPExperienceEnhancementProps> = ({
     setRefreshing(true);
     await initializeVIPSystem();
     setRefreshing(false);
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: "VIP Data Refreshed",
       description: "All VIP experience data has been updated"
     });

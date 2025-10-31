@@ -47,7 +47,7 @@ import {
   ContentOptimization
 } from '@/types/marketing';
 import { format } from 'date-fns';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 interface SocialMediaAutomationProps {
   className?: string;
@@ -113,7 +113,7 @@ export const SocialMediaAutomation: React.FC<SocialMediaAutomationProps> = ({ cl
       setCalendarEvents(events);
     } catch (error) {
       console.error('Error loading social media data:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to load social media data');
+      toast.error('Failed to load social media data');
     } finally {
       setIsLoading(false);
     }
@@ -136,10 +136,10 @@ export const SocialMediaAutomation: React.FC<SocialMediaAutomationProps> = ({ cl
       setContent([result, ...content]);
       setIsCreateDialogOpen(false);
       resetContentForm();
-      toast aria-live="polite" aria-atomic="true".success('Social media content created successfully');
+      toast.success('Social media content created successfully');
     } catch (error) {
       console.error('Error creating content:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to create content');
+      toast.error('Failed to create content');
     }
   };
 
@@ -147,10 +147,10 @@ export const SocialMediaAutomation: React.FC<SocialMediaAutomationProps> = ({ cl
     try {
       await marketingService.scheduleContent(contentId, scheduledFor);
       await loadData();
-      toast aria-live="polite" aria-atomic="true".success('Content scheduled successfully');
+      toast.success('Content scheduled successfully');
     } catch (error) {
       console.error('Error scheduling content:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to schedule content');
+      toast.error('Failed to schedule content');
     }
   };
 
@@ -158,10 +158,10 @@ export const SocialMediaAutomation: React.FC<SocialMediaAutomationProps> = ({ cl
     try {
       await marketingService.postContent(contentId);
       await loadData();
-      toast aria-live="polite" aria-atomic="true".success('Content posted successfully');
+      toast.success('Content posted successfully');
     } catch (error) {
       console.error('Error posting content:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to post content');
+      toast.error('Failed to post content');
     }
   };
 
@@ -190,7 +190,7 @@ export const SocialMediaAutomation: React.FC<SocialMediaAutomationProps> = ({ cl
       setOptimizationSuggestions(suggestions);
     } catch (error) {
       console.error('Error optimizing content:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to optimize content');
+      toast.error('Failed to optimize content');
     }
   };
 
@@ -214,10 +214,10 @@ export const SocialMediaAutomation: React.FC<SocialMediaAutomationProps> = ({ cl
       setSchedulingRules([...schedulingRules, newRule]);
       setIsScheduleRuleDialogOpen(false);
       resetScheduleRuleForm();
-      toast aria-live="polite" aria-atomic="true".success('Scheduling rule created successfully');
+      toast.success('Scheduling rule created successfully');
     } catch (error) {
       console.error('Error creating scheduling rule:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to create scheduling rule');
+      toast.error('Failed to create scheduling rule');
     }
   };
 

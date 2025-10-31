@@ -52,7 +52,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { pricingService, PricingRuleInsert, PricingRuleConditions } from '@/services/pricing.service'
 import { servicesService } from '@/services/services.service'
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"'
+import { useToast } from '@/hooks/use-toast'
 
 const ruleSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -107,7 +107,7 @@ const RULE_TYPE_DESCRIPTIONS = {
 
 export function PricingRuleWizard({ open, onOpenChange, rule, onSuccess }: PricingRuleWizardProps) {
   const { t } = useTranslation()
-  const { toast aria-live="polite" aria-atomic="true" } = useToast()
+  const { toast } = useToast()
   const [services, setServices] = useState<any[]>([])
   const [currentStep, setCurrentStep] = useState(0)
   const [previewPrice, setPreviewPrice] = useState<number | null>(null)
@@ -222,13 +222,13 @@ export function PricingRuleWizard({ open, onOpenChange, rule, onSuccess }: Prici
     try {
       if (rule?.id) {
         await pricingService.updatePricingRule(rule.id, data)
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: t('pricing.ruleUpdated'),
           description: t('pricing.ruleUpdatedDescription')
         })
       } else {
         await pricingService.createPricingRule(data)
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: t('pricing.ruleCreated'),
           description: t('pricing.ruleCreatedDescription')
         })
@@ -238,7 +238,7 @@ export function PricingRuleWizard({ open, onOpenChange, rule, onSuccess }: Prici
       onOpenChange(false)
     } catch (error) {
       console.error('Error saving rule:', error)
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('pricing.error'),
         description: t('pricing.saveError'),
         variant: 'destructive'

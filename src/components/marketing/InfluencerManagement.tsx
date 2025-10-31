@@ -54,7 +54,7 @@ import {
   InfluencerCollaborationRequest
 } from '@/types/marketing';
 import { format } from 'date-fns';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 interface InfluencerManagementProps {
   className?: string;
@@ -128,7 +128,7 @@ export const InfluencerManagement: React.FC<InfluencerManagementProps> = ({ clas
       setAffiliatePrograms(affiliateProgramsData);
     } catch (error) {
       console.error('Error loading influencer data:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to load influencer data');
+      toast.error('Failed to load influencer data');
     } finally {
       setIsLoading(false);
     }
@@ -180,10 +180,10 @@ export const InfluencerManagement: React.FC<InfluencerManagementProps> = ({ clas
       setInfluencers([influencer, ...influencers]);
       setIsCreateInfluencerDialogOpen(false);
       resetInfluencerForm();
-      toast aria-live="polite" aria-atomic="true".success('Influencer added successfully');
+      toast.success('Influencer added successfully');
     } catch (error) {
       console.error('Error creating influencer:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to add influencer');
+      toast.error('Failed to add influencer');
     }
   };
 
@@ -193,10 +193,10 @@ export const InfluencerManagement: React.FC<InfluencerManagementProps> = ({ clas
       setCollaborations([collaboration, ...collaborations]);
       setIsCreateCollaborationDialogOpen(false);
       resetCollaborationForm();
-      toast aria-live="polite" aria-atomic="true".success('Collaboration created successfully');
+      toast.success('Collaboration created successfully');
     } catch (error) {
       console.error('Error creating collaboration:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to create collaboration');
+      toast.error('Failed to create collaboration');
     }
   };
 

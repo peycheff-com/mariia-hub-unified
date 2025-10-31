@@ -39,7 +39,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"'
+import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 
 
@@ -177,7 +177,7 @@ const TemplatePreview: React.FC<TemplatePreviewProps> = ({ template, previewData
 
 export const TemplateManager: React.FC<TemplateManagerProps> = ({ className }) => {
   const { t } = useTranslation()
-  const { toast aria-live="polite" aria-atomic="true" } = useToast()
+  const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [templates, setTemplates] = useState<MarketingTemplate[]>([
@@ -263,7 +263,7 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({ className }) =
   // Handle template creation
   const handleCreateTemplate = () => {
     if (!formData.name || !formData.body_template) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('error', 'Error'),
         description: t('template_name_and_body_required', 'Template name and body are required'),
         variant: 'destructive'
@@ -291,7 +291,7 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({ className }) =
     setShowCreateDialog(false)
     resetForm()
 
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: t('success', 'Success'),
       description: t('template_created', 'Template created successfully')
     })
@@ -316,7 +316,7 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({ className }) =
     setTemplates(prev => prev.map(t => t.id === selectedTemplate.id ? updatedTemplate : t))
     setSelectedTemplate(updatedTemplate)
 
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: t('success', 'Success'),
       description: t('template_updated', 'Template updated successfully')
     })
@@ -333,7 +333,7 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({ className }) =
       setSelectedTemplate(null)
     }
 
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: t('template_deleted', 'Template Deleted'),
       description: t('template_deleted_description', 'The template has been deleted')
     })
@@ -351,7 +351,7 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({ className }) =
 
     setTemplates(prev => [duplicated, ...prev])
 
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: t('template_duplicated', 'Template Duplicated'),
       description: t('template_duplicated_description', 'The template has been duplicated')
     })
@@ -372,7 +372,7 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({ className }) =
     }
 
     if (recipients.length === 0) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('error', 'Error'),
         description: t('provide_test_recipient', 'Please provide at least one test recipient'),
         variant: 'destructive'
@@ -381,7 +381,7 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({ className }) =
     }
 
     // Simulate sending test
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: t('test_sent', 'Test Sent'),
       description: t('template_test_sent', 'Test template has been sent to recipients')
     })
@@ -418,12 +418,12 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({ className }) =
 
         setTemplates(prev => [imported, ...prev])
 
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: t('import_successful', 'Import Successful'),
           description: t('template_imported', 'Template imported successfully')
         })
       } catch (error) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: t('import_failed', 'Import Failed'),
           description: t('invalid_template_file', 'Invalid template file'),
           variant: 'destructive'

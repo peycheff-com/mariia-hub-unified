@@ -40,7 +40,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { businessIntelligenceService } from '@/services/business-intelligence.service';
 import { AnalyticsFilters } from '@/types/analytics';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 interface RevenueForecastData {
   currentPeriod: {
@@ -110,7 +110,7 @@ const RevenueForecasting = () => {
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [forecastHorizon, setForecastHorizon] = useState('90d');
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     loadForecastData();
@@ -301,7 +301,7 @@ const RevenueForecasting = () => {
       setForecastData(mockData);
 
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to load revenue forecasting data',
         variant: 'destructive'

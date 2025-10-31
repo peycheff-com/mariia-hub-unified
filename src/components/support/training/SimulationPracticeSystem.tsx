@@ -441,7 +441,7 @@ const SimulationPracticeSystem: React.FC = () => {
             title: 'Information Gathering',
             description: 'Listen to the client\'s full explanation and gather necessary information',
             content: {
-              situation: 'The client explains they had an important business meeting and the appointment was cancelled without proper notification aria-live="polite" aria-atomic="true".'
+              situation: 'The client explains they had an important business meeting and the appointment was cancelled without proper notification.'
             },
             points: 15,
             required: true,

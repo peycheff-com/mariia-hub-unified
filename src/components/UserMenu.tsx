@@ -4,7 +4,7 @@ import { User, Settings, LogOut, Calendar, Heart, Shield } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 
 import { Button } from "./ui/button";
 import {
@@ -34,7 +34,7 @@ const UserMenu = ({ user }: UserMenuProps) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (user) {
@@ -74,7 +74,7 @@ const UserMenu = ({ user }: UserMenuProps) => {
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: error.message,
         variant: "destructive",

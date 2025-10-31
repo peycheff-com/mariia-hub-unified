@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Share2, Copy, Check, Users, Gift, MessageCircle, Mail, Facebook, Twitter, Plus, UserPlus } from 'lucide-react';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,10 +44,10 @@ export function ReferralShare({ className }: ReferralShareProps) {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      toast aria-live="polite" aria-atomic="true".success(`${type === 'code' ? 'Referral code' : 'Referral link'} copied!`);
+      toast.success(`${type === 'code' ? 'Referral code' : 'Referral link'} copied!`);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true".error('Failed to copy');
+      toast.error('Failed to copy');
     }
   };
 
@@ -71,7 +71,7 @@ export function ReferralShare({ className }: ReferralShareProps) {
 
   const handleCreateReferral = async () => {
     if (!referralForm.email) {
-      toast aria-live="polite" aria-atomic="true".error('Email is required');
+      toast.error('Email is required');
       return;
     }
 

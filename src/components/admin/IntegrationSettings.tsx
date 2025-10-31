@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { logger } from "@/lib/logger";
 
@@ -84,7 +84,7 @@ export function IntegrationSettings() {
   const [settings, setSettings] = useState<Setting[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchSettings();
@@ -101,7 +101,7 @@ export function IntegrationSettings() {
       setSettings(data || []);
     } catch (error) {
       logger.error("Error fetching settings:", error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Failed to load settings",
         variant: "destructive",
@@ -125,7 +125,7 @@ export function IntegrationSettings() {
 
       if (error) throw error;
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Success",
         description: "Setting saved successfully",
       });
@@ -133,7 +133,7 @@ export function IntegrationSettings() {
       await fetchSettings();
     } catch (error) {
       logger.error("Error saving setting:", error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Failed to save setting",
         variant: "destructive",

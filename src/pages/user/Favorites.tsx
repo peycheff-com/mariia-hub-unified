@@ -19,7 +19,7 @@ import {
   AlertCircle,
   Check
 } from 'lucide-react';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -58,10 +58,10 @@ const UserFavorites: React.FC = () => {
     mutationFn: (favoriteId: string) => favoritesService.removeFavorite(favoriteId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-favorites'] });
-      toast aria-live="polite" aria-atomic="true".success(t('user.favorites.removeSuccess'));
+      toast.success(t('user.favorites.removeSuccess'));
     },
     onError: () => {
-      toast aria-live="polite" aria-atomic="true".error(t('user.favorites.removeError'));
+      toast.error(t('user.favorites.removeError'));
     },
   });
 
@@ -73,10 +73,10 @@ const UserFavorites: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['user-favorites'] });
       setNotesDialogOpen(false);
       setEditingNotes(null);
-      toast aria-live="polite" aria-atomic="true".success(t('user.favorites.notesUpdateSuccess'));
+      toast.success(t('user.favorites.notesUpdateSuccess'));
     },
     onError: () => {
-      toast aria-live="polite" aria-atomic="true".error(t('user.favorites.notesUpdateError'));
+      toast.error(t('user.favorites.notesUpdateError'));
     },
   });
 
@@ -86,7 +86,7 @@ const UserFavorites: React.FC = () => {
       favoritesService.updateNotificationPreference(favoriteId, enabled),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-favorites'] });
-      toast aria-live="polite" aria-atomic="true".success(t('user.favorites.notification aria-live="polite" aria-atomic="true"UpdateSuccess'));
+      toast.success(t('user.favorites.notification aria-live="polite" aria-atomic="true"UpdateSuccess'));
     },
   });
 

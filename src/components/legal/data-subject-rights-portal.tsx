@@ -104,7 +104,7 @@ export function DataSubjectRightsPortal() {
       ],
       preferences: {
         language: 'en',
-        notification aria-live="polite" aria-atomic="true"s: true,
+        notifications: true,
         marketing: false,
       },
       exportDate: new Date().toISOString(),

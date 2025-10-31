@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 import { format, addDays, isAfter, isBefore, startOfDay } from 'date-fns';
 
 // UI Components
@@ -440,7 +440,7 @@ export function RecommendationEngine({
       });
 
     if (type === 'like') {
-      toast aria-live="polite" aria-atomic="true".success(t('recommendations.feedbackThanks'));
+      toast.success(t('recommendations.feedbackThanks'));
     }
   };
 

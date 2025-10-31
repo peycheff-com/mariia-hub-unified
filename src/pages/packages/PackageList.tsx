@@ -14,7 +14,7 @@ import {
   Calendar
 } from 'lucide-react';
 
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 import { SEO } from '@/components/SEO';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
@@ -33,7 +33,7 @@ import { cn } from '@/lib/utils';
 const PackageList = () => {
   const { i18n } = useTranslation();
   const { formatPrice } = useCurrency();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // State
   const [searchTerm, setSearchTerm] = useState('');
@@ -106,7 +106,7 @@ const PackageList = () => {
   };
 
   const handlePurchaseSuccess = (clientPackage: ClientPackage) => {
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: i18n.t('package.purchaseSuccess', 'Package Purchased!'),
       description: i18n.t('package.purchaseSuccessDesc', 'Your package has been successfully purchased.'),
     });
@@ -118,7 +118,7 @@ const PackageList = () => {
 
   const handlePackageInfo = (pkg: ServicePackage) => {
     // Could open a detail modal or navigate to detail page
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: pkg.name,
       description: pkg.description,
     });

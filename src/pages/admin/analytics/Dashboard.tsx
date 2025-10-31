@@ -35,7 +35,7 @@ import { ClientDemographics } from '@/components/admin/analytics/ClientDemograph
 import { ProviderPerformance } from '@/components/admin/analytics/ProviderPerformance';
 import { TimeAnalysis } from '@/components/admin/analytics/TimeAnalysis';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 interface KPICard {
   title: string;
@@ -60,7 +60,7 @@ export default function AnalyticsDashboard() {
   const [loading, setLoading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState<number>(60000); // 1 minute
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchKPIData();
@@ -211,7 +211,7 @@ export default function AnalyticsDashboard() {
       setKpis(newKpis);
     } catch (error) {
       console.error('Error fetching KPI data:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to fetch KPI data',
         variant: 'destructive',
@@ -297,12 +297,12 @@ export default function AnalyticsDashboard() {
       a.click();
       URL.revokeObjectURL(url);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: 'Analytics data exported successfully',
       });
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to export data',
         variant: 'destructive',

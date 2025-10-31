@@ -38,7 +38,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 
 interface MobilePerformanceProps {
   className?: string;
@@ -89,7 +89,7 @@ interface ResourceTiming {
 
 export function MobilePerformance({ className = '' }: MobilePerformanceProps) {
   const { t } = useTranslation();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -237,13 +237,13 @@ export function MobilePerformance({ className = '' }: MobilePerformanceProps) {
       // Update cache usage
       await updateCacheUsage();
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('mobilePerformance.analysisComplete'),
         description: t('mobilePerformance.analysisCompleteDesc'),
       });
     } catch (error) {
       console.error('Performance analysis failed:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('mobilePerformance.analysisFailed'),
         description: t('mobilePerformance.analysisFailedDesc'),
         variant: 'destructive',
@@ -251,7 +251,7 @@ export function MobilePerformance({ className = '' }: MobilePerformanceProps) {
     } finally {
       setIsAnalyzing(false);
     }
-  }, [toast aria-live="polite" aria-atomic="true", t]);
+  }, [toast, t]);
 
   const collectPerformanceMetrics = async (): Promise<PerformanceMetrics> => {
     return new Promise((resolve) => {
@@ -353,13 +353,13 @@ export function MobilePerformance({ className = '' }: MobilePerformanceProps) {
 
         await updateCacheUsage();
 
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: t('mobilePerformance.cacheCleared'),
           description: t('mobilePerformance.cacheClearedDesc'),
         });
       } catch (error) {
         console.error('Failed to clear cache:', error);
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: t('mobilePerformance.cacheClearFailed'),
           description: t('mobilePerformance.cacheClearFailedDesc'),
           variant: 'destructive',

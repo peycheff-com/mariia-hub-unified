@@ -42,7 +42,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { businessIntelligenceService } from '@/services/business-intelligence.service';
 import { AnalyticsFilters, AnalyticsQuery } from '@/types/analytics';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 interface ConversionFunnelData {
   stage: string;
@@ -96,7 +96,7 @@ const BookingConversionAnalytics = () => {
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [selectedService, setSelectedService] = useState('all');
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     loadConversionData();
@@ -276,7 +276,7 @@ const BookingConversionAnalytics = () => {
       setMetrics(mockData);
 
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to load conversion analytics data',
         variant: 'destructive'

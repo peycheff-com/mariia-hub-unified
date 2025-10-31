@@ -141,7 +141,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 interface DailyOperationsDashboardProps {
@@ -149,7 +149,7 @@ interface DailyOperationsDashboardProps {
 }
 
 export function DailyOperationsDashboard({ className }: DailyOperationsDashboardProps) {
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const [selectedTimeRange, setSelectedTimeRange] = useState("today");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
@@ -380,7 +380,7 @@ export function DailyOperationsDashboard({ className }: DailyOperationsDashboard
       icon: CalendarPlus,
       color: "from-blue-500 to-cyan-500",
       action: () => {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Opening booking form...",
           description: "New appointment booking interface",
         });
@@ -394,7 +394,7 @@ export function DailyOperationsDashboard({ className }: DailyOperationsDashboard
       icon: UserPlus,
       color: "from-purple-500 to-pink-500",
       action: () => {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Opening client form...",
           description: "New client registration",
         });
@@ -408,7 +408,7 @@ export function DailyOperationsDashboard({ className }: DailyOperationsDashboard
       icon: CreditCard,
       color: "from-emerald-500 to-teal-500",
       action: () => {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Opening payment interface...",
           description: "Payment processing",
         });
@@ -422,7 +422,7 @@ export function DailyOperationsDashboard({ className }: DailyOperationsDashboard
       icon: MessageCircle,
       color: "from-amber-500 to-orange-500",
       action: () => {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Opening messaging...",
           description: "Client communication",
         });
@@ -436,7 +436,7 @@ export function DailyOperationsDashboard({ className }: DailyOperationsDashboard
       icon: Calendar,
       color: "from-rose-500 to-pink-500",
       action: () => {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Opening schedule...",
           description: "Daily calendar view",
         });
@@ -450,7 +450,7 @@ export function DailyOperationsDashboard({ className }: DailyOperationsDashboard
       icon: BarChart3,
       color: "from-indigo-500 to-purple-500",
       action: () => {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Generating report...",
           description: "Daily performance report",
         });
@@ -521,14 +521,14 @@ export function DailyOperationsDashboard({ className }: DailyOperationsDashboard
     // Simulate API refresh
     await new Promise(resolve => setTimeout(resolve, 1000));
     setIsLoading(false);
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: "Data refreshed",
       description: "Dashboard updated with latest information",
     });
   };
 
   const handleAlertAction = (alert: any) => {
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: "Processing action...",
       description: `Opening ${alert.action}`,
     });
@@ -543,7 +543,7 @@ export function DailyOperationsDashboard({ className }: DailyOperationsDashboard
           : task
       )
     }));
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: "Task completed",
       description: "Great job! Task marked as complete",
     });

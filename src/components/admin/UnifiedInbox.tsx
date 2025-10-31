@@ -36,7 +36,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"'
+import { useToast } from '@/hooks/use-toast'
 import { useMessaging, type MessageThreadWithDetails, type MessagingFilters } from '@/hooks/useMessaging'
 import { ConversationView } from '@/components/messaging/ConversationView'
 import { MessageComposer } from '@/components/messaging/MessageComposer'
@@ -51,7 +51,7 @@ interface UnifiedInboxProps {
 export const UnifiedInbox: React.FC<UnifiedInboxProps> = ({ className }) => {
   const { t, i18n } = useTranslation()
   const locale = i18n.language === 'pl' ? pl : enUS
-  const { toast aria-live="polite" aria-atomic="true" } = useToast()
+  const { toast } = useToast()
 
   // Messaging state
   const {
@@ -140,7 +140,7 @@ export const UnifiedInbox: React.FC<UnifiedInboxProps> = ({ className }) => {
   // Handle creating new thread
   const handleCreateThread = async () => {
     if (!newConversationData.clientId) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('error', 'Error'),
         description: t('select_client', 'Please select a client'),
         variant: 'destructive'
@@ -164,7 +164,7 @@ export const UnifiedInbox: React.FC<UnifiedInboxProps> = ({ className }) => {
         initialMessage: ''
       })
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('success', 'Success'),
         description: t('conversation_created', 'Conversation created successfully')
       })
@@ -194,7 +194,7 @@ export const UnifiedInbox: React.FC<UnifiedInboxProps> = ({ className }) => {
         await updateThreadStatus(threadId, 'archived')
       }
       setSelectedThreads([])
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('success', 'Success'),
         description: t('threads_archived', 'Threads archived successfully')
       })
@@ -213,7 +213,7 @@ export const UnifiedInbox: React.FC<UnifiedInboxProps> = ({ className }) => {
       setSelectedThreads([])
       setShowAssignDialog(false)
       setAssignedTo(null)
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('success', 'Success'),
         description: t('threads_assigned', 'Threads assigned successfully')
       })

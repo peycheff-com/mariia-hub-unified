@@ -32,7 +32,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AvailabilitySlot, Booking } from '@/hooks/useAvailability';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 
@@ -66,7 +66,7 @@ const UnifiedAvailabilityCalendar = ({
   onAddSlot,
   onRefresh
 }: UnifiedAvailabilityCalendarProps) => {
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [dayViewOpen, setDayViewOpen] = useState(false);
@@ -210,7 +210,7 @@ const UnifiedAvailabilityCalendar = ({
 
       setEvents(allEvents);
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to load calendar events',
         variant: 'destructive',
@@ -269,7 +269,7 @@ const UnifiedAvailabilityCalendar = ({
     });
 
     if (hasConflict) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Slot Occupied',
         description: 'This time slot is already booked or blocked',
         variant: 'destructive',
@@ -305,7 +305,7 @@ const UnifiedAvailabilityCalendar = ({
 
       if (error) throw error;
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: 'Block created successfully',
       });
@@ -315,7 +315,7 @@ const UnifiedAvailabilityCalendar = ({
       loadDayEvents();
       onRefresh();
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message || 'Failed to create block',
         variant: 'destructive',
@@ -350,7 +350,7 @@ const UnifiedAvailabilityCalendar = ({
         if (error) throw error;
       }
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: `${event.type} deleted successfully`,
       });
@@ -358,7 +358,7 @@ const UnifiedAvailabilityCalendar = ({
       loadDayEvents();
       onRefresh();
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message || 'Failed to delete event',
         variant: 'destructive',
@@ -369,9 +369,9 @@ const UnifiedAvailabilityCalendar = ({
   const handleBookingUpdate = async (bookingId: string, updates: any) => {
     const { error } = await supabase.from('bookings').update(updates).eq('id', bookingId);
     if (error) {
-      toast aria-live="polite" aria-atomic="true"({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
-      toast aria-live="polite" aria-atomic="true"({ title: 'Success', description: 'Booking updated' });
+      toast({ title: 'Success', description: 'Booking updated' });
       setEditingBooking(null);
       onRefresh();
     }
@@ -391,10 +391,10 @@ const UnifiedAvailabilityCalendar = ({
         body: { bookingId, amount, reason: 'admin_initiated' }
       });
       if (error) throw error;
-      toast aria-live="polite" aria-atomic="true"({ title: 'Refund issued' });
+      toast({ title: 'Refund issued' });
       onRefresh();
     } catch (e: any) {
-      toast aria-live="polite" aria-atomic="true"({ title: 'Refund failed', description: e?.message, variant: 'destructive' });
+      toast({ title: 'Refund failed', description: e?.message, variant: 'destructive' });
     }
   };
 

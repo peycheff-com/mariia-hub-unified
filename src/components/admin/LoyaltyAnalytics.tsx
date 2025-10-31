@@ -31,7 +31,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { format, subDays, startOfMonth, endOfMonth } from 'date-fns';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -168,7 +168,7 @@ export const LoyaltyAnalytics: React.FC<LoyaltyAnalyticsProps> = ({ className })
       setData(mockData);
     } catch (error) {
       console.error('Error loading analytics:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to load analytics data');
+      toast.error('Failed to load analytics data');
     } finally {
       setLoading(false);
     }
@@ -178,15 +178,15 @@ export const LoyaltyAnalytics: React.FC<LoyaltyAnalyticsProps> = ({ className })
     setRefreshing(true);
     await loadAnalyticsData();
     setRefreshing(false);
-    toast aria-live="polite" aria-atomic="true".success('Analytics refreshed');
+    toast.success('Analytics refreshed');
   };
 
   const handleExport = async () => {
     try {
       // Export functionality would be implemented here
-      toast aria-live="polite" aria-atomic="true".success('Analytics exported successfully');
+      toast.success('Analytics exported successfully');
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true".error('Failed to export analytics');
+      toast.error('Failed to export analytics');
     }
   };
 

@@ -49,7 +49,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 interface AIOptimizationSuggestion {
   id: string;
@@ -156,7 +156,7 @@ const AIContentOptimizer: React.FC = () => {
   const [templates, setTemplates] = useState<AIContentTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<AIContentTemplate | null>(null);
   const [appliedSuggestions, setAppliedSuggestions] = useState<Set<string>>(new Set());
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // Mock AI templates
   useEffect(() => {
@@ -372,7 +372,7 @@ A: [DETAILED_ANSWER_3]
 
   const analyzeContent = useCallback(async () => {
     if (!content.trim()) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Please enter some content to analyze',
         variant: 'destructive',
@@ -495,12 +495,12 @@ A: [DETAILED_ANSWER_3]
       );
 
       setAnalysis(mockAnalysis);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Analysis Complete',
         description: 'AI analysis finished with actionable recommendations',
       });
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Analysis Failed',
         description: 'Unable to analyze content. Please try again.',
         variant: 'destructive',
@@ -508,7 +508,7 @@ A: [DETAILED_ANSWER_3]
     } finally {
       setIsAnalyzing(false);
     }
-  }, [content, selectedContentType, targetAudience, primaryKeyword, secondaryKeywords, selectedTone, goals, toast aria-live="polite" aria-atomic="true"]);
+  }, [content, selectedContentType, targetAudience, primaryKeyword, secondaryKeywords, selectedTone, goals, toast]);
 
   const applySuggestion = useCallback((suggestionId: string) => {
     if (!analysis) return;
@@ -526,11 +526,11 @@ A: [DETAILED_ANSWER_3]
       )
     }));
 
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: 'Suggestion Applied',
       description: `"${suggestion.title}" has been applied to your content.`,
     });
-  }, [analysis, toast aria-live="polite" aria-atomic="true"]);
+  }, [analysis, toast]);
 
   const generateFromTemplate = useCallback(async (template: AIContentTemplate) => {
     setIsGenerating(true);
@@ -544,12 +544,12 @@ A: [DETAILED_ANSWER_3]
       setContent(template.template);
       setSelectedTemplate(template);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Content Generated',
         description: `Content generated using "${template.name}" template`,
       });
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Generation Failed',
         description: 'Unable to generate content. Please try again.',
         variant: 'destructive',
@@ -557,7 +557,7 @@ A: [DETAILED_ANSWER_3]
     } finally {
       setIsGenerating(false);
     }
-  }, [toast aria-live="polite" aria-atomic="true"]);
+  }, [toast]);
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600';

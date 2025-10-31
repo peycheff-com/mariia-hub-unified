@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 import { waitlistService } from '@/services/waitlist.service';
 import { WaitlistEntry } from '@/types/booking';
 import { logger } from '@/lib/logger';
@@ -26,7 +26,7 @@ interface WaitlistStats {
 }
 
 export function WaitlistDashboard() {
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const [waitlistEntries, setWaitlistEntries] = useState<WaitlistEntry[]>([]);
   const [stats, setStats] = useState<WaitlistStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -72,7 +72,7 @@ export function WaitlistDashboard() {
       setWaitlistEntries(filteredEntries);
     } catch (error) {
       logger.error('Error loading waitlist data:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to load waitlist data',
         variant: 'destructive',
@@ -88,20 +88,20 @@ export function WaitlistDashboard() {
       const bookingId = await waitlistService.promoteWaitlistEntry(entryId);
 
       if (bookingId) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Success',
           description: `Waitlist entry promoted to booking ${bookingId}`,
         });
         await loadWaitlistData();
       } else {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Info',
           description: 'No available slots found for promotion',
         });
       }
     } catch (error) {
       logger.error('Error promoting waitlist entry:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to promote waitlist entry',
         variant: 'destructive',
@@ -114,14 +114,14 @@ export function WaitlistDashboard() {
   const handleRemoveEntry = async (entryId: string) => {
     try {
       await waitlistService.removeFromWaitlist(entryId);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: 'Waitlist entry removed',
       });
       await loadWaitlistData();
     } catch (error) {
       logger.error('Error removing waitlist entry:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to remove waitlist entry',
         variant: 'destructive',
@@ -133,7 +133,7 @@ export function WaitlistDashboard() {
     setIsRefreshing(true);
     await loadWaitlistData();
     setIsRefreshing(false);
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: 'Refreshed',
       description: 'Waitlist data updated',
     });

@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
@@ -44,7 +44,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
 }) => {
   const { i18n } = useTranslation();
   const { formatPrice, currency } = useCurrency();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const handlePurchase = () => {
     if (onPurchase) {

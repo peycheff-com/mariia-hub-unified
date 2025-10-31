@@ -50,7 +50,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { businessIntelligenceService } from '@/services/business-intelligence.service';
 import { ServiceProfitabilityData, AnalyticsFilters } from '@/types/analytics';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 interface ServicePerformanceMetrics {
   overview: {
@@ -131,7 +131,7 @@ const ServicePerformanceAnalysis = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('revenue');
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     loadServiceData();
@@ -404,7 +404,7 @@ const ServicePerformanceAnalysis = () => {
       setMetrics(mockData);
 
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to load service performance data',
         variant: 'destructive'

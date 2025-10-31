@@ -27,7 +27,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 interface Collaborator {
   id: string;
@@ -129,7 +129,7 @@ const ContentCollaboration: React.FC = () => {
   const [inviteRole, setInviteRole] = useState<'editor' | 'reviewer' | 'commenter' | 'viewer'>('editor');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // Mock data
   useEffect(() => {
@@ -315,7 +315,7 @@ const ContentCollaboration: React.FC = () => {
 
   const inviteCollaborator = useCallback(async () => {
     if (!inviteEmail) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Email Required',
         description: 'Please enter an email address',
         variant: 'destructive'
@@ -351,18 +351,18 @@ const ContentCollaboration: React.FC = () => {
       setInviteEmail('');
       setShowInviteDialog(false);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Invitation Sent',
         description: `Invitation sent to ${inviteEmail}`,
       });
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Invitation Failed',
         description: 'Unable to send invitation',
         variant: 'destructive'
       });
     }
-  }, [inviteEmail, inviteRole, toast aria-live="polite" aria-atomic="true"]);
+  }, [inviteEmail, inviteRole, toast]);
 
   const addComment = useCallback(async () => {
     if (!newComment.trim()) return;
@@ -396,18 +396,18 @@ const ContentCollaboration: React.FC = () => {
       };
       setActivities(prev => [activity, ...prev]);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Comment Added',
         description: 'Your comment has been added successfully',
       });
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Failed to Add Comment',
         description: 'Unable to add comment',
         variant: 'destructive'
       });
     }
-  }, [newComment, collaborators, toast aria-live="polite" aria-atomic="true"]);
+  }, [newComment, collaborators, toast]);
 
   const addReply = useCallback(async (commentId: string) => {
     if (!replyText.trim()) return;
@@ -441,18 +441,18 @@ const ContentCollaboration: React.FC = () => {
       setReplyText('');
       setReplyingTo(null);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Reply Added',
         description: 'Your reply has been added successfully',
       });
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Failed to Add Reply',
         description: 'Unable to add reply',
         variant: 'destructive'
       });
     }
-  }, [replyText, collaborators, toast aria-live="polite" aria-atomic="true"]);
+  }, [replyText, collaborators, toast]);
 
   const resolveComment = useCallback(async (commentId: string) => {
     try {
@@ -470,34 +470,34 @@ const ContentCollaboration: React.FC = () => {
         return comment;
       }));
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Comment Resolved',
         description: 'The comment has been marked as resolved',
       });
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Failed to Resolve',
         description: 'Unable to resolve comment',
         variant: 'destructive'
       });
     }
-  }, [collaborators, toast aria-live="polite" aria-atomic="true"]);
+  }, [collaborators, toast]);
 
   const startVideoCall = useCallback(async () => {
     try {
       setIsVideoCallActive(true);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Video Call Started',
         description: 'Video call session has been initiated',
       });
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Failed to Start Call',
         description: 'Unable to start video call',
         variant: 'destructive'
       });
     }
-  }, [toast aria-live="polite" aria-atomic="true"]);
+  }, [toast]);
 
   const getStatusColor = (status: string) => {
     const colors = {

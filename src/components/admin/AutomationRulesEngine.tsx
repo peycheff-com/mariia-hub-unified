@@ -36,7 +36,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"'
+import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { cn } from '@/lib/utils'
 
@@ -122,7 +122,7 @@ const OPERATORS = [
 
 export const AutomationRulesEngine: React.FC = () => {
   const { t } = useTranslation()
-  const { toast aria-live="polite" aria-atomic="true" } = useToast()
+  const { toast } = useToast()
   const supabase = createClient()
 
   const [rules, setRules] = useState<AutomationRule[]>([])
@@ -156,7 +156,7 @@ export const AutomationRulesEngine: React.FC = () => {
       setRules(data || [])
     } catch (error) {
       console.error('Error fetching automation rules:', error)
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to load automation rules',
         variant: 'destructive'
@@ -182,7 +182,7 @@ export const AutomationRulesEngine: React.FC = () => {
 
         if (error) throw error
 
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Success',
           description: 'Automation rule updated successfully'
         })
@@ -196,7 +196,7 @@ export const AutomationRulesEngine: React.FC = () => {
 
         if (error) throw error
 
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Success',
           description: 'Automation rule created successfully'
         })
@@ -208,7 +208,7 @@ export const AutomationRulesEngine: React.FC = () => {
       fetchRules()
     } catch (error) {
       console.error('Error saving rule:', error)
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to save automation rule',
         variant: 'destructive'
@@ -226,7 +226,7 @@ export const AutomationRulesEngine: React.FC = () => {
 
       if (error) throw error
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: 'Automation rule deleted successfully'
       })
@@ -234,7 +234,7 @@ export const AutomationRulesEngine: React.FC = () => {
       fetchRules()
     } catch (error) {
       console.error('Error deleting rule:', error)
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to delete automation rule',
         variant: 'destructive'
@@ -252,7 +252,7 @@ export const AutomationRulesEngine: React.FC = () => {
 
       if (error) throw error
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: `Rule ${rule.is_active ? 'disabled' : 'enabled'} successfully`
       })
@@ -260,7 +260,7 @@ export const AutomationRulesEngine: React.FC = () => {
       fetchRules()
     } catch (error) {
       console.error('Error toggling rule:', error)
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to toggle rule',
         variant: 'destructive'
@@ -284,7 +284,7 @@ export const AutomationRulesEngine: React.FC = () => {
 
       if (error) throw error
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: 'Automation rule duplicated successfully'
       })
@@ -292,7 +292,7 @@ export const AutomationRulesEngine: React.FC = () => {
       fetchRules()
     } catch (error) {
       console.error('Error duplicating rule:', error)
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to duplicate automation rule',
         variant: 'destructive'

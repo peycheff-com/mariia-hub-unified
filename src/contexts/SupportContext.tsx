@@ -35,8 +35,8 @@ interface SupportContextType {
   };
 
   // Notifications
-  notification aria-live="polite" aria-atomic="true"s: SupportNotification[];
-  addNotification: (notification aria-live="polite" aria-atomic="true": Omit<SupportNotification, 'id' | 'timestamp'>) => void;
+  notifications: SupportNotification[];
+  addNotification: (notification: Omit<SupportNotification, 'id' | 'timestamp'>) => void;
   clearNotifications: () => void;
 
   // Language support
@@ -161,8 +161,8 @@ export const SupportProvider: React.FC<SupportProviderProps> = ({ children }) =>
     if (eventType === 'INSERT') {
       addNotification({
         type: 'new_ticket',
-        title: t('notification aria-live="polite" aria-atomic="true"s.newTicket.title'),
-        message: t('notification aria-live="polite" aria-atomic="true"s.newTicket.message', { ticketNumber: newRecord.ticket_number }),
+        title: t('notifications.newTicket.title'),
+        message: t('notifications.newTicket.message', { ticketNumber: newRecord.ticket_number }),
         ticketId: newRecord.id,
         isRead: false,
         priority: newRecord.priority
@@ -171,8 +171,8 @@ export const SupportProvider: React.FC<SupportProviderProps> = ({ children }) =>
       if (newRecord.assigned_agent_id !== oldRecord.assigned_agent_id) {
         addNotification({
           type: 'ticket_assigned',
-          title: t('notification aria-live="polite" aria-atomic="true"s.ticketAssigned.title'),
-          message: t('notification aria-live="polite" aria-atomic="true"s.ticketAssigned.message', { ticketNumber: newRecord.ticket_number }),
+          title: t('notifications.ticketAssigned.title'),
+          message: t('notifications.ticketAssigned.message', { ticketNumber: newRecord.ticket_number }),
           ticketId: newRecord.id,
           isRead: false,
           priority: 'medium'
@@ -182,8 +182,8 @@ export const SupportProvider: React.FC<SupportProviderProps> = ({ children }) =>
       if (newRecord.escalation_level > oldRecord.escalation_level) {
         addNotification({
           type: 'ticket_escalated',
-          title: t('notification aria-live="polite" aria-atomic="true"s.ticketEscalated.title'),
-          message: t('notification aria-live="polite" aria-atomic="true"s.ticketEscalated.message', { ticketNumber: newRecord.ticket_number }),
+          title: t('notifications.ticketEscalated.title'),
+          message: t('notifications.ticketEscalated.message', { ticketNumber: newRecord.ticket_number }),
           ticketId: newRecord.id,
           isRead: false,
           priority: 'high'
@@ -193,8 +193,8 @@ export const SupportProvider: React.FC<SupportProviderProps> = ({ children }) =>
       if (newRecord.sla_status === 'at_risk' && oldRecord.sla_status === 'on_track') {
         addNotification({
           type: 'sla_warning',
-          title: t('notification aria-live="polite" aria-atomic="true"s.slaWarning.title'),
-          message: t('notification aria-live="polite" aria-atomic="true"s.slaWarning.message', { ticketNumber: newRecord.ticket_number }),
+          title: t('notifications.slaWarning.title'),
+          message: t('notifications.slaWarning.message', { ticketNumber: newRecord.ticket_number }),
           ticketId: newRecord.id,
           isRead: false,
           priority: 'high'
@@ -224,8 +224,8 @@ export const SupportProvider: React.FC<SupportProviderProps> = ({ children }) =>
       if (routingResult.success) {
         addNotification({
           type: 'ticket_assigned',
-          title: t('notification aria-live="polite" aria-atomic="true"s.ticketAutoAssigned.title'),
-          message: t('notification aria-live="polite" aria-atomic="true"s.ticketAutoAssigned.message'),
+          title: t('notifications.ticketAutoAssigned.title'),
+          message: t('notifications.ticketAutoAssigned.message'),
           ticketId: createdTicket.id,
           isRead: false,
           priority: 'low'
@@ -288,7 +288,7 @@ export const SupportProvider: React.FC<SupportProviderProps> = ({ children }) =>
   };
 
   // Notification functions
-  const addNotification = (notification aria-live="polite" aria-atomic="true": Omit<SupportNotification, 'id' | 'timestamp'>) => {
+  const addNotification = (notification: Omit<SupportNotification, 'id' | 'timestamp'>) => {
     const newNotification: SupportNotification = {
       ...notification aria-live="polite" aria-atomic="true",
       id: `notif_${Date.now()}_${Math.random()}`,
@@ -298,7 +298,7 @@ export const SupportProvider: React.FC<SupportProviderProps> = ({ children }) =>
     setNotifications(prev => [newNotification, ...prev]);
 
     // Update unread count for chat notification aria-live="polite" aria-atomic="true"s
-    if (notification aria-live="polite" aria-atomic="true".type === 'chat_message') {
+    if (notification.type === 'chat_message') {
       setChatState(prev => ({ ...prev, unreadCount: prev.unreadCount + 1 }));
     }
   };
@@ -379,16 +379,16 @@ export const SupportProvider: React.FC<SupportProviderProps> = ({ children }) =>
 // Support translations
 export const supportTranslations = {
   en: {
-    'notification aria-live="polite" aria-atomic="true"s.newTicket.title': 'New Support Ticket',
-    'notification aria-live="polite" aria-atomic="true"s.newTicket.message': 'Ticket #{ticketNumber} has been created',
-    'notification aria-live="polite" aria-atomic="true"s.ticketAssigned.title': 'Ticket Assigned',
-    'notification aria-live="polite" aria-atomic="true"s.ticketAssigned.message': 'Ticket #{ticketNumber} has been assigned to you',
-    'notification aria-live="polite" aria-atomic="true"s.ticketAutoAssigned.title': 'Ticket Auto-Assigned',
-    'notification aria-live="polite" aria-atomic="true"s.ticketAutoAssigned.message': 'Ticket has been automatically assigned to the best available agent',
-    'notification aria-live="polite" aria-atomic="true"s.ticketEscalated.title': 'Ticket Escalated',
-    'notification aria-live="polite" aria-atomic="true"s.ticketEscalated.message': 'Ticket #{ticketNumber} has been escalated',
-    'notification aria-live="polite" aria-atomic="true"s.slaWarning.title': 'SLA Warning',
-    'notification aria-live="polite" aria-atomic="true"s.slaWarning.message': 'Ticket #{ticketNumber} is at risk of breaching SLA',
+    'notifications.newTicket.title': 'New Support Ticket',
+    'notifications.newTicket.message': 'Ticket #{ticketNumber} has been created',
+    'notifications.ticketAssigned.title': 'Ticket Assigned',
+    'notifications.ticketAssigned.message': 'Ticket #{ticketNumber} has been assigned to you',
+    'notifications.ticketAutoAssigned.title': 'Ticket Auto-Assigned',
+    'notifications.ticketAutoAssigned.message': 'Ticket has been automatically assigned to the best available agent',
+    'notifications.ticketEscalated.title': 'Ticket Escalated',
+    'notifications.ticketEscalated.message': 'Ticket #{ticketNumber} has been escalated',
+    'notifications.slaWarning.title': 'SLA Warning',
+    'notifications.slaWarning.message': 'Ticket #{ticketNumber} is at risk of breaching SLA',
 
     'support.portal.title': 'Customer Support',
     'support.portal.subtitle': 'We\'re here to help with your beauty and fitness needs',
@@ -437,16 +437,16 @@ export const supportTranslations = {
     'metrics.channelBreakdown': 'Channel Breakdown'
   },
   pl: {
-    'notification aria-live="polite" aria-atomic="true"s.newTicket.title': 'Nowy Zgłoszenie',
-    'notification aria-live="polite" aria-atomic="true"s.newTicket.message': 'Zgłoszenie #{ticketNumber} zostało utworzone',
-    'notification aria-live="polite" aria-atomic="true"s.ticketAssigned.title': 'Przypisano Zgłoszenie',
-    'notification aria-live="polite" aria-atomic="true"s.ticketAssigned.message': 'Zgłoszenie #{ticketNumber} zostało Ci przypisane',
-    'notification aria-live="polite" aria-atomic="true"s.ticketAutoAssigned.title': 'Automatyczne Przypisanie',
-    'notification aria-live="polite" aria-atomic="true"s.ticketAutoAssigned.message': 'Zgłoszenie zostało automatycznie przypisane do najlepszego dostępnego agenta',
-    'notification aria-live="polite" aria-atomic="true"s.ticketEscalated.title': 'Eskalacja Zgłoszenia',
-    'notification aria-live="polite" aria-atomic="true"s.ticketEscalated.message': 'Zgłoszenie #{ticketNumber} zostało eskalowane',
-    'notification aria-live="polite" aria-atomic="true"s.slaWarning.title': 'Ostrzeżenie SLA',
-    'notification aria-live="polite" aria-atomic="true"s.slaWarning.message': 'Zgłoszenie #{ticketNumber} jest zagrożone naruszeniem SLA',
+    'notifications.newTicket.title': 'Nowy Zgłoszenie',
+    'notifications.newTicket.message': 'Zgłoszenie #{ticketNumber} zostało utworzone',
+    'notifications.ticketAssigned.title': 'Przypisano Zgłoszenie',
+    'notifications.ticketAssigned.message': 'Zgłoszenie #{ticketNumber} zostało Ci przypisane',
+    'notifications.ticketAutoAssigned.title': 'Automatyczne Przypisanie',
+    'notifications.ticketAutoAssigned.message': 'Zgłoszenie zostało automatycznie przypisane do najlepszego dostępnego agenta',
+    'notifications.ticketEscalated.title': 'Eskalacja Zgłoszenia',
+    'notifications.ticketEscalated.message': 'Zgłoszenie #{ticketNumber} zostało eskalowane',
+    'notifications.slaWarning.title': 'Ostrzeżenie SLA',
+    'notifications.slaWarning.message': 'Zgłoszenie #{ticketNumber} jest zagrożone naruszeniem SLA',
 
     'support.portal.title': 'Obsługa Klienta',
     'support.portal.subtitle': 'Jesteśmy tutaj, aby pomóc z potrzebami urody i fitness',

@@ -30,7 +30,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 
 interface OperationalMetrics {
   bookings: {
@@ -137,7 +137,7 @@ const OperationalDashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedView, setSelectedView] = useState<'today' | 'week' | 'month'>('today');
   const [searchTerm, setSearchTerm] = useState('');
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     loadOperationalData();
@@ -163,7 +163,7 @@ const OperationalDashboard = () => {
 
     } catch (error) {
       console.error('Failed to load operational data:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Failed to load operational dashboard data. Please try again.",
         variant: "destructive",

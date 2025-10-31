@@ -3,7 +3,7 @@ import { Plus, Edit, Trash2, Sparkles, Search, Languages, GripVertical, BarChart
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -65,7 +65,7 @@ const EnhancedServicesManagement = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [selectedServices, setSelectedServices] = useState<Set<string>>(new Set());
   const [translating, setTranslating] = useState(false);
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     title: { en: '', pl: '', ua: '', ru: '' },
@@ -100,7 +100,7 @@ const EnhancedServicesManagement = () => {
       .order("display_order", { ascending: true });
 
     if (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error loading services",
         description: error.message,
         variant: "destructive",
@@ -132,7 +132,7 @@ const EnhancedServicesManagement = () => {
 
   const handleAutoTranslate = async (sourceText: string, type: 'title' | 'description' | 'features', sourceLang: string) => {
     if (!sourceText) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "No text to translate",
         description: `Please enter ${sourceLang.toUpperCase()} text first`,
         variant: "destructive",
@@ -177,12 +177,12 @@ const EnhancedServicesManagement = () => {
         }));
       }
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Translation complete",
         description: "Content translated to all languages",
       });
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Translation failed",
         description: error.message,
         variant: "destructive",
@@ -225,13 +225,13 @@ const EnhancedServicesManagement = () => {
         .eq("id", editingService.id);
 
       if (error) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Error updating service",
           description: error.message,
           variant: "destructive",
         });
       } else {
-        toast aria-live="polite" aria-atomic="true"({ title: "Service updated successfully" });
+        toast({ title: "Service updated successfully" });
         setDialogOpen(false);
         loadServices();
         resetForm();
@@ -242,13 +242,13 @@ const EnhancedServicesManagement = () => {
         .insert([serviceData]);
 
       if (error) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Error creating service",
           description: error.message,
           variant: "destructive",
         });
       } else {
-        toast aria-live="polite" aria-atomic="true"({ title: "Service created successfully" });
+        toast({ title: "Service created successfully" });
         setDialogOpen(false);
         loadServices();
         resetForm();
@@ -343,13 +343,13 @@ const EnhancedServicesManagement = () => {
       .eq("id", id);
 
     if (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error deleting service",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast aria-live="polite" aria-atomic="true"({ title: "Service deleted successfully" });
+      toast({ title: "Service deleted successfully" });
       loadServices();
     }
   };
@@ -412,12 +412,12 @@ const EnhancedServicesManagement = () => {
         .eq("id", update.id);
     }
 
-    toast aria-live="polite" aria-atomic="true"({ title: "Order updated successfully" });
+    toast({ title: "Order updated successfully" });
   };
 
   const handleBulkAction = async (action: 'activate' | 'deactivate' | 'delete') => {
     if (selectedServices.size === 0) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "No services selected",
         description: "Please select services first",
         variant: "destructive",
@@ -433,13 +433,13 @@ const EnhancedServicesManagement = () => {
 
     if (action === 'delete') {
       await supabase.from("services").delete().in("id", ids);
-      toast aria-live="polite" aria-atomic="true"({ title: `${ids.length} service(s) deleted` });
+      toast({ title: `${ids.length} service(s) deleted` });
     } else {
       await supabase
         .from("services")
         .update({ is_active: action === 'activate' })
         .in("id", ids);
-      toast aria-live="polite" aria-atomic="true"({ title: `${ids.length} service(s) ${action}d` });
+      toast({ title: `${ids.length} service(s) ${action}d` });
     }
 
     setSelectedServices(new Set());
@@ -448,7 +448,7 @@ const EnhancedServicesManagement = () => {
 
   const generateHeroImage = async (service: Service) => {
     try {
-      toast aria-live="polite" aria-atomic="true"({ title: 'Generating image…', description: service.title });
+      toast({ title: 'Generating image…', description: service.title });
       const basePrompt = service.service_type === 'beauty'
         ? `Luxury PMU hero for ${service.title}. Photorealistic close-up implying natural results; cocoa/champagne palette (#8B4513, #F5DEB3); 16:9 with right-side negative space; soft studio light; no text or logos.`
         : `Luxury fitness hero for ${service.title}. Photorealistic boutique-gym scene; women-first aesthetic; subtle cyan within cocoa/champagne palette; 16:9 with right-side negative space; no text.`;
@@ -467,10 +467,10 @@ const EnhancedServicesManagement = () => {
       if (!publicUrl) throw new Error('Public URL missing');
       const { error: upd } = await supabase.from('services').update({ image_url: publicUrl }).eq('id', service.id);
       if (upd) throw upd;
-      toast aria-live="polite" aria-atomic="true"({ title: 'Hero image updated', description: service.title });
+      toast({ title: 'Hero image updated', description: service.title });
       loadServices();
     } catch (e: any) {
-      toast aria-live="polite" aria-atomic="true"({ title: 'Image generation failed', description: e?.message || 'Please try again', variant: 'destructive' });
+      toast({ title: 'Image generation failed', description: e?.message || 'Please try again', variant: 'destructive' });
     }
   };
 

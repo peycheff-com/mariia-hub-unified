@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 import { cn } from '@/lib/utils';
 import { contentStrategyService } from '@/services/content-strategy.service';
@@ -600,7 +600,7 @@ export const ThoughtLeadershipTemplates = ({
     if (!selectedTemplate) return;
 
     // Here you would implement the logic to create content from template
-    toast aria-live="polite" aria-atomic="true".success(`Creating content from template: ${selectedTemplate.name}`);
+    toast.success(`Creating content from template: ${selectedTemplate.name}`);
     setCreateFromTemplate(false);
   };
 
@@ -617,7 +617,7 @@ export const ThoughtLeadershipTemplates = ({
       usageCount: 0
     };
     setTemplates([...templates, duplicatedTemplate]);
-    toast aria-live="polite" aria-atomic="true".success('Template duplicated successfully');
+    toast.success('Template duplicated successfully');
   };
 
   const getDifficultyColor = (difficulty: string) => {

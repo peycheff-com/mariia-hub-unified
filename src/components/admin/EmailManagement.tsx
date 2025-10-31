@@ -19,7 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast aria-live="polite" aria-atomic="true" } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { toast } from "@/hooks/use-toast";
 import { ResendService } from "@/lib/resend";
 
 interface EmailCampaign {
@@ -75,7 +75,7 @@ export const EmailManagement = () => {
 
   const sendTestEmail = async () => {
     if (!testEmail) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Please enter a test email address",
         variant: "destructive"
@@ -96,12 +96,12 @@ export const EmailManagement = () => {
         }
       });
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Success",
         description: "Test email sent successfully!"
       });
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: error.message || "Failed to send test email",
         variant: "destructive"
@@ -113,7 +113,7 @@ export const EmailManagement = () => {
 
   const sendCampaign = async () => {
     if (!campaignForm.name || !campaignForm.subject || !campaignForm.content) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Please fill in all campaign fields",
         variant: "destructive"
@@ -165,12 +165,12 @@ export const EmailManagement = () => {
         content: ''
       });
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Success",
         description: `Campaign sent to ${subscribers.length} subscribers!`
       });
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: error.message || "Failed to send campaign",
         variant: "destructive"

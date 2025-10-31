@@ -20,7 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { getMetaConversionsAPI } from '@/lib/meta-conversions-api';
 import { logger } from '@/lib/logger';
@@ -67,7 +67,7 @@ export const MetaCAPIDashboard: React.FC = () => {
   const [funnelData, setFunnelData] = useState<FunnelStep[]>([]);
   const [retryStatus, setRetryStatus] = useState<RetryStatus | null>(null);
   const [dateRange, setDateRange] = useState(30);
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const fetchAnalytics = async () => {
     try {
@@ -106,7 +106,7 @@ export const MetaCAPIDashboard: React.FC = () => {
 
     } catch (error) {
       logger.error('Failed to fetch CAPI analytics', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to load conversion analytics',
         variant: 'destructive',
@@ -126,7 +126,7 @@ export const MetaCAPIDashboard: React.FC = () => {
 
       if (error) throw error;
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: `Retried ${data} failed events`,
       });
@@ -134,7 +134,7 @@ export const MetaCAPIDashboard: React.FC = () => {
       fetchAnalytics();
     } catch (error) {
       logger.error('Failed to retry events', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to retry events',
         variant: 'destructive',
@@ -147,7 +147,7 @@ export const MetaCAPIDashboard: React.FC = () => {
     api.clearRetryQueue();
     setRetryStatus(api.getRetryQueueStatus());
 
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: 'Success',
       description: 'Retry queue cleared',
     });

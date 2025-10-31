@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Sparkles, Image as ImageIcon, Filter } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +32,7 @@ const defaultGalleryPrompt = (svc: ServiceRow) => (
 );
 
 const MediaStudio = () => {
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const [services, setServices] = useState<ServiceRow[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [onlyMissing, setOnlyMissing] = useState(true);
@@ -50,13 +50,13 @@ const MediaStudio = () => {
         .eq('is_active', true)
         .order('display_order');
       if (error) {
-        toast aria-live="polite" aria-atomic="true"({ title: 'Error', description: error.message, variant: 'destructive' });
+        toast({ title: 'Error', description: error.message, variant: 'destructive' });
       } else {
         setServices(data as ServiceRow[] || []);
       }
     };
     load();
-  }, [toast aria-live="polite" aria-atomic="true"]);
+  }, [toast]);
 
   const visible = useMemo(() => services.filter(s => !onlyMissing || !s.image_url), [services, onlyMissing]);
 
@@ -69,7 +69,7 @@ const MediaStudio = () => {
   const runHeroBatch = async () => {
     const ids = Array.from(selected);
     if (ids.length === 0) {
-      toast aria-live="polite" aria-atomic="true"({ title: 'Select services', description: 'Pick at least one service to generate', variant: 'destructive' });
+      toast({ title: 'Select services', description: 'Pick at least one service to generate', variant: 'destructive' });
       return;
     }
     setState('running'); setProgress(0);
@@ -92,18 +92,18 @@ const MediaStudio = () => {
         if (upd) throw upd;
       } catch (e: any) {
         setState('error');
-        toast aria-live="polite" aria-atomic="true"({ title: 'Hero generation failed', description: `${svc.title}: ${e?.message}`, variant: 'destructive' });
+        toast({ title: 'Hero generation failed', description: `${svc.title}: ${e?.message}`, variant: 'destructive' });
       }
       setProgress(Math.round(((i + 1) / ids.length) * 100));
     }
     setState('done');
-    toast aria-live="polite" aria-atomic="true"({ title: 'Hero generation completed' });
+    toast({ title: 'Hero generation completed' });
   };
 
   const runGalleryBatch = async () => {
     const ids = Array.from(selected);
     if (ids.length === 0) {
-      toast aria-live="polite" aria-atomic="true"({ title: 'Select services', description: 'Pick at least one service to generate', variant: 'destructive' });
+      toast({ title: 'Select services', description: 'Pick at least one service to generate', variant: 'destructive' });
       return;
     }
     setState('running'); setProgress(0);
@@ -135,14 +135,14 @@ const MediaStudio = () => {
           if (ins) throw ins;
         } catch (e: any) {
           setState('error');
-          toast aria-live="polite" aria-atomic="true"({ title: 'Gallery generation failed', description: `${svc.title}: ${e?.message}`, variant: 'destructive' });
+          toast({ title: 'Gallery generation failed', description: `${svc.title}: ${e?.message}`, variant: 'destructive' });
         }
         completed += 1;
         setProgress(Math.round((completed / total) * 100));
       }
     }
     setState('done');
-    toast aria-live="polite" aria-atomic="true"({ title: 'Gallery generation completed' });
+    toast({ title: 'Gallery generation completed' });
   };
 
   return (

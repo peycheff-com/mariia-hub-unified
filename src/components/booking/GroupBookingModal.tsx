@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { GroupParticipant, Service, LocationType } from '@/types/booking';
 
@@ -62,7 +62,7 @@ export function GroupBookingModal({
   isSubmitting = false,
 }: GroupBookingModalProps) {
   const { t } = useTranslation();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const { formatPrice } = useCurrency();
 
   const [step, setStep] = useState(1);
@@ -212,13 +212,13 @@ export function GroupBookingModal({
 
     try {
       await onSubmit(bookingData);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Group booking successful!',
         description: `Booking confirmed for ${groupSize} participants.`,
       });
       onClose();
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Booking failed',
         description: 'Please try again or contact support.',
         variant: 'destructive',

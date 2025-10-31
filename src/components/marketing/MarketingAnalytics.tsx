@@ -51,7 +51,7 @@ import {
   AnalyticsQuery
 } from '@/types/marketing';
 import { format, subDays, startOfMonth, endOfMonth } from 'date-fns';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 interface MarketingAnalyticsProps {
   className?: string;
@@ -81,7 +81,7 @@ export const MarketingAnalytics: React.FC<MarketingAnalyticsProps> = ({ classNam
       setCampaignROI(roi);
     } catch (error) {
       console.error('Error loading analytics data:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to load analytics data');
+      toast.error('Failed to load analytics data');
     } finally {
       setIsLoading(false);
     }
@@ -146,16 +146,16 @@ export const MarketingAnalytics: React.FC<MarketingAnalyticsProps> = ({ classNam
   const exportReport = async (format: 'pdf' | 'excel') => {
     try {
       // Mock export functionality
-      toast aria-live="polite" aria-atomic="true".success(`Report exported as ${format.toUpperCase()}`);
+      toast.success(`Report exported as ${format.toUpperCase()}`);
     } catch (error) {
       console.error('Error exporting report:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to export report');
+      toast.error('Failed to export report');
     }
   };
 
   const refreshData = () => {
     loadData();
-    toast aria-live="polite" aria-atomic="true".success('Analytics data refreshed');
+    toast.success('Analytics data refreshed');
   };
 
   const formatCurrency = (amount: number) => {

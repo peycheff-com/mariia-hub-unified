@@ -35,7 +35,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"'
+import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 
 
@@ -100,7 +100,7 @@ const mockAnalyticsData: CampaignAnalytics = {
 export const CampaignAnalytics: React.FC<CampaignAnalyticsProps> = ({ className }) => {
   const { t, i18n } = useTranslation()
   const locale = i18n.language === 'pl' ? pl : enUS
-  const { toast aria-live="polite" aria-atomic="true" } = useToast()
+  const { toast } = useToast()
 
   const [analyticsData, setAnalyticsData] = useState<CampaignAnalytics>(mockAnalyticsData)
   const [selectedPeriod, setSelectedPeriod] = useState('30d')
@@ -136,7 +136,7 @@ export const CampaignAnalytics: React.FC<CampaignAnalyticsProps> = ({ className 
     linkElement.setAttribute('download', exportFileDefaultName)
     linkElement.click()
 
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: t('report_exported', 'Report Exported'),
       description: t('analytics_report_exported', 'Analytics report has been exported successfully')
     })

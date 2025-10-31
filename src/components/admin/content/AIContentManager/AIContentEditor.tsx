@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 import {
   Loader2,
   Save,
@@ -95,11 +95,11 @@ export const AIContentEditor = React.memo<AIContentEditorProps>(({
 
       if (!response.ok) throw new Error('Failed to save');
 
-      toast aria-live="polite" aria-atomic="true".success(t('admin.ai.content.savedSuccessfully'));
+      toast.success(t('admin.ai.content.savedSuccessfully'));
       onContentUpdate({ ...content, status, version: content.version + 1 });
     } catch (error) {
       console.error('Save failed:', error);
-      toast aria-live="polite" aria-atomic="true".error(t('admin.ai.content.saveFailed'));
+      toast.error(t('admin.ai.content.saveFailed'));
     } finally {
       setIsSaving(false);
     }

@@ -41,7 +41,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 
 interface GeolocationServicesProps {
   className?: string;
@@ -113,7 +113,7 @@ interface WarsawDistrict {
 export function GeolocationServices({ className = '' }: GeolocationServicesProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
   const [nearbyServices, setNearbyServices] = useState<NearbyService[]>([]);
@@ -272,7 +272,7 @@ export function GeolocationServices({ className = '' }: GeolocationServicesProps
 
   const getCurrentLocation = useCallback(async () => {
     if (!navigator.geolocation) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('geolocation.notSupported'),
         description: t('geolocation.notSupportedDesc'),
         variant: 'destructive',
@@ -312,7 +312,7 @@ export function GeolocationServices({ className = '' }: GeolocationServicesProps
       // Get nearby services
       await getNearbyServices(location);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('geolocation.locationObtained'),
         description: t('geolocation.locationObtainedDesc', {
           accuracy: Math.round(location.accuracy),
@@ -323,13 +323,13 @@ export function GeolocationServices({ className = '' }: GeolocationServicesProps
 
       if (error.code === 1) {
         setLocationPermission('denied');
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: t('geolocation.accessDenied'),
           description: t('geolocation.accessDeniedDesc'),
           variant: 'destructive',
         });
       } else {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: t('geolocation.locationFailed'),
           description: t('geolocation.locationFailedDesc'),
           variant: 'destructive',
@@ -338,7 +338,7 @@ export function GeolocationServices({ className = '' }: GeolocationServicesProps
     } finally {
       setIsGettingLocation(false);
     }
-  }, [locationHistory, toast aria-live="polite" aria-atomic="true", t]);
+  }, [locationHistory, toast, t]);
 
   const getNearbyServices = async (location: Location) => {
     try {
@@ -416,7 +416,7 @@ export function GeolocationServices({ className = '' }: GeolocationServicesProps
 
     } catch (error) {
       console.error('Failed to get nearby services:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('geolocation.servicesFailed'),
         description: t('geolocation.servicesFailedDesc'),
         variant: 'destructive',
@@ -469,7 +469,7 @@ export function GeolocationServices({ className = '' }: GeolocationServicesProps
       });
     }
 
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: alert.title,
       description: alert.description + ` (${data.length} ${t('geolocation.nearby')})`,
     });

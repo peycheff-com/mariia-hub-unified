@@ -31,7 +31,7 @@ export function WaitlistOption({ onWaitlistJoined, onCancel }: WaitlistOptionPro
       start: '09:00',
       end: '17:00',
     },
-    notification aria-live="polite" aria-atomic="true"Preferences: {
+    notificationPreferences: {
       email: true,
       sms: false,
       push: true,
@@ -238,7 +238,7 @@ export function WaitlistOption({ onWaitlistJoined, onCancel }: WaitlistOptionPro
                   onCheckedChange={(checked) =>
                     setFormData({
                       ...formData,
-                      notification aria-live="polite" aria-atomic="true"Preferences: {
+                      notificationPreferences: {
                         ...formData.notification aria-live="polite" aria-atomic="true"Preferences,
                         email: checked as boolean,
                       },
@@ -256,7 +256,7 @@ export function WaitlistOption({ onWaitlistJoined, onCancel }: WaitlistOptionPro
                   onCheckedChange={(checked) =>
                     setFormData({
                       ...formData,
-                      notification aria-live="polite" aria-atomic="true"Preferences: {
+                      notificationPreferences: {
                         ...formData.notification aria-live="polite" aria-atomic="true"Preferences,
                         sms: checked as boolean,
                       },

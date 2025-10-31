@@ -27,7 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useLoyaltyContext } from '@/contexts/LoyaltyContext';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Reward, RewardRedemption } from '@/contexts/LoyaltyContext';
@@ -45,7 +45,7 @@ interface FilterOptions {
 
 export function EnhancedRewardsCatalog({ className }: RewardsCatalogProps) {
   const { state, redeemReward } = useLoyaltyContext();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState('catalog');
   const [searchTerm, setSearchTerm] = useState('');
@@ -103,7 +103,7 @@ export function EnhancedRewardsCatalog({ className }: RewardsCatalogProps) {
 
   const handleRedeemReward = async (reward: Reward) => {
     if (currentPoints < reward.points_cost) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Insufficient Points",
         description: `You need ${reward.points_cost - currentPoints} more points to redeem this reward.`,
         variant: "destructive"
@@ -114,7 +114,7 @@ export function EnhancedRewardsCatalog({ className }: RewardsCatalogProps) {
     try {
       const redemption = await redeemReward(reward.id, redemptionNotes);
       if (redemption) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Reward Redeemed!",
           description: `You've successfully redeemed ${reward.title}. Your redemption code is ${redemption.redemption_code}`,
         });
@@ -123,7 +123,7 @@ export function EnhancedRewardsCatalog({ className }: RewardsCatalogProps) {
         setSelectedReward(null);
       }
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Redemption Failed",
         description: error.message || "Failed to redeem reward. Please try again.",
         variant: "destructive"

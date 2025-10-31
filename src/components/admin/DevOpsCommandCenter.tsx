@@ -266,7 +266,7 @@ interface AutomationWorkflow {
   triggers: string[];
   actions: string[];
   dependencies: string[];
-  notification aria-live="polite" aria-atomic="true"s: string[];
+  notifications: string[];
   logs: WorkflowLog[];
 }
 
@@ -525,7 +525,7 @@ const DevOpsCommandCenter: React.FC = () => {
         triggers: ['schedule'],
         actions: ['database_backup', 'file_backup', 'verification'],
         dependencies: [],
-        notification aria-live="polite" aria-atomic="true"s: ['email', 'slack'],
+        notifications: ['email', 'slack'],
         logs: []
       },
       {
@@ -541,7 +541,7 @@ const DevOpsCommandCenter: React.FC = () => {
         triggers: ['schedule'],
         actions: ['dependency_check', 'code_analysis', 'report_generation'],
         dependencies: [],
-        notification aria-live="polite" aria-atomic="true"s: ['email', 'slack'],
+        notifications: ['email', 'slack'],
         logs: []
       },
       {
@@ -557,7 +557,7 @@ const DevOpsCommandCenter: React.FC = () => {
         triggers: ['schedule', 'deployment'],
         actions: ['load_test', 'lighthouse_audit', 'report_generation'],
         dependencies: ['staging_deployment'],
-        notification aria-live="polite" aria-atomic="true"s: ['slack'],
+        notifications: ['slack'],
         logs: []
       }
     ]);

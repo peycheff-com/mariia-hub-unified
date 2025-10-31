@@ -6,9 +6,9 @@ import { Service } from '@/types/booking';
 import { GroupBookingModal, GroupBookingData } from '../GroupBookingModal';
 
 // Mock dependencies
-vi.mock('@/components/ui/use-toast aria-live="polite" aria-atomic="true"', () => ({
+vi.mock('@/components/ui/use-toast', () => ({
   useToast: () => ({
-    toast aria-live="polite" aria-atomic="true": vi.fn(),
+    toast: vi.fn(),
   }),
 }));
 

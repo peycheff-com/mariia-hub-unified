@@ -24,7 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 
 interface OfflineBookingManagerProps {
   className?: string;
@@ -59,7 +59,7 @@ interface LocationService {
 export function OfflineBookingManager({ className = '' }: OfflineBookingManagerProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [offlineBookings, setOfflineBookings] = useState<OfflineBooking[]>([]);
@@ -74,7 +74,7 @@ export function OfflineBookingManager({ className = '' }: OfflineBookingManagerP
     contacts: false,
     calendar: false,
     geolocation: false,
-    notification aria-live="polite" aria-atomic="true"s: false,
+    notifications: false,
     share: false,
   });
 
@@ -96,7 +96,7 @@ export function OfflineBookingManager({ className = '' }: OfflineBookingManagerP
         contacts: 'contacts' in navigator && 'select' in navigator.contacts,
         calendar: 'share' in navigator, // Calendar integration via Web Share API
         geolocation: 'geolocation' in navigator,
-        notification aria-live="polite" aria-atomic="true"s: 'Notification' in window && Notification.permission === 'granted',
+        notifications: 'Notification' in window && Notification.permission === 'granted',
         share: 'share' in navigator,
       });
     };
@@ -192,7 +192,7 @@ export function OfflineBookingManager({ className = '' }: OfflineBookingManagerP
       // Update localStorage
       localStorage.setItem('offline-bookings', JSON.stringify(offlineBookings));
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('offlineBooking.syncComplete'),
         description: t('offlineBooking.syncCompleteDesc', { count: syncedCount }),
       });
@@ -207,7 +207,7 @@ export function OfflineBookingManager({ className = '' }: OfflineBookingManagerP
 
     } catch (error) {
       console.error('Sync failed:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('offlineBooking.syncFailed'),
         description: t('offlineBooking.syncFailedDesc'),
         variant: 'destructive',
@@ -220,7 +220,7 @@ export function OfflineBookingManager({ className = '' }: OfflineBookingManagerP
 
   const handleCalendarIntegration = async () => {
     if (!deviceCapabilities.calendar) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('offlineBooking.calendarNotSupported'),
         description: t('offlineBooking.calendarNotSupportedDesc'),
         variant: 'destructive',
@@ -246,14 +246,14 @@ export function OfflineBookingManager({ className = '' }: OfflineBookingManagerP
         });
       }
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('offlineBooking.calendarSuccess'),
         description: t('offlineBooking.calendarSuccessDesc'),
       });
     } catch (error) {
       if (error.name !== 'AbortError') {
         console.error('Calendar integration failed:', error);
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: t('offlineBooking.calendarFailed'),
           description: t('offlineBooking.calendarFailedDesc'),
           variant: 'destructive',
@@ -264,7 +264,7 @@ export function OfflineBookingManager({ className = '' }: OfflineBookingManagerP
 
   const handleLocationServices = async () => {
     if (!deviceCapabilities.geolocation) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('offlineBooking.locationNotSupported'),
         description: t('offlineBooking.locationNotSupportedDesc'),
         variant: 'destructive',
@@ -294,14 +294,14 @@ export function OfflineBookingManager({ className = '' }: OfflineBookingManagerP
           data: services,
         }));
 
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: t('offlineBooking.locationSuccess'),
           description: t('offlineBooking.locationSuccessDesc', { count: services.length }),
         });
       }
     } catch (error) {
       console.error('Location services failed:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('offlineBooking.locationFailed'),
         description: t('offlineBooking.locationFailedDesc'),
         variant: 'destructive',
@@ -311,7 +311,7 @@ export function OfflineBookingManager({ className = '' }: OfflineBookingManagerP
 
   const handleCameraCapture = async () => {
     if (!deviceCapabilities.camera) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('offlineBooking.cameraNotSupported'),
         description: t('offlineBooking.cameraNotSupportedDesc'),
         variant: 'destructive',
@@ -353,7 +353,7 @@ export function OfflineBookingManager({ className = '' }: OfflineBookingManagerP
                 const imageData = reader.result as string;
                 localStorage.setItem('profile-photo', imageData);
 
-                toast aria-live="polite" aria-atomic="true"({
+                toast({
                   title: t('offlineBooking.photoSuccess'),
                   description: t('offlineBooking.photoSuccessDesc'),
                 });
@@ -368,7 +368,7 @@ export function OfflineBookingManager({ className = '' }: OfflineBookingManagerP
       };
     } catch (error) {
       console.error('Camera capture failed:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('offlineBooking.cameraFailed'),
         description: t('offlineBooking.cameraFailedDesc'),
         variant: 'destructive',
@@ -378,7 +378,7 @@ export function OfflineBookingManager({ className = '' }: OfflineBookingManagerP
 
   const handleContactsIntegration = async () => {
     if (!deviceCapabilities.contacts) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('offlineBooking.contactsNotSupported'),
         description: t('offlineBooking.contactsNotSupportedDesc'),
         variant: 'destructive',
@@ -401,7 +401,7 @@ export function OfflineBookingManager({ className = '' }: OfflineBookingManagerP
           phone: contact.tel?.[0] || '',
         }));
 
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: t('offlineBooking.contactsSuccess'),
           description: t('offlineBooking.contactsSuccessDesc'),
         });
@@ -412,7 +412,7 @@ export function OfflineBookingManager({ className = '' }: OfflineBookingManagerP
     } catch (error) {
       if (error.name !== 'AbortError') {
         console.error('Contacts integration failed:', error);
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: t('offlineBooking.contactsFailed'),
           description: t('offlineBooking.contactsFailedDesc'),
           variant: 'destructive',

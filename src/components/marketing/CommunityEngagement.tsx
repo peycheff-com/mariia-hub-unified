@@ -58,7 +58,7 @@ import {
   EmailSubscriber
 } from '@/types/marketing';
 import { format } from 'date-fns';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 interface CommunityEngagementProps {
   className?: string;
@@ -124,7 +124,7 @@ export const CommunityEngagement: React.FC<CommunityEngagementProps> = ({ classN
       setSubscribers(subscribersData);
     } catch (error) {
       console.error('Error loading community data:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to load community data');
+      toast.error('Failed to load community data');
     } finally {
       setIsLoading(false);
     }
@@ -263,10 +263,10 @@ export const CommunityEngagement: React.FC<CommunityEngagementProps> = ({ classN
             : content
         )
       );
-      toast aria-live="polite" aria-atomic="true".success(featured ? 'Content featured successfully' : 'Content unfeatured');
+      toast.success(featured ? 'Content featured successfully' : 'Content unfeatured');
     } catch (error) {
       console.error('Error featuring content:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to update content');
+      toast.error('Failed to update content');
     }
   };
 
@@ -280,10 +280,10 @@ export const CommunityEngagement: React.FC<CommunityEngagementProps> = ({ classN
             : content
         )
       );
-      toast aria-live="polite" aria-atomic="true".success(`Content ${status} successfully`);
+      toast.success(`Content ${status} successfully`);
     } catch (error) {
       console.error('Error moderating content:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to moderate content');
+      toast.error('Failed to moderate content');
     }
   };
 
@@ -306,10 +306,10 @@ export const CommunityEngagement: React.FC<CommunityEngagementProps> = ({ classN
       setLoyaltyPrograms([newProgram, ...loyaltyPrograms]);
       setIsCreateLoyaltyProgramDialogOpen(false);
       resetLoyaltyProgramForm();
-      toast aria-live="polite" aria-atomic="true".success('Loyalty program created successfully');
+      toast.success('Loyalty program created successfully');
     } catch (error) {
       console.error('Error creating loyalty program:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to create loyalty program');
+      toast.error('Failed to create loyalty program');
     }
   };
 
@@ -331,10 +331,10 @@ export const CommunityEngagement: React.FC<CommunityEngagementProps> = ({ classN
       setReferralPrograms([newProgram, ...referralPrograms]);
       setIsCreateReferralProgramDialogOpen(false);
       resetReferralProgramForm();
-      toast aria-live="polite" aria-atomic="true".success('Referral program created successfully');
+      toast.success('Referral program created successfully');
     } catch (error) {
       console.error('Error creating referral program:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to create referral program');
+      toast.error('Failed to create referral program');
     }
   };
 

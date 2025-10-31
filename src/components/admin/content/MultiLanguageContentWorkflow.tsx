@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -340,7 +340,7 @@ export const MultiLanguageContentWorkflow = ({
       setContentItems(data || []);
     } catch (error) {
       console.error('Failed to load content items:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to load content items');
+      toast.error('Failed to load content items');
     }
   };
 
@@ -422,12 +422,12 @@ export const MultiLanguageContentWorkflow = ({
         }
       }
 
-      toast aria-live="polite" aria-atomic="true".success('Translation tasks created successfully');
+      toast.success('Translation tasks created successfully');
       setShowTranslationDialog(false);
       await loadTranslationTasks();
     } catch (error) {
       console.error('Failed to create translation tasks:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to create translation tasks');
+      toast.error('Failed to create translation tasks');
     } finally {
       setLoading(false);
     }
@@ -487,10 +487,10 @@ export const MultiLanguageContentWorkflow = ({
         .eq('content_id', content.id)
         .eq('target_language', targetLanguage);
 
-      toast aria-live="polite" aria-atomic="true".success(`Auto-translation to ${targetLanguage} completed`);
+      toast.success(`Auto-translation to ${targetLanguage} completed`);
     } catch (error) {
       console.error('Auto-translation failed:', error);
-      toast aria-live="polite" aria-atomic="true".error('Auto-translation failed');
+      toast.error('Auto-translation failed');
     }
   };
 
@@ -612,7 +612,7 @@ export const MultiLanguageContentWorkflow = ({
     link.click();
     URL.revokeObjectURL(url);
 
-    toast aria-live="polite" aria-atomic="true".success('Localization report exported successfully');
+    toast.success('Localization report exported successfully');
   };
 
   const renderOverview = () => (

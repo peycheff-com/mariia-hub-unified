@@ -50,7 +50,7 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 interface ContentVersion {
   id: string;
@@ -137,7 +137,7 @@ const ContentVersionHistory: React.FC = () => {
   const [showVersionDetails, setShowVersionDetails] = useState(false);
   const [isReverting, setIsReverting] = useState(false);
   const [comparison, setComparison] = useState<VersionComparison | null>(null);
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // Mock data
   useEffect(() => {
@@ -325,7 +325,7 @@ const ContentVersionHistory: React.FC = () => {
       // Simulate revert process
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Version Reverted',
         description: `Successfully reverted to version ${version.version}`,
       });
@@ -336,7 +336,7 @@ const ContentVersionHistory: React.FC = () => {
         isCurrent: v.id === version.id
       })));
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Revert Failed',
         description: 'Unable to revert to this version',
         variant: 'destructive'
@@ -344,7 +344,7 @@ const ContentVersionHistory: React.FC = () => {
     } finally {
       setIsReverting(false);
     }
-  }, [toast aria-live="polite" aria-atomic="true"]);
+  }, [toast]);
 
   const compareVersions = useCallback(async (v1: ContentVersion, v2: ContentVersion) => {
     try {
@@ -371,13 +371,13 @@ const ContentVersionHistory: React.FC = () => {
       setComparison(mockComparison);
       setShowComparison(true);
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Comparison Failed',
         description: 'Unable to compare versions',
         variant: 'destructive'
       });
     }
-  }, [toast aria-live="polite" aria-atomic="true"]);
+  }, [toast]);
 
   const exportVersion = useCallback((version: ContentVersion, format: 'json' | 'html' | 'markdown') => {
     let content: string;
@@ -411,11 +411,11 @@ const ContentVersionHistory: React.FC = () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: 'Version Exported',
       description: `Version ${version.version} exported as ${format.toUpperCase()}`,
     });
-  }, [toast aria-live="polite" aria-atomic="true"]);
+  }, [toast]);
 
   const getStatusColor = (status: string) => {
     const colors = {
@@ -663,7 +663,7 @@ const ContentVersionHistory: React.FC = () => {
               variant="outline"
               onClick={() => {
                 // Refresh versions
-                toast aria-live="polite" aria-atomic="true"({
+                toast({
                   title: 'Versions Refreshed',
                   description: 'Version history has been updated',
                 });

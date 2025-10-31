@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -63,7 +63,7 @@ const SocialPostsManagement = () => {
     caption: "",
     posted_at: new Date().toISOString().split("T")[0],
   });
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     loadPosts();
@@ -76,7 +76,7 @@ const SocialPostsManagement = () => {
       .order("posted_at", { ascending: false });
 
     if (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -95,13 +95,13 @@ const SocialPostsManagement = () => {
       .insert([formData]);
 
     if (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Success",
         description: "Social post added successfully",
       });
@@ -124,7 +124,7 @@ const SocialPostsManagement = () => {
       .eq("id", postId);
 
     if (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -143,13 +143,13 @@ const SocialPostsManagement = () => {
       .eq("id", postId);
 
     if (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Success",
         description: "Post deleted successfully",
       });

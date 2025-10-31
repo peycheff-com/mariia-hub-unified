@@ -15,7 +15,7 @@ import { loadStripe } from '@stripe/stripe-js';
 
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 import {
   Dialog,
   DialogContent,
@@ -55,7 +55,7 @@ const PackagePurchaseModal: React.FC<PackagePurchaseModalProps> = ({
   const { i18n } = useTranslation();
   const { formatPrice, currency } = useCurrency();
   const { user } = useAuth();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [purchaseType, setPurchaseType] = useState<'self' | 'gift'>('self');
   const [giftRecipient, setGiftRecipient] = useState('');
@@ -88,7 +88,7 @@ const PackagePurchaseModal: React.FC<PackagePurchaseModalProps> = ({
 
     // Validation
     if (!acceptTerms || !acceptPrivacy) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: i18n.t('validation.required', 'Required'),
         description: i18n.t('package.acceptTermsRequired', 'You must accept the terms and privacy policy to proceed.'),
         variant: 'destructive',
@@ -97,7 +97,7 @@ const PackagePurchaseModal: React.FC<PackagePurchaseModalProps> = ({
     }
 
     if (purchaseType === 'gift' && !giftRecipient) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: i18n.t('validation.required', 'Required'),
         description: i18n.t('package.recipientRequired', 'Please enter the gift recipient email.'),
         variant: 'destructive',
@@ -156,7 +156,7 @@ const PackagePurchaseModal: React.FC<PackagePurchaseModalProps> = ({
           purchase_notes: notes,
         });
 
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: i18n.t('package.purchaseSuccess', 'Package Purchased!'),
           description: i18n.t('package.purchaseSuccessDesc', 'Your package has been successfully purchased.'),
         });
@@ -169,7 +169,7 @@ const PackagePurchaseModal: React.FC<PackagePurchaseModalProps> = ({
       }
     } catch (error: any) {
       console.error('Purchase error:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: i18n.t('error.purchaseFailed', 'Purchase Failed'),
         description: error.message || i18n.t('error.purchaseFailedDesc', 'Failed to process your purchase. Please try again.'),
         variant: 'destructive',

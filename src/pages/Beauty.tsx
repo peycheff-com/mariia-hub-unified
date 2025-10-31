@@ -8,12 +8,12 @@ import { SEO, generateLocalBusinessSchema } from "@/components/SEO";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import MobileFooter from "@/components/MobileFooter";
-import BeforeAfterSlider from "@/components/BeforeAfterSlider";
+import { BeforeAfterSlider } from "@/components/media/BeforeAfterSlider";
 import AvailableSlotsList from "@/components/AvailableSlotsList";
 import BookingSheet from "@/components/booking/BookingSheet";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import { useSiteImage } from "@/hooks/useSiteImage";
 
 import mariiaProfile from "@/assets/mariia-profile.jpg";
@@ -24,7 +24,7 @@ const Beauty = () => {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [services, setServices] = useState<any[]>([]);
 
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     setMode("beauty");
@@ -43,7 +43,7 @@ const Beauty = () => {
       if (error) throw error;
       setServices(data || []);
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Could not load services",
         variant: "destructive",

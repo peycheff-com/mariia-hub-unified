@@ -26,7 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useLoyaltyContext } from '@/contexts/LoyaltyContext';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -36,7 +36,7 @@ interface ReferralSystemProps {
 
 export function ReferralSystem({ className }: ReferralSystemProps) {
   const { state, createReferral, checkReferralCode, processSuccessfulReferral } = useLoyaltyContext();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState('refer');
   const [referralData, setReferralData] = useState({
@@ -61,7 +61,7 @@ export function ReferralSystem({ className }: ReferralSystemProps) {
 
   const handleCreateReferral = async () => {
     if (!referralData.refereeEmail) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Please enter the referee's email address",
         variant: "destructive"
@@ -78,7 +78,7 @@ export function ReferralSystem({ className }: ReferralSystemProps) {
       );
 
       if (referral) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Referral Created!",
           description: `Referral code: ${referral.referral_code}`,
         });
@@ -92,7 +92,7 @@ export function ReferralSystem({ className }: ReferralSystemProps) {
         });
       }
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Failed to create referral. Please try again.",
         variant: "destructive"
@@ -103,7 +103,7 @@ export function ReferralSystem({ className }: ReferralSystemProps) {
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
     setCopiedCode(code);
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: "Copied!",
       description: "Referral code copied to clipboard",
     });
@@ -131,19 +131,19 @@ export function ReferralSystem({ className }: ReferralSystemProps) {
     try {
       const referral = await checkReferralCode(checkCode);
       if (referral) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Valid Referral Code!",
           description: "This code is valid. Complete your booking to claim your welcome bonus.",
         });
       } else {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Invalid Code",
           description: "This referral code is not valid or has expired.",
           variant: "destructive"
         });
       }
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Failed to check referral code. Please try again.",
         variant: "destructive"

@@ -29,7 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import { useFeedbackAnalytics, useFeedback, useNPSSurvey } from '@/hooks/useFeedback';
 import { cn } from '@/lib/utils';
 
@@ -72,7 +72,7 @@ const priorityColors = {
 };
 
 export const FeedbackAnalyticsDashboard: React.FC = () => {
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const { analytics, loading: analyticsLoading, refresh: refreshAnalytics, getSummaryStats } = useFeedbackAnalytics('month');
   const { feedback } = useFeedback();
   const { getNPSScore } = useNPSSurvey();
@@ -98,7 +98,7 @@ export const FeedbackAnalyticsDashboard: React.FC = () => {
       generateMockData();
 
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message || 'Failed to load analytics data',
         variant: 'destructive',
@@ -180,7 +180,7 @@ export const FeedbackAnalyticsDashboard: React.FC = () => {
   };
 
   const handleExport = () => {
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: 'Export Started',
       description: 'Your analytics data is being prepared for download.',
     });
@@ -189,7 +189,7 @@ export const FeedbackAnalyticsDashboard: React.FC = () => {
   const handleRefresh = () => {
     refreshAnalytics();
     loadAnalyticsData();
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: 'Data Refreshed',
       description: 'Analytics data has been updated.',
     });

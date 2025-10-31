@@ -35,7 +35,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 interface ReportField {
   name: string;
@@ -81,7 +81,7 @@ const ReportBuilder = () => {
   const [editingReport, setEditingReport] = useState<CustomReport | null>(null);
   const [reportData, setReportData] = useState<any[]>([]);
   const [previewReport, setPreviewReport] = useState<CustomReport | null>(null);
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [reportConfig, setReportConfig] = useState<ReportConfig>({
     name: '',
@@ -180,7 +180,7 @@ const ReportBuilder = () => {
       if (error) throw error;
       setReports(data || []);
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message,
         variant: 'destructive'
@@ -214,7 +214,7 @@ const ReportBuilder = () => {
 
       if (result.error) throw result.error;
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: `Report ${editingReport ? 'updated' : 'saved'} successfully`
       });
@@ -223,7 +223,7 @@ const ReportBuilder = () => {
       resetForm();
       loadReports();
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message,
         variant: 'destructive'
@@ -233,7 +233,7 @@ const ReportBuilder = () => {
 
   const handleRunReport = async () => {
     if (!reportConfig.fields.length) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Please select at least one field',
         variant: 'destructive'
@@ -251,7 +251,7 @@ const ReportBuilder = () => {
       setReportData(mockData);
       setPreviewDialogOpen(true);
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message,
         variant: 'destructive'
@@ -313,14 +313,14 @@ const ReportBuilder = () => {
 
       if (error) throw error;
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: 'Report deleted successfully'
       });
 
       loadReports();
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message,
         variant: 'destructive'

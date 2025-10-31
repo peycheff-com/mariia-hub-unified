@@ -3,7 +3,7 @@ import { Plus, Edit, Trash2, HelpCircle, GripVertical } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -34,7 +34,7 @@ const ServiceFAQManagement = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingFAQ, setEditingFAQ] = useState<FAQ | null>(null);
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     service_id: "",
@@ -77,13 +77,13 @@ const ServiceFAQManagement = () => {
         .eq("id", editingFAQ.id);
 
       if (error) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Error updating FAQ",
           description: error.message,
           variant: "destructive",
         });
       } else {
-        toast aria-live="polite" aria-atomic="true"({ title: "FAQ updated successfully" });
+        toast({ title: "FAQ updated successfully" });
         setDialogOpen(false);
         loadData();
         resetForm();
@@ -101,13 +101,13 @@ const ServiceFAQManagement = () => {
         }]);
 
       if (error) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Error adding FAQ",
           description: error.message,
           variant: "destructive",
         });
       } else {
-        toast aria-live="polite" aria-atomic="true"({ title: "FAQ added successfully" });
+        toast({ title: "FAQ added successfully" });
         setDialogOpen(false);
         loadData();
         resetForm();
@@ -143,13 +143,13 @@ const ServiceFAQManagement = () => {
       .eq("id", id);
 
     if (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error deleting FAQ",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast aria-live="polite" aria-atomic="true"({ title: "FAQ deleted" });
+      toast({ title: "FAQ deleted" });
       loadData();
     }
   };

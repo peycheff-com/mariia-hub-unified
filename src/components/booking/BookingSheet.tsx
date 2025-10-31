@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Service, Location, Step1Data, Step2Data, Step3Data } from '@/types/booking';
 import { logger } from '@/lib/logger';
@@ -14,7 +14,7 @@ import { waitlistService } from '@/services/waitlist.service';
 import { pushToDataLayer } from '@/lib/gtm';
 
 import { Step1Choose } from './Step1Choose';
-import { Step2Time } from './Step2Time';
+import { Step2TimeWithCapacity as Step2Time } from './Step2TimeWithCapacity';
 import { Step3Details } from './Step3Details';
 import { Step3Review } from './Step3Review';
 import { Step4Payment } from './Step4Payment';
@@ -39,7 +39,7 @@ const BookingSheet = ({
   preselectedService,
   preselectedType
 }: BookingSheetProps) => {
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const { state: loyaltyState, actions: loyaltyActions } = useLoyaltyContext();
@@ -191,7 +191,7 @@ const BookingSheet = ({
 
       
       if (servicesRes.error) {
-          toast aria-live="polite" aria-atomic="true"({
+          toast({
           title: 'Error loading services',
           description: 'Please try again later.',
           variant: 'destructive',
@@ -203,7 +203,7 @@ const BookingSheet = ({
 
       // Check if services exist
       if (!servicesRes.data || servicesRes.data.length === 0) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'No services available',
           description: 'Please check back later as we are updating our service catalog.',
           variant: 'destructive',
@@ -212,7 +212,7 @@ const BookingSheet = ({
 
       // Check if locations exist
       if (!locationsRes.data || locationsRes.data.length === 0) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'No locations available',
           description: 'Please check back later as we are updating our studio locations.',
           variant: 'destructive',
@@ -220,7 +220,7 @@ const BookingSheet = ({
       }
     } catch (error) {
       logger.error('Error loading booking data:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error loading booking data',
         description: 'Unable to load services and locations. Please refresh the page.',
         variant: 'destructive',
@@ -394,7 +394,7 @@ const BookingSheet = ({
             description: `Points earned from ${currentService.title} booking`
           });
 
-          toast aria-live="polite" aria-atomic="true"({
+          toast({
             title: 'Loyalty points earned!',
             description: `You earned ${totalPoints.toLocaleString()} points from this booking.`,
             variant: 'default',
@@ -405,7 +405,7 @@ const BookingSheet = ({
         // Don't fail the booking if loyalty points fail
       }
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Booking confirmed!',
         description: 'You will receive a confirmation email shortly.',
       });
@@ -427,7 +427,7 @@ const BookingSheet = ({
         event: 'booking_failed',
         service_id: step1Data?.serviceId,
       });
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Booking failed',
         description: 'Please try again or contact support.',
         variant: 'destructive',
@@ -743,7 +743,7 @@ const BookingSheet = ({
                     bookingId={selectedTimeSlot.slotId}
                     onRescheduled={(success) => {
                       if (success) {
-                        toast aria-live="polite" aria-atomic="true"({
+                        toast({
                           title: 'Rescheduled successfully',
                           description: 'Your booking has been rescheduled.',
                         });

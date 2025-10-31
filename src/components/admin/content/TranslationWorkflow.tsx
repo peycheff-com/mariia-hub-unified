@@ -38,7 +38,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import { translationMemory } from '@/lib/translations/TranslationMemory';
 import { getAIService } from '@/integrations/ai/service';
 import {
@@ -69,7 +69,7 @@ export const TranslationWorkflow: React.FC<TranslationWorkflowProps> = ({
   className
 }) => {
   const { t, i18n } = useTranslation();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // State
   const [sourceLanguage, setSourceLanguage] = useState<Language>(i18n.language as Language || 'en');
@@ -139,7 +139,7 @@ export const TranslationWorkflow: React.FC<TranslationWorkflowProps> = ({
   // Start translation process
   const startTranslation = useCallback(async () => {
     if (!sourceContent) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('admin.translation.noSourceContent'),
         description: t('admin.translation.noSourceContentDesc'),
         variant: 'destructive'
@@ -237,7 +237,7 @@ export const TranslationWorkflow: React.FC<TranslationWorkflowProps> = ({
         )
       );
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('admin.translation.completed'),
         description: t('admin.translation.completedDesc')
       });
@@ -257,7 +257,7 @@ export const TranslationWorkflow: React.FC<TranslationWorkflowProps> = ({
       );
     } catch (error) {
       console.error('Translation failed:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('admin.translation.failed'),
         description: t('admin.translation.failedDesc'),
         variant: 'destructive'
@@ -286,14 +286,14 @@ export const TranslationWorkflow: React.FC<TranslationWorkflowProps> = ({
     category,
     translateWithAI,
     onTranslated,
-    toast aria-live="polite" aria-atomic="true",
+    toast,
     t
   ]);
 
   // Save translation
   const saveTranslation = useCallback(async () => {
     if (!sourceContent || !titleTranslation) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('admin.translation.incomplete'),
         description: t('admin.translation.incompleteDesc'),
         variant: 'destructive'
@@ -317,13 +317,13 @@ export const TranslationWorkflow: React.FC<TranslationWorkflowProps> = ({
 
       await blogService.saveBlogPost(translatedContent);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('admin.translation.saved'),
         description: t('admin.translation.savedDesc')
       });
     } catch (error) {
       console.error('Error saving translation:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('admin.translation.saveFailed'),
         description: t('admin.translation.saveFailedDesc'),
         variant: 'destructive'
@@ -338,7 +338,7 @@ export const TranslationWorkflow: React.FC<TranslationWorkflowProps> = ({
     targetLanguage,
     sourceLanguage,
     contentId,
-    toast aria-live="polite" aria-atomic="true",
+    toast,
     t
   ]);
 

@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from 'react-i18next';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import {
   Crown,
   Diamond,
@@ -745,7 +745,7 @@ interface ClientPreferences {
   responseTimeExpectation: string;
   language: string;
   timezone: string;
-  notification aria-live="polite" aria-atomic="true"s: boolean;
+  notifications: boolean;
   privacyLevel: string;
   accessibilityNeeds: string[];
   personalizationLevel: string;
@@ -846,7 +846,7 @@ const UnifiedSupportDashboard: React.FC<UnifiedSupportDashboardProps> = ({
   initialView = 'overview'
 }) => {
   const { t } = useTranslation();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // State management
   const [activeView, setActiveView] = useState(initialView);
@@ -890,7 +890,7 @@ const UnifiedSupportDashboard: React.FC<UnifiedSupportDashboardProps> = ({
 
     } catch (error) {
       console.error('Failed to initialize dashboard:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Dashboard Initialization Failed",
         description: "Unable to load support dashboard data",
         variant: "destructive"
@@ -943,7 +943,7 @@ const UnifiedSupportDashboard: React.FC<UnifiedSupportDashboardProps> = ({
             responseTimeExpectation: 'immediate',
             language: 'pl',
             timezone: 'Europe/Warsaw',
-            notification aria-live="polite" aria-atomic="true"s: true,
+            notifications: true,
             privacyLevel: 'high',
             accessibilityNeeds: [],
             personalizationLevel: 'high'
@@ -1050,7 +1050,7 @@ const UnifiedSupportDashboard: React.FC<UnifiedSupportDashboardProps> = ({
     setRefreshing(true);
     await initializeDashboard();
     setRefreshing(false);
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: "Dashboard Refreshed",
       description: "All support data has been updated"
     });

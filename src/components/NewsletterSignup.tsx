@@ -5,20 +5,20 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import { ResendService } from "@/lib/resend";
 
 const NewsletterSignup = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email || !email.includes("@")) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('newsletter.error', 'Error'),
         description: t('newsletter.invalidEmail', 'Please enter a valid email'),
         variant: "destructive",
@@ -32,7 +32,7 @@ const NewsletterSignup = () => {
       // Subscribe using ResendService
       await ResendService.subscribeToList(email.toLowerCase().trim());
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('newsletter.success', 'Subscribed!'),
         description: t('newsletter.successDesc', 'Thank you for subscribing to our newsletter'),
       });
@@ -65,7 +65,7 @@ const NewsletterSignup = () => {
       }
 
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('newsletter.error', 'Error'),
         description: error.message,
         variant: "destructive",

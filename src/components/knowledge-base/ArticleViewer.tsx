@@ -181,7 +181,7 @@ export const ArticleViewer: React.FC<ArticleViewerProps> = ({ slug: propSlug }) 
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(window.location.href);
-    // Show toast aria-live="polite" aria-atomic="true" notification aria-live="polite" aria-atomic="true"
+    // Show toast notification aria-live="polite" aria-atomic="true"
   };
 
   const renderContent = (content: string) => {

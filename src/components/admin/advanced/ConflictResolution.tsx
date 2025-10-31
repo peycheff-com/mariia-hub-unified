@@ -23,7 +23,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 interface Conflict {
   id: string;
@@ -56,7 +56,7 @@ const ConflictResolution = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'pending' | 'resolved' | 'all'>('pending');
   const [autoResolving, setAutoResolving] = useState(false);
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     loadConflicts();
@@ -70,7 +70,7 @@ const ConflictResolution = () => {
       const detectedConflicts = await detectConflicts();
       setConflicts(detectedConflicts);
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message,
         variant: 'destructive'
@@ -193,12 +193,12 @@ const ConflictResolution = () => {
         c.id === conflictId ? { ...c, resolved: true } : c
       ));
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: 'Conflict resolved automatically'
       });
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to resolve conflict',
         variant: 'destructive'
@@ -215,13 +215,13 @@ const ConflictResolution = () => {
         c.id === conflictId ? { ...c, resolved: true } : c
       ));
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: 'Conflict marked as resolved'
       });
       setDialogOpen(false);
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message,
         variant: 'destructive'

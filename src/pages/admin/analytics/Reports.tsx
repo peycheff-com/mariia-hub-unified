@@ -37,7 +37,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 interface ReportTemplate {
   id: string;
@@ -134,7 +134,7 @@ export default function ReportsPage() {
     from: format(addDays(new Date(), -30), 'yyyy-MM-dd'),
     to: format(new Date(), 'yyyy-MM-dd'),
   });
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchReportTemplates();
@@ -151,7 +151,7 @@ export default function ReportsPage() {
       setTemplates(data || []);
     } catch (error) {
       console.error('Error fetching report templates:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to fetch report templates',
         variant: 'destructive',
@@ -161,7 +161,7 @@ export default function ReportsPage() {
 
   const handleCreateTemplate = async () => {
     if (!reportName || selectedMetrics.length === 0) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Please provide a report name and select at least one metric',
         variant: 'destructive',
@@ -190,13 +190,13 @@ export default function ReportsPage() {
       setIsCreateDialogOpen(false);
       resetForm();
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: 'Report template created successfully',
       });
     } catch (error) {
       console.error('Error creating template:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to create report template',
         variant: 'destructive',
@@ -242,13 +242,13 @@ export default function ReportsPage() {
       a.click();
       URL.revokeObjectURL(url);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: 'Report generated and downloaded successfully',
       });
     } catch (error) {
       console.error('Error generating report:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to generate report',
         variant: 'destructive',
@@ -289,13 +289,13 @@ export default function ReportsPage() {
       console.log('Sending report to recipients:', template.recipients);
       console.log('Report data:', reportData);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: `Report sent to ${template.recipients.length} recipients`,
       });
     } catch (error) {
       console.error('Error sending report:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to send report',
         variant: 'destructive',
@@ -314,13 +314,13 @@ export default function ReportsPage() {
 
       setTemplates(templates.filter(t => t.id !== templateId));
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: 'Report template deleted successfully',
       });
     } catch (error) {
       console.error('Error deleting template:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to delete report template',
         variant: 'destructive',

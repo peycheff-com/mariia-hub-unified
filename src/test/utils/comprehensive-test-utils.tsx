@@ -9,7 +9,7 @@ import { vi, describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } 
 import { BookingProvider } from '@/contexts/BookingContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { ModeProvider } from '@/contexts/ModeContext';
-import { Toaster } from '@/components/ui/toast aria-live="polite" aria-atomic="true"er';
+import { Toaster } from '@/components/ui/toaster';
 
 import i18n from '@/lib/i18n';
 
@@ -429,11 +429,11 @@ export { vi, describe, it, expect, beforeEach, afterEach, beforeAll, afterAll };
 // ==================== COMMON ASSERTIONS ====================
 
 export const expectToastToHaveBeenCalled = (message: string) => {
-  const toast aria-live="polite" aria-atomic="true" = vi.fn();
-  vi.mock('@/hooks/use-toast aria-live="polite" aria-atomic="true"', () => ({
-    useToast: () => ({ toast aria-live="polite" aria-atomic="true" }),
+  const toast = vi.fn();
+  vi.mock('@/hooks/use-toast', () => ({
+    useToast: () => ({ toast }),
   }));
-  expect(toast aria-live="polite" aria-atomic="true").toHaveBeenCalledWith(
+  expect(toast).toHaveBeenCalledWith(
     expect.objectContaining({
       description: message,
     })

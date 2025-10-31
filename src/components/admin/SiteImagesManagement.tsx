@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Pencil, Trash2, Upload, Image as ImageIcon } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,7 +43,7 @@ const SiteImagesManagement = () => {
   const [loading, setLoading] = useState(true);
   const [editingImage, setEditingImage] = useState<SiteImage | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     key: "",
@@ -69,7 +69,7 @@ const SiteImagesManagement = () => {
       if (error) throw error;
       setImages(data || []);
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error loading images",
         description: error.message,
         variant: "destructive",
@@ -98,7 +98,7 @@ const SiteImagesManagement = () => {
 
         if (error) throw error;
 
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Image updated",
           description: "Site image has been updated successfully",
         });
@@ -107,7 +107,7 @@ const SiteImagesManagement = () => {
 
         if (error) throw error;
 
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Image added",
           description: "New site image has been added successfully",
         });
@@ -117,7 +117,7 @@ const SiteImagesManagement = () => {
       resetForm();
       setIsDialogOpen(false);
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -147,14 +147,14 @@ const SiteImagesManagement = () => {
 
       if (error) throw error;
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Image deleted",
         description: "Site image has been deleted successfully",
       });
 
       fetchImages();
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error deleting image",
         description: error.message,
         variant: "destructive",
@@ -172,12 +172,12 @@ const SiteImagesManagement = () => {
       if (error) throw error;
 
       fetchImages();
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Status updated",
         description: `Image ${!currentStatus ? "activated" : "deactivated"}`,
       });
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: error.message,
         variant: "destructive",

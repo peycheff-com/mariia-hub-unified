@@ -3,7 +3,7 @@ import { useDropzone } from "react-dropzone";
 import { Upload, X, Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { logger } from "@/lib/logger";
 
@@ -17,7 +17,7 @@ interface ImageUploadProps {
 export const ImageUpload = ({ bucket, onUploadComplete, currentImage, folder }: ImageUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(currentImage || null);
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
@@ -49,12 +49,12 @@ export const ImageUpload = ({ bucket, onUploadComplete, currentImage, folder }: 
       setPreview(publicUrl);
       onUploadComplete(publicUrl);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Image uploaded successfully",
       });
     } catch (error: any) {
       logger.error('Upload error:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Upload failed",
         description: error.message,
         variant: "destructive",
@@ -62,7 +62,7 @@ export const ImageUpload = ({ bucket, onUploadComplete, currentImage, folder }: 
     } finally {
       setUploading(false);
     }
-  }, [bucket, folder, onUploadComplete, toast aria-live="polite" aria-atomic="true"]);
+  }, [bucket, folder, onUploadComplete, toast]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

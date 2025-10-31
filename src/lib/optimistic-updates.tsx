@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 // Optimistic update types
 export interface OptimisticConfig {
@@ -218,8 +218,8 @@ export function useOptimisticUpdates<T extends { id: string | number }>(
         addOptimisticUpdate(id, update);
       }, 1000);
     } else {
-      // Show error toast aria-live="polite" aria-atomic="true"
-      toast aria-live="polite" aria-atomic="true".error('Failed to update. Please try again later.', {
+      // Show error toast
+      toast.error('Failed to update. Please try again later.', {
         description: `Retry attempt ${retryCount} of ${maxRetries} failed.`,
       });
 

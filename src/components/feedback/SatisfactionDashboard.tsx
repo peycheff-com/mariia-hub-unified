@@ -58,7 +58,7 @@ import {
   Target,
   Zap
 } from 'lucide-react';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 import {
   SatisfactionDashboard,
@@ -149,7 +149,7 @@ export function SatisfactionDashboard({
     } catch (err) {
       console.error('Error loading dashboard data:', err);
       setError(t('feedback.dashboard.loadError'));
-      toast aria-live="polite" aria-atomic="true".error(t('feedback.dashboard.loadError'));
+      toast.error(t('feedback.dashboard.loadError'));
     } finally {
       setLoading(false);
     }
@@ -159,7 +159,7 @@ export function SatisfactionDashboard({
     setRefreshing(true);
     await loadDashboardData(false);
     setRefreshing(false);
-    toast aria-live="polite" aria-atomic="true".success(t('feedback.dashboard.refreshed'));
+    toast.success(t('feedback.dashboard.refreshed'));
   }, [filters]);
 
   const handleFilterChange = (key: string, value: any) => {

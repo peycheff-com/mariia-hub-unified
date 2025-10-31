@@ -34,7 +34,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useLoyaltyContext } from '@/contexts/LoyaltyContext';
@@ -46,7 +46,7 @@ interface LoyaltyAdminPanelProps {
 
 export const LoyaltyAdminPanel: React.FC<LoyaltyAdminPanelProps> = ({ className }) => {
   const { state, actions } = useLoyaltyContext();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(false);
@@ -93,7 +93,7 @@ export const LoyaltyAdminPanel: React.FC<LoyaltyAdminPanelProps> = ({ className 
       ]);
     } catch (error) {
       console.error('Failed to load admin data:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error loading data',
         description: 'Failed to load loyalty program data. Please refresh.',
         variant: 'destructive',
@@ -145,7 +145,7 @@ export const LoyaltyAdminPanel: React.FC<LoyaltyAdminPanelProps> = ({ className 
         }
       }
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Member updated successfully',
         description: 'The member profile has been updated.',
       });
@@ -155,7 +155,7 @@ export const LoyaltyAdminPanel: React.FC<LoyaltyAdminPanelProps> = ({ className 
       await loadAdminData();
     } catch (error) {
       console.error('Failed to update member:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Failed to update member',
         description: 'Please try again or contact support.',
         variant: 'destructive',
@@ -187,14 +187,14 @@ export const LoyaltyAdminPanel: React.FC<LoyaltyAdminPanelProps> = ({ className 
       if (selectedReward) {
         // Update existing reward
         await actions.updateReward(selectedReward.id, rewardForm);
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Reward updated successfully',
           description: 'The reward has been updated.',
         });
       } else {
         // Create new reward
         await actions.createReward(rewardForm);
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Reward created successfully',
           description: 'The new reward has been added to the catalog.',
         });
@@ -216,7 +216,7 @@ export const LoyaltyAdminPanel: React.FC<LoyaltyAdminPanelProps> = ({ className 
       await loadAdminData();
     } catch (error) {
       console.error('Failed to save reward:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Failed to save reward',
         description: 'Please try again or contact support.',
         variant: 'destructive',
@@ -286,13 +286,13 @@ export const LoyaltyAdminPanel: React.FC<LoyaltyAdminPanelProps> = ({ className 
       a.click();
       window.URL.revokeObjectURL(url);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Data exported successfully',
         description: `${filename} data has been downloaded.`,
       });
     } catch (error) {
       console.error('Failed to export data:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Export failed',
         description: 'Failed to export data. Please try again.',
         variant: 'destructive',

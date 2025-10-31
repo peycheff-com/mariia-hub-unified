@@ -59,7 +59,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 
 interface MediaFile {
@@ -140,7 +140,7 @@ const AdvancedMediaManager: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState<Set<string>>(new Set());
   const [previewFile, setPreviewFile] = useState<MediaFile | null>(null);
   const [editFile, setEditFile] = useState<MediaFile | null>(null);
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Mock data - replace with actual Supabase queries
@@ -352,12 +352,12 @@ const AdvancedMediaManager: React.FC = () => {
 
     try {
       await Promise.all(uploadPromises);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Upload successful',
         description: `${files.length} file(s) uploaded successfully`,
       });
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Upload failed',
         description: 'Some files failed to upload',
         variant: 'destructive',
@@ -365,7 +365,7 @@ const AdvancedMediaManager: React.FC = () => {
     } finally {
       setIsUploading(false);
     }
-  }, [selectedFolder, toast aria-live="polite" aria-atomic="true"]);
+  }, [selectedFolder, toast]);
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';

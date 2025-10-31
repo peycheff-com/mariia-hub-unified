@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 import { Loader2, Sparkles, Save, Send, RefreshCw, Download, Eye, Settings } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -90,7 +90,7 @@ export function AIContentGenerator({ className, initialTab = 'blog' }: AIContent
 
   const generateBlogPost = async () => {
     if (!blogTopic) {
-      toast aria-live="polite" aria-atomic="true".error(t('admin.ai.content.pleaseEnterTopic'));
+      toast.error(t('admin.ai.content.pleaseEnterTopic'));
       return;
     }
 
@@ -117,10 +117,10 @@ export function AIContentGenerator({ className, initialTab = 'blog' }: AIContent
         status: 'draft',
       });
 
-      toast aria-live="polite" aria-atomic="true".success(t('admin.ai.content.blogGenerated'));
+      toast.success(t('admin.ai.content.blogGenerated'));
     } catch (error) {
       console.error('Error generating blog post:', error);
-      toast aria-live="polite" aria-atomic="true".error(t('admin.ai.content.generationError'));
+      toast.error(t('admin.ai.content.generationError'));
     } finally {
       setIsGenerating(false);
     }
@@ -128,7 +128,7 @@ export function AIContentGenerator({ className, initialTab = 'blog' }: AIContent
 
   const generateServiceDescription = async () => {
     if (!selectedService) {
-      toast aria-live="polite" aria-atomic="true".error(t('admin.ai.content.pleaseSelectService'));
+      toast.error(t('admin.ai.content.pleaseSelectService'));
       return;
     }
 
@@ -138,7 +138,7 @@ export function AIContentGenerator({ className, initialTab = 'blog' }: AIContent
       const service = services?.find(s => s.id === selectedService);
 
       if (!service) {
-        toast aria-live="polite" aria-atomic="true".error(t('admin.ai.content.serviceNotFound'));
+        toast.error(t('admin.ai.content.serviceNotFound'));
         return;
       }
 
@@ -161,10 +161,10 @@ export function AIContentGenerator({ className, initialTab = 'blog' }: AIContent
         status: 'draft',
       });
 
-      toast aria-live="polite" aria-atomic="true".success(t('admin.ai.content.serviceDescriptionGenerated'));
+      toast.success(t('admin.ai.content.serviceDescriptionGenerated'));
     } catch (error) {
       console.error('Error generating service description:', error);
-      toast aria-live="polite" aria-atomic="true".error(t('admin.ai.content.generationError'));
+      toast.error(t('admin.ai.content.generationError'));
     } finally {
       setIsGenerating(false);
     }
@@ -189,10 +189,10 @@ export function AIContentGenerator({ className, initialTab = 'blog' }: AIContent
         status: 'draft',
       });
 
-      toast aria-live="polite" aria-atomic="true".success(t('admin.ai.content.emailGenerated'));
+      toast.success(t('admin.ai.content.emailGenerated'));
     } catch (error) {
       console.error('Error generating email:', error);
-      toast aria-live="polite" aria-atomic="true".error(t('admin.ai.content.generationError'));
+      toast.error(t('admin.ai.content.generationError'));
     } finally {
       setIsGenerating(false);
     }
@@ -215,10 +215,10 @@ export function AIContentGenerator({ className, initialTab = 'blog' }: AIContent
       if (error) throw error;
 
       setSavedDrafts([...savedDrafts, generatedContent]);
-      toast aria-live="polite" aria-atomic="true".success(t('admin.ai.content.draftSaved'));
+      toast.success(t('admin.ai.content.draftSaved'));
     } catch (error) {
       console.error('Error saving draft:', error);
-      toast aria-live="polite" aria-atomic="true".error(t('admin.ai.content.saveError'));
+      toast.error(t('admin.ai.content.saveError'));
     }
   };
 
@@ -247,11 +247,11 @@ export function AIContentGenerator({ className, initialTab = 'blog' }: AIContent
       }
 
       setGeneratedContent({ ...generatedContent, status: 'published' });
-      toast aria-live="polite" aria-atomic="true".success(t('admin.ai.content.contentPublished'));
+      toast.success(t('admin.ai.content.contentPublished'));
       queryClient.invalidateQueries({ queryKey: ['blog-posts'] });
     } catch (error) {
       console.error('Error publishing content:', error);
-      toast aria-live="polite" aria-atomic="true".error(t('admin.ai.content.publishError'));
+      toast.error(t('admin.ai.content.publishError'));
     }
   };
 

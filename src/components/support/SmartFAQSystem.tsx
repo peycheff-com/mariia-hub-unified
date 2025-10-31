@@ -73,7 +73,7 @@ import { Switch } from '@/components/ui/switch';
 import { supportAutomationService } from '@/services/support-automation.service';
 import { KnowledgeBaseArticle, KnowledgeSearchResult } from '@/types/support-automation';
 import { cn } from '@/lib/utils';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 interface SmartFAQSystemProps {
   className?: string;
@@ -310,7 +310,7 @@ export function SmartFAQSystem({
       }
     } catch (error) {
       console.error('Error loading articles:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to load articles');
+      toast.error('Failed to load articles');
     } finally {
       setLoading(false);
     }
@@ -329,7 +329,7 @@ export function SmartFAQSystem({
       setSearchResults(results);
     } catch (error) {
       console.error('Error searching knowledge base:', error);
-      toast aria-live="polite" aria-atomic="true".error('Search failed');
+      toast.error('Search failed');
     } finally {
       setSearching(false);
     }
@@ -455,10 +455,10 @@ export function SmartFAQSystem({
         setArticles(updatedArticles);
       }
 
-      toast aria-live="polite" aria-atomic="true".success('Thank you for your feedback!');
+      toast.success('Thank you for your feedback!');
     } catch (error) {
       console.error('Error rating article:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to submit feedback');
+      toast.error('Failed to submit feedback');
     }
   };
 
@@ -466,10 +466,10 @@ export function SmartFAQSystem({
     const newBookmarks = new Set(bookmarkedArticles);
     if (newBookmarks.has(articleId)) {
       newBookmarks.delete(articleId);
-      toast aria-live="polite" aria-atomic="true".success('Article removed from bookmarks');
+      toast.success('Article removed from bookmarks');
     } else {
       newBookmarks.add(articleId);
-      toast aria-live="polite" aria-atomic="true".success('Article added to bookmarks');
+      toast.success('Article added to bookmarks');
     }
     setBookmarkedArticles(newBookmarks);
     localStorage.setItem('faq-bookmarks', JSON.stringify(Array.from(newBookmarks)));
@@ -491,11 +491,11 @@ export function SmartFAQSystem({
         });
       } else {
         await navigator.clipboard.writeText(shareUrl);
-        toast aria-live="polite" aria-atomic="true".success('Link copied to clipboard!');
+        toast.success('Link copied to clipboard!');
       }
     } catch (error) {
       console.error('Error sharing article:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to share article');
+      toast.error('Failed to share article');
     }
   };
 

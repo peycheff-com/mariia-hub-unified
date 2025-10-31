@@ -32,7 +32,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 
 interface DeviceIntegrationProps {
   className?: string;
@@ -43,7 +43,7 @@ interface DeviceCapability {
   contacts: boolean;
   calendar: boolean;
   geolocation: boolean;
-  notification aria-live="polite" aria-atomic="true"s: boolean;
+  notifications: boolean;
   share: boolean;
   bluetooth: boolean;
   nfc: boolean;
@@ -89,14 +89,14 @@ interface MediaFile {
 export function DeviceIntegration({ className = '' }: DeviceIntegrationProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [capabilities, setCapabilities] = useState<DeviceCapability>({
     camera: false,
     contacts: false,
     calendar: false,
     geolocation: false,
-    notification aria-live="polite" aria-atomic="true"s: false,
+    notifications: false,
     share: false,
     bluetooth: false,
     nfc: false,
@@ -142,7 +142,7 @@ export function DeviceIntegration({ className = '' }: DeviceIntegrationProps) {
       contacts: !!(navigator as any).contacts && !!(navigator as any).contacts.select,
       calendar: !!(navigator.share && navigator.canShare), // Calendar integration via share API
       geolocation: !!navigator.geolocation,
-      notification aria-live="polite" aria-atomic="true"s: !!('Notification' in window),
+      notifications: !!('Notification' in window),
       share: !!navigator.share,
       bluetooth: !!(navigator as any).bluetooth,
       nfc: !!(navigator as any).nfc,
@@ -198,14 +198,14 @@ export function DeviceIntegration({ className = '' }: DeviceIntegrationProps) {
       const notification aria-live="polite" aria-atomic="true"Permission = Notification.permission;
       setCapabilities(prev => ({
         ...prev,
-        notification aria-live="polite" aria-atomic="true"s: notification aria-live="polite" aria-atomic="true"Permission === 'granted'
+        notifications: notification aria-live="polite" aria-atomic="true"Permission === 'granted'
       }));
     }
   };
 
   const requestCameraAccess = async () => {
     if (!capabilities.camera) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('deviceIntegration.cameraNotSupported'),
         description: t('deviceIntegration.cameraNotSupportedDesc'),
         variant: 'destructive',
@@ -231,7 +231,7 @@ export function DeviceIntegration({ className = '' }: DeviceIntegrationProps) {
       }
     } catch (error) {
       console.error('Camera access denied:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('deviceIntegration.cameraAccessDenied'),
         description: t('deviceIntegration.cameraAccessDeniedDesc'),
         variant: 'destructive',
@@ -294,7 +294,7 @@ export function DeviceIntegration({ className = '' }: DeviceIntegrationProps) {
         console.error('Failed to save image to localStorage:', error);
       }
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('deviceIntegration.photoCaptured'),
         description: t('deviceIntegration.photoCapturedDesc'),
       });
@@ -316,7 +316,7 @@ export function DeviceIntegration({ className = '' }: DeviceIntegrationProps) {
 
   const recordVideo = async () => {
     if (!capabilities.camera) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('deviceIntegration.videoNotSupported'),
         description: t('deviceIntegration.videoNotSupportedDesc'),
         variant: 'destructive',
@@ -340,7 +340,7 @@ export function DeviceIntegration({ className = '' }: DeviceIntegrationProps) {
       }
     } catch (error) {
       console.error('Video recording failed:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('deviceIntegration.videoRecordingFailed'),
         description: t('deviceIntegration.videoRecordingFailedDesc'),
         variant: 'destructive',
@@ -350,7 +350,7 @@ export function DeviceIntegration({ className = '' }: DeviceIntegrationProps) {
 
   const selectContacts = async () => {
     if (!capabilities.contacts) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('deviceIntegration.contactsNotSupported'),
         description: t('deviceIntegration.contactsNotSupportedDesc'),
         variant: 'destructive',
@@ -375,14 +375,14 @@ export function DeviceIntegration({ className = '' }: DeviceIntegrationProps) {
       // Save to localStorage
       localStorage.setItem('selected-contacts', JSON.stringify(contactInfos));
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('deviceIntegration.contactsSelected'),
         description: t('deviceIntegration.contactsSelectedDesc', { count: contactInfos.length }),
       });
     } catch (error) {
       if (error.name !== 'AbortError') {
         console.error('Contact selection failed:', error);
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: t('deviceIntegration.contactSelectionFailed'),
           description: t('deviceIntegration.contactSelectionFailedDesc'),
           variant: 'destructive',
@@ -393,7 +393,7 @@ export function DeviceIntegration({ className = '' }: DeviceIntegrationProps) {
 
   const getCurrentLocation = async () => {
     if (!capabilities.geolocation) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('deviceIntegration.locationNotSupported'),
         description: t('deviceIntegration.locationNotSupportedDesc'),
         variant: 'destructive',
@@ -441,7 +441,7 @@ export function DeviceIntegration({ className = '' }: DeviceIntegrationProps) {
         console.error('Failed to get nearby services:', error);
       }
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('deviceIntegration.locationObtained'),
         description: t('deviceIntegration.locationObtainedDesc', {
           accuracy: Math.round(location.accuracy),
@@ -449,7 +449,7 @@ export function DeviceIntegration({ className = '' }: DeviceIntegrationProps) {
       });
     } catch (error) {
       console.error('Location access failed:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('deviceIntegration.locationAccessFailed'),
         description: t('deviceIntegration.locationAccessFailedDesc'),
         variant: 'destructive',
@@ -466,7 +466,7 @@ export function DeviceIntegration({ className = '' }: DeviceIntegrationProps) {
     files?: File[];
   }) => {
     if (!capabilities.share) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('deviceIntegration.shareNotSupported'),
         description: t('deviceIntegration.shareNotSupportedDesc'),
         variant: 'destructive',
@@ -490,14 +490,14 @@ export function DeviceIntegration({ className = '' }: DeviceIntegrationProps) {
 
       await navigator.share(shareData);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('deviceIntegration.contentShared'),
         description: t('deviceIntegration.contentSharedDesc'),
       });
     } catch (error) {
       if (error.name !== 'AbortError') {
         console.error('Share failed:', error);
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: t('deviceIntegration.shareFailed'),
           description: t('deviceIntegration.shareFailedDesc'),
           variant: 'destructive',
@@ -573,7 +573,7 @@ export function DeviceIntegration({ className = '' }: DeviceIntegrationProps) {
                 contacts: Users,
                 calendar: Calendar,
                 geolocation: MapPin,
-                notification aria-live="polite" aria-atomic="true"s: Bell,
+                notifications: Bell,
                 share: Share2,
                 bluetooth: Zap,
                 nfc: Wifi,
@@ -884,7 +884,7 @@ export function DeviceIntegration({ className = '' }: DeviceIntegrationProps) {
               variant="outline"
               onClick={() => {
                 vibrateDevice(1000);
-                toast aria-live="polite" aria-atomic="true"({
+                toast({
                   title: t('deviceIntegration.notification aria-live="polite" aria-atomic="true"Test'),
                   description: t('deviceIntegration.notification aria-live="polite" aria-atomic="true"TestDesc'),
                 });

@@ -28,7 +28,7 @@ import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 interface Resource {
   id: string;
@@ -64,7 +64,7 @@ const ResourceManagement = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
   const [activeTab, setActiveTab] = useState<'resources' | 'locations' | 'schedule'>('resources');
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -121,7 +121,7 @@ const ResourceManagement = () => {
       setResources(resourcesResult.data || []);
       setLocations(locationsResult.data || []);
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message,
         variant: 'destructive'
@@ -156,7 +156,7 @@ const ResourceManagement = () => {
 
       if (result.error) throw result.error;
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: `Resource ${editingResource ? 'updated' : 'created'} successfully`
       });
@@ -165,7 +165,7 @@ const ResourceManagement = () => {
       resetForm();
       loadData();
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message,
         variant: 'destructive'
@@ -182,14 +182,14 @@ const ResourceManagement = () => {
 
       if (error) throw error;
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: `Resource status updated to ${newStatus}`
       });
 
       loadData();
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message,
         variant: 'destructive'
@@ -210,14 +210,14 @@ const ResourceManagement = () => {
 
       if (error) throw error;
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: 'Resource deleted successfully'
       });
 
       loadData();
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message,
         variant: 'destructive'

@@ -1,0 +1,243 @@
+# Docker Compose configuration for Mariia Hub development environment
+version: '3.8'
+
+services:
+  # Main application service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+      args:
+        BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+        BUILD_VERSION: ${BUILD_VERSION:-local-dev}
+        VITE_BUILD_TARGET: development
+        VITE_APP_ENV: development
+        VITE_BUILD_SHA: ${BUILD_SHA:-local}
+        VITE_BUILD_TIME: ${BUILD_TIME:-$(date -u +'%H:%M:%S')}
+        CI: false
+    container_name: mariia-hub-app
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      - NODE_ENV=development
+      - VITE_APP_ENV=development
+      - VITE_SUPABASE_URL=http://supabase-kong:8000
+      - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4cHdyYWNqYWtxcXBvaXZ5cG0iLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY5Nzk2NzQ4MiwiZXhwIjoyMDUzNTQzNDgyfQ.6E8JL0pJcQWRk_x3dKZdHvE0I2F3Kq2Jm7aQ6FkX8w}
+      - VITE_STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-pk_test_51M7J7wJdX7vY8W6J3J4H8W6J4H8W6J4H8W6J4H8W6J4H8W6J4H8W6J4H8W6J4H8W6}
+      - VITE_GA4_MEASUREMENT_ID=${GA4_MEASUREMENT_ID:-G-XXXXXXXXXX}
+      - VITE_ENABLE_ANALYTICS=false
+      - VITE_ENABLE_SOCIAL_LOGIN=false
+      - VITE_DEFAULT_CURRENCY=PLN
+      - VITE_DEFAULT_LOCALE=en
+      - VITE_APP_URL=http://localhost:${APP_PORT:-8080}
+      - VITE_ENABLE_DEBUG=true
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - app_logs:/var/log/nginx
+    depends_on:
+      - supabase-db
+      - supabase-kong
+      - redis
+    networks:
+      - mariia-hub-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Supabase Database
+  supabase-db:
+    image: supabase/postgres:15.1.0.117
+    container_name: mariia-hub-supabase-db
+    ports:
+      - "${DB_PORT:-54322}:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME:-mariia_hub}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-token}
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - supabase_db_data:/var/lib/postgresql/data
+      - ./supabase/migrations:/docker-entrypoint-initdb.d:ro
+    networks:
+      - mariia-hub-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Supabase Kong API Gateway
+  supabase-kong:
+    image: kong:3.4
+    container_name: mariia-hub-supabase-kong
+    ports:
+      - "${KONG_HTTP_PORT:-8000}:8000"
+      - "${KONG_HTTPS_PORT:-8443}:8443"
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_ADMIN_GUI_URL: http://localhost:8002
+    volumes:
+      - ./infrastructure/supabase/kong.yml:/kong/declarative/kong.yml:ro
+    depends_on:
+      - supabase-db
+    networks:
+      - mariia-hub-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: mariia-hub-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis123}
+    volumes:
+      - redis_data:/data
+    networks:
+      - mariia-hub-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Commander for Redis management
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: mariia-hub-redis-commander
+    ports:
+      - "${REDIS_COMMANDER_PORT:-8081}:8081"
+    environment:
+      REDIS_HOSTS: local:redis:6379:0:${REDIS_PASSWORD:-redis123}
+      HTTP_USER: ${REDIS_USER:-admin}
+      HTTP_PASSWORD: ${REDIS_PASSWORD:-redis123}
+    depends_on:
+      - redis
+    networks:
+      - mariia-hub-network
+    restart: unless-stopped
+
+  # PgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: mariia-hub-pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@mariaborysevych.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - supabase-db
+    networks:
+      - mariia-hub-network
+    restart: unless-stopped
+
+  # Mailhog for email testing in development
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mariia-hub-mailhog
+    ports:
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
+      - "${MAILHOG_WEB_PORT:-8025}:8025"
+    networks:
+      - mariia-hub-network
+    restart: unless-stopped
+
+  # MinIO for S3-compatible storage
+  minio:
+    image: minio/minio:latest
+    container_name: mariia-hub-minio
+    ports:
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+      - "${MINIO_API_PORT:-9000}:9000"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - mariia-hub-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # Production stage for testing builds
+  app-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+      args:
+        BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+        BUILD_VERSION: ${BUILD_VERSION:-local-prod}
+        VITE_BUILD_TARGET: production
+        VITE_APP_ENV: production
+        VITE_BUILD_SHA: ${BUILD_SHA:-local}
+        VITE_BUILD_TIME: ${BUILD_TIME:-$(date -u +'%H:%M:%S')}
+    container_name: mariia-hub-app-prod
+    ports:
+      - "${PROD_PORT:-8081}:8080"
+    environment:
+      - NODE_ENV=production
+      - NGINX_HOST=0.0.0.0
+      - NGINX_PORT=8080
+    profiles:
+      - production
+    networks:
+      - mariia-hub-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+# Networks
+networks:
+  mariia-hub-network:
+    name: mariia-hub-network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# Volumes
+volumes:
+  supabase_db_data:
+    name: mariia-hub-supabase-db-data
+  redis_data:
+    name: mariia-hub-redis-data
+  pgadmin_data:
+    name: mariia-hub-pgadmin-data
+  minio_data:
+    name: mariia-hub-minio-data
+  app_logs:
+    name: mariia-hub-app-logs

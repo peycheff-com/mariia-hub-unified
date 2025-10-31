@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 
 import { useLoyaltyContext } from '@/contexts/LoyaltyContext';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -44,7 +44,7 @@ export const LoyaltyBookingIntegration: React.FC<LoyaltyBookingIntegrationProps>
 }) => {
   const { t } = useTranslation();
   const { state, actions } = useLoyaltyContext();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState('points');
   const [pointsToUse, setPointsToUse] = useState(0);
@@ -102,7 +102,7 @@ export const LoyaltyBookingIntegration: React.FC<LoyaltyBookingIntegrationProps>
 
       onPointsApplied?.(pointsToUse, discountAmount);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Points applied successfully!',
         description: `${pointsToUse.toLocaleString()} points redeemed for ${discountAmount.toFixed(2)} PLN discount`,
       });
@@ -110,7 +110,7 @@ export const LoyaltyBookingIntegration: React.FC<LoyaltyBookingIntegrationProps>
       setPointsToUse(0);
     } catch (error) {
       console.error('Failed to redeem points:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Failed to redeem points',
         description: 'Please try again or contact support.',
         variant: 'destructive',
@@ -137,7 +137,7 @@ export const LoyaltyBookingIntegration: React.FC<LoyaltyBookingIntegrationProps>
 
       onRewardApplied?.(rewardId, reward.discount_value || 0);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Reward applied successfully!',
         description: `${reward.name} - ${reward.description}`,
       });
@@ -145,7 +145,7 @@ export const LoyaltyBookingIntegration: React.FC<LoyaltyBookingIntegrationProps>
       setSelectedReward(null);
     } catch (error) {
       console.error('Failed to redeem reward:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Failed to apply reward',
         description: 'Please try again or contact support.',
         variant: 'destructive',

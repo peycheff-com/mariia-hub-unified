@@ -5,7 +5,7 @@ import { LogOut, Home, TrendingUp, Users, Calendar, DollarSign, Activity, Star, 
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 
@@ -57,7 +57,7 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("analytics");
   const navigate = useNavigate();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // Mock data for luxury dashboard
   const dashboardData = useMemo(() => ({

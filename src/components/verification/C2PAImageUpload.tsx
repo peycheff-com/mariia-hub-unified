@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone'
 import { Upload, X, Loader2, Shield, ShieldCheck, AlertCircle, Settings } from 'lucide-react'
 
 import { supabase } from '@/integrations/supabase/client'
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"'
+import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -64,7 +64,7 @@ export const C2PAImageUpload: React.FC<C2PAImageUploadProps> = ({
     description: '',
     assertions: []
   })
-  const { toast aria-live="polite" aria-atomic="true" } = useToast()
+  const { toast } = useToast()
 
   useEffect(() => {
     // Set default manifest data based on service type
@@ -181,7 +181,7 @@ export const C2PAImageUpload: React.FC<C2PAImageUploadProps> = ({
             message: 'Image uploaded and C2PA verified successfully'
           }))
 
-          toast aria-live="polite" aria-atomic="true"({
+          toast({
             title: "Image uploaded successfully",
             description: "C2PA watermark has been applied and verified",
           })
@@ -203,7 +203,7 @@ export const C2PAImageUpload: React.FC<C2PAImageUploadProps> = ({
           message: 'Image uploaded successfully'
         }))
 
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Image uploaded successfully",
         })
 
@@ -221,13 +221,13 @@ export const C2PAImageUpload: React.FC<C2PAImageUploadProps> = ({
         message: error.message || 'Upload failed'
       })
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Upload failed",
         description: error.message,
         variant: "destructive",
       })
     }
-  }, [bucket, folder, onUploadComplete, toast aria-live="polite" aria-atomic="true", c2paEnabled, c2paOptions, manifestData])
+  }, [bucket, folder, onUploadComplete, toast, c2paEnabled, c2paOptions, manifestData])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

@@ -65,7 +65,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 // Types for Report Builder
 interface ReportMetric {
@@ -130,7 +130,7 @@ const ReportBuilder: React.FC = () => {
     from: subDays(new Date(), 30),
     to: new Date()
   });
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // Available metrics and dimensions
   const availableMetrics: ReportMetric[] = [
@@ -382,7 +382,7 @@ const ReportBuilder: React.FC = () => {
       setReportData(mockData);
       setActiveTab('preview');
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to generate report',
         variant: 'destructive'
@@ -394,7 +394,7 @@ const ReportBuilder: React.FC = () => {
 
   const saveReport = async () => {
     if (!reportName.trim()) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Please enter a report name',
         variant: 'destructive'
@@ -418,7 +418,7 @@ const ReportBuilder: React.FC = () => {
     // In a real implementation, save to backend
     console.log('Saving report:', report);
 
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: 'Success',
       description: 'Report saved successfully'
     });
@@ -448,7 +448,7 @@ const ReportBuilder: React.FC = () => {
         downloadFile(csvBlob, `${reportName.replace(/\s+/g, '_')}_${format(new Date(), 'yyyy-MM-dd')}.csv`);
         break;
       case 'pdf':
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Coming Soon',
           description: 'PDF export will be available soon'
         });
@@ -1089,7 +1089,7 @@ const ReportBuilder: React.FC = () => {
                       // Generate shareable link
                       const shareUrl = `${window.location.origin}/reports/shared/${Date.now()}`;
                       navigator.clipboard.writeText(shareUrl);
-                      toast aria-live="polite" aria-atomic="true"({
+                      toast({
                         title: 'Link Copied',
                         description: 'Shareable link copied to clipboard'
                       });
@@ -1103,7 +1103,7 @@ const ReportBuilder: React.FC = () => {
                     className="border-graphite/50 hover:bg-champagne/10"
                     onClick={() => {
                       // Email report
-                      toast aria-live="polite" aria-atomic="true"({
+                      toast({
                         title: 'Coming Soon',
                         description: 'Email sharing will be available soon'
                       });

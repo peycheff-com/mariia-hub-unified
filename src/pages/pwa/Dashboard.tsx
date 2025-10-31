@@ -46,7 +46,7 @@ export default function PWADashboard() {
                 <Zap className="h-4 w-4" />
                 <span className="hidden sm:inline">{t('pwaDashboard.offline')}</span>
               </TabsTrigger>
-              <TabsTrigger value="notification aria-live="polite" aria-atomic="true"s" className="flex items-center gap-2">
+              <TabsTrigger value="notification s" className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
                 <span className="hidden sm:inline">{t('pwaDashboard.notification aria-live="polite" aria-atomic="true"s')}</span>
               </TabsTrigger>
@@ -72,7 +72,7 @@ export default function PWADashboard() {
               <OfflineBookingManager />
             </TabsContent>
 
-            <TabsContent value="notification aria-live="polite" aria-atomic="true"s" className="space-y-6">
+            <TabsContent value="notification s" className="space-y-6">
               <PushNotificationManager />
             </TabsContent>
 

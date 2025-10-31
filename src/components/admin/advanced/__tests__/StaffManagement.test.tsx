@@ -11,9 +11,9 @@ vi.mock('@/integrations/supabase/client', () => ({
   supabase: createSupabaseMock(),
 }))
 
-vi.mock('@/hooks/use-toast aria-live="polite" aria-atomic="true"', () => ({
+vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
-    toast aria-live="polite" aria-atomic="true": vi.fn(),
+    toast: vi.fn(),
   }),
 }))
 
@@ -272,9 +272,9 @@ describe('StaffManagement', () => {
       return mockSupabase.from(table)
     })
 
-    vi.mock('@/hooks/use-toast aria-live="polite" aria-atomic="true"', () => ({
+    vi.mock('@/hooks/use-toast', () => ({
       useToast: () => ({
-        toast aria-live="polite" aria-atomic="true": mockToast,
+        toast: mockToast,
       }),
     }))
   })

@@ -33,7 +33,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 interface ContentPerformanceMetrics {
   id: string;
@@ -123,7 +123,7 @@ const ContentPerformanceDashboard: React.FC = () => {
   const [sortBy, setSortBy] = useState('views');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMetric, setSelectedMetric] = useState<ContentPerformanceMetrics | null>(null);
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // Mock data - replace with actual analytics data
   useEffect(() => {

@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTranslation } from 'react-i18next';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import { LuxurySupportOrchestrator } from '@/lib/luxury-support-orchestrator';
 import { ExecutiveAnalyticsEngine } from '@/lib/executive-analytics-engine';
 import { VIPClientExperienceManager } from '@/lib/vip-client-experience-manager';
@@ -124,7 +124,7 @@ const LuxurySupportExperienceIntegration: React.FC<LuxurySupportExperienceProps>
   initialTab = 'orchestration'
 }) => {
   const { t } = useTranslation();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // State management
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -202,7 +202,7 @@ const LuxurySupportExperienceIntegration: React.FC<LuxurySupportExperienceProps>
 
     } catch (error) {
       console.error('Failed to initialize luxury support system:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "System Initialization Failed",
         description: "Unable to load luxury support experience data",
         variant: "destructive"
@@ -301,7 +301,7 @@ const LuxurySupportExperienceIntegration: React.FC<LuxurySupportExperienceProps>
     setRefreshing(true);
     await initializeSystem();
     setRefreshing(false);
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: "Data Refreshed",
       description: "All luxury support metrics have been updated"
     });

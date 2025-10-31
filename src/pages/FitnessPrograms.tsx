@@ -10,7 +10,7 @@ import MobileFooter from "@/components/MobileFooter";
 import AvailableSlotsList from "@/components/AvailableSlotsList";
 import ServiceCardSkeleton from "@/components/ServiceCardSkeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
 interface Program {
@@ -27,7 +27,7 @@ interface Program {
 
 const FitnessPrograms = () => {
   const { t, i18n } = useTranslation();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const { formatPrice } = useCurrency();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +45,7 @@ const FitnessPrograms = () => {
         if (error) throw error;
         setPrograms(data || []);
       } catch (error) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Error",
           description: "Could not load programs",
           variant: "destructive",
@@ -56,7 +56,7 @@ const FitnessPrograms = () => {
     };
 
     fetchPrograms();
-  }, [toast aria-live="polite" aria-atomic="true"]);
+  }, [toast]);
 
   const getIcon = (slug: string) => {
     const iconMap: Record<string, any> = {

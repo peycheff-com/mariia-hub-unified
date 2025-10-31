@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import { funnelAnalyzer } from "@/integrations/analytics/funnel-analyzer";
 import { behaviorTracker } from "@/integrations/analytics/behavior-tracker";
 import { ga4Analytics } from "@/integrations/analytics/ga4";
@@ -61,7 +61,7 @@ const AdvancedAnalyticsDashboard = () => {
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | 'all'>('all');
   const [selectedDevice, setSelectedDevice] = useState<string>('all');
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     loadDashboardData();
@@ -130,7 +130,7 @@ const AdvancedAnalyticsDashboard = () => {
 
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: "Failed to load analytics data. Please try again.",
         variant: "destructive",

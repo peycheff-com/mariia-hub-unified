@@ -1,0 +1,246 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database for Testing
+  postgres-test:
+    image: postgres:15-alpine
+    container_name: mariia-hub-postgres-test
+    environment:
+      POSTGRES_DB: test_db
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+      - ./scripts/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d test_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - test-network
+    restart: unless-stopped
+
+  # Redis for Testing
+  redis-test:
+    image: redis:7-alpine
+    container_name: mariia-hub-redis-test
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_test_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - test-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+
+  # Supabase Local for Testing
+  supabase-test:
+    image: supabase/cli:latest
+    container_name: mariia-hub-supabase-test
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    environment:
+      SUPABASE_DB_HOST: postgres-test
+      SUPABASE_DB_PORT: 5432
+      SUPABASE_DB_NAME: test_db
+      SUPABASE_DB_USER: test_user
+      SUPABASE_DB_PASSWORD: test_password
+      SUPABASE_SERVICE_KEY: test-service-key
+      SUPABASE_ANON_KEY: test-anon-key
+      SUPABASE_JWT_SECRET: test-jwt-secret
+    ports:
+      - "54322:54322"
+      - "54323:54323"
+      - "54324:54324"
+      - "54325:54325"
+    volumes:
+      - ./supabase:/supabase
+      - supabase_test_data:/var/lib/supabase
+    networks:
+      - test-network
+    command: >
+      sh -c "
+        supabase start &&
+        supabase db push &&
+        supabase gen types typescript --local > /supabase/types.ts &&
+        tail -f /dev/null
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:54323/rest/v1/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  # Test Application Container
+  app-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: mariia-hub-app-test
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+      supabase-test:
+        condition: service_healthy
+    environment:
+      NODE_ENV: test
+      VITE_SUPABASE_URL: http://supabase-test:54323
+      VITE_SUPABASE_ANON_KEY: test-anon-key
+      VITE_SUPABASE_SERVICE_ROLE_KEY: test-service-key
+      TEST_DATABASE_URL: postgresql://test_user:test_password@postgres-test:5432/test_db
+      TEST_REDIS_URL: redis://redis-test:6379
+      CI: true
+      DEBUG: true
+    ports:
+      - "3001:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - test_coverage:/app/coverage
+      - test_results:/app/test-results
+    networks:
+      - test-network
+    command: >
+      sh -c "
+        npm ci --prefer-offline --no-audit &&
+        npm run test:coverage &&
+        npm run test:e2e:ci &&
+        npm run build
+      "
+
+  # Playwright Container for E2E Testing
+  playwright-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.playwright
+    container_name: mariia-hub-playwright-test
+    depends_on:
+      - app-test
+    environment:
+      BASE_URL: http://app-test:3000
+      CI: true
+      DEBUG: pw:api
+    volumes:
+      - ./test-results:/app/test-results
+      - ./playwright-report:/app/playwright-report
+    networks:
+      - test-network
+    command: >
+      sh -c "
+        npx playwright install --with-deps &&
+        npx playwright test --reporter=json --outputFile=/app/test-results/e2e-results.json
+      "
+
+  # Lighthouse CI Container
+  lighthouse-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.lighthouse
+    container_name: mariia-hub-lighthouse-test
+    depends_on:
+      - app-test
+    environment:
+      LHCI_BUILD_URL: http://app-test:3000
+      LHCI_GITHUB_APP_TOKEN: ${LHCI_GITHUB_APP_TOKEN}
+      LHCI_SERVER_URL: http://lighthouse-server:9009
+    volumes:
+      - ./.lighthouseci:/app/.lighthouseci
+    networks:
+      - test-network
+    command: >
+      sh -c "
+        npm install -g @lhci/cli@0.12.x &&
+        lhci autorun
+      "
+
+  # Lighthouse Server for Storing Results
+  lighthouse-server:
+    image: patrickhulce/lhci-server:latest
+    container_name: mariia-hub-lighthouse-server
+    environment:
+      LHCI_STORAGE_SQLITE_PATH: /tmp/lhci-results.db
+    ports:
+      - "9009:9009"
+    volumes:
+      - lighthouse_data:/tmp
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9009/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # OWASP ZAP Container for Security Testing
+  zap-test:
+    image: owasp/zap2docker-stable
+    container_name: mariia-hub-zap-test
+    depends_on:
+      - app-test
+    volumes:
+      - ./security-reports:/zap/wrk
+      - /zap/wrk:/zap/wrk
+    networks:
+      - test-network
+    command: >
+      sh -c "
+        mkdir -p /zap/wrk &&
+        zap-baseline.py -t http://app-test:3000 -J /zap/wrk/zap-report.json || true
+      "
+
+  # Test Monitoring Dashboard
+  test-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    container_name: mariia-hub-test-dashboard
+    depends_on:
+      - lighthouse-server
+    ports:
+      - "3010:3000"
+    environment:
+      LHCI_SERVER_URL: http://lighthouse-server:9009
+      TEST_RESULTS_PATH: /app/test-results
+    volumes:
+      - ./test-results:/app/test-results
+      - ./coverage:/app/coverage
+    networks:
+      - test-network
+    command: >
+      sh -c "
+        npm install -g &&
+        npm start
+      "
+
+volumes:
+  postgres_test_data:
+    driver: local
+  redis_test_data:
+    driver: local
+  supabase_test_data:
+    driver: local
+  test_coverage:
+    driver: local
+  test_results:
+    driver: local
+  lighthouse_data:
+    driver: local
+
+networks:
+  test-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

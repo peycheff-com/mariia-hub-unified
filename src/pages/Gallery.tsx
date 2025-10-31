@@ -6,7 +6,7 @@ import { SEO } from "@/components/SEO";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import MobileFooter from "@/components/MobileFooter";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 
 
 interface GalleryImage {
@@ -21,7 +21,7 @@ interface GalleryImage {
 
 const Gallery = () => {
   const { i18n } = useTranslation();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
   const [images, setImages] = useState<GalleryImage[]>([]);
@@ -128,7 +128,7 @@ const Gallery = () => {
     setImages(images.map(img =>
       img.id === imageId ? { ...img, likes: (img.likes || 0) + 1 } : img
     ));
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: "Liked!",
       description: "You liked this photo",
     });

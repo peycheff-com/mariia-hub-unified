@@ -38,7 +38,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"'
+import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 
 
@@ -78,7 +78,7 @@ export const WorkflowDesigner: React.FC<WorkflowDesignerProps> = ({
   className
 }) => {
   const { t } = useTranslation()
-  const { toast aria-live="polite" aria-atomic="true" } = useToast()
+  const { toast } = useToast()
   const canvasRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [draggedNode, setDraggedNode] = useState<string | null>(null)
@@ -373,7 +373,7 @@ export const WorkflowDesigner: React.FC<WorkflowDesignerProps> = ({
   const handleSave = async () => {
     try {
       if (!workflowState.name) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: t('error', 'Error'),
           description: t('workflow_name_required', 'Workflow name is required'),
           variant: 'destructive'
@@ -399,13 +399,13 @@ export const WorkflowDesigner: React.FC<WorkflowDesignerProps> = ({
 
       await onSave(completeWorkflow)
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('success', 'Success'),
         description: t('workflow_saved', 'Workflow saved successfully')
       })
     } catch (error) {
       console.error('Failed to save workflow:', error)
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('error', 'Error'),
         description: t('failed_to_save_workflow', 'Failed to save workflow'),
         variant: 'destructive'
@@ -433,13 +433,13 @@ export const WorkflowDesigner: React.FC<WorkflowDesignerProps> = ({
 
       await onTest(completeWorkflow)
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('test_started', 'Test Started'),
         description: t('workflow_test_started', 'Workflow test has been started')
       })
     } catch (error) {
       console.error('Failed to test workflow:', error)
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('error', 'Error'),
         description: t('failed_to_test_workflow', 'Failed to test workflow'),
         variant: 'destructive'
@@ -477,12 +477,12 @@ export const WorkflowDesigner: React.FC<WorkflowDesignerProps> = ({
       try {
         const imported = JSON.parse(event.target?.result as string)
         setWorkflowState(imported)
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: t('import_successful', 'Import Successful'),
           description: t('workflow_imported', 'Workflow imported successfully')
         })
       } catch (error) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: t('import_failed', 'Import Failed'),
           description: t('invalid_workflow_file', 'Invalid workflow file'),
           variant: 'destructive'

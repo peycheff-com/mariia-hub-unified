@@ -138,7 +138,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 interface PartnerIntegrationProps {
@@ -225,7 +225,7 @@ export const PartnerIntegration: React.FC<PartnerIntegrationProps> = ({
   className
 }) => {
   const { partners, createPartner, updatePartner, deletePartner, loadPartners } = useCorporate();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // State
   const [searchQuery, setSearchQuery] = useState('');
@@ -344,7 +344,7 @@ export const PartnerIntegration: React.FC<PartnerIntegrationProps> = ({
   const handleSavePartner = async () => {
     try {
       if (!formData.partner_name || !formData.contact_email) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Validation Error',
           description: 'Please fill in all required fields',
           variant: 'destructive'
@@ -378,13 +378,13 @@ export const PartnerIntegration: React.FC<PartnerIntegrationProps> = ({
 
       if (selectedPartner) {
         await updatePartner(selectedPartner.id, partnerData);
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Success',
           description: 'Partner updated successfully'
         });
       } else {
         await createPartner(partnerData);
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Success',
           description: 'Partner added successfully'
         });
@@ -396,7 +396,7 @@ export const PartnerIntegration: React.FC<PartnerIntegrationProps> = ({
       resetForm();
       await loadPartners();
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to save partner',
         variant: 'destructive'
@@ -411,13 +411,13 @@ export const PartnerIntegration: React.FC<PartnerIntegrationProps> = ({
       // Simulate API test
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Connection Test',
         description: 'Connection successful! All endpoints are responding.',
         variant: 'default'
       });
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Connection Test Failed',
         description: 'Unable to connect to partner API. Please check credentials.',
         variant: 'destructive'
@@ -430,7 +430,7 @@ export const PartnerIntegration: React.FC<PartnerIntegrationProps> = ({
   // Sync partner data
   const handleSyncData = async (partner: B2BPartner) => {
     try {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Syncing Data',
         description: 'Syncing data with partner...'
       });
@@ -438,12 +438,12 @@ export const PartnerIntegration: React.FC<PartnerIntegrationProps> = ({
       // Simulate sync
       await new Promise(resolve => setTimeout(resolve, 3000));
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Sync Complete',
         description: 'Successfully synced 125 services and 350 availability slots.'
       });
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Sync Failed',
         description: 'Failed to sync data with partner.',
         variant: 'destructive'

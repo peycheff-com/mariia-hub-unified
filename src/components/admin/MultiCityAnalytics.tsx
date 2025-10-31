@@ -54,7 +54,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 // Types for multi-city analytics
 interface CityData {
@@ -118,7 +118,7 @@ const MultiCityAnalytics: React.FC = () => {
   const [timeframe, setTimeframe] = useState('12m');
   const [showProjections, setShowProjections] = useState(true);
   const [analysisMode, setAnalysisMode] = useState<'compare' | 'expand' | 'optimize'>('compare');
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // City data with comprehensive metrics
   const cityData: CityData[] = useMemo(() => [

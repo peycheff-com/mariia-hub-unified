@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import { useNPSSurvey } from '@/hooks/useFeedback';
 import { cn } from '@/lib/utils';
 
@@ -61,7 +61,7 @@ export const NPSSurvey: React.FC<NPSSurveyProps> = ({
   showResults = false,
   className,
 }) => {
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const { submitNPSSurvey, getNPSScore, loading: submitting } = useNPSSurvey();
   const [isOpen, setIsOpen] = useState(false);
   const [showWidget, setShowWidget] = useState(false);
@@ -100,7 +100,7 @@ export const NPSSurvey: React.FC<NPSSurveyProps> = ({
 
   const handleSubmit = async () => {
     if (currentScore === null) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Please select a score',
         description: 'Rate how likely you are to recommend us',
         variant: 'destructive',
@@ -113,7 +113,7 @@ export const NPSSurvey: React.FC<NPSSurveyProps> = ({
 
       if (result) {
         setSubmitted(true);
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Thank you for your feedback!',
           description: 'Your response helps us improve our service.',
         });
@@ -130,7 +130,7 @@ export const NPSSurvey: React.FC<NPSSurveyProps> = ({
         }, 2000);
       }
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message || 'Failed to submit survey',
         variant: 'destructive',

@@ -35,7 +35,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 
 interface HomeScreenExperienceProps {
   className?: string;
@@ -62,7 +62,7 @@ interface ShortcutData {
 export function HomeScreenExperience({ className = '' }: HomeScreenExperienceProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
@@ -99,7 +99,7 @@ export function HomeScreenExperience({ className = '' }: HomeScreenExperiencePro
       setIsInstalled(true);
       setShowInstallPrompt(false);
       setDeferredPrompt(null);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('homeScreen.appInstalled'),
         description: t('homeScreen.appInstalledDesc'),
       });
@@ -157,7 +157,7 @@ export function HomeScreenExperience({ className = '' }: HomeScreenExperiencePro
         (navigator as any).connection.removeEventListener('change', updateNetworkStatus);
       }
     };
-  }, [isStandalone, toast aria-live="polite" aria-atomic="true", t]);
+  }, [isStandalone, toast, t]);
 
   const loadCustomShortcuts = () => {
     try {
@@ -281,7 +281,7 @@ export function HomeScreenExperience({ className = '' }: HomeScreenExperiencePro
     } catch (error) {
       console.error('Error during app installation:', error);
       setInstallationProgress(0);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('homeScreen.installationFailed'),
         description: t('homeScreen.installationFailedDesc'),
         variant: 'destructive',
@@ -311,7 +311,7 @@ export function HomeScreenExperience({ className = '' }: HomeScreenExperiencePro
     const updated = [...customShortcuts, shortcut];
     setCustomShortcuts(updated);
     localStorage.setItem('custom-shortcuts', JSON.stringify(updated));
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: t('homeScreen.shortcutAdded'),
       description: t('homeScreen.shortcutAddedDesc', { name: shortcut.name }),
     });

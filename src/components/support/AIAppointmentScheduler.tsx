@@ -1202,7 +1202,7 @@ import { Label } from '@/components/ui/label';
 
 import { supportAutomationService } from '@/services/support-automation.service';
 import { cn } from '@/lib/utils';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 interface AIAppointmentSchedulerProps {
   className?: string;
@@ -1366,7 +1366,7 @@ export function AIAppointmentScheduler({
       }
     } catch (error) {
       console.error('Error loading time slots:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to load available times');
+      toast.error('Failed to load available times');
     } finally {
       setProcessingTimeSlots(false);
     }
@@ -1498,7 +1498,7 @@ export function AIAppointmentScheduler({
       ];
 
       setAiInsights(prev => [...prev, ...insights]);
-      toast aria-live="polite" aria-atomic="true".success('AI analysis complete! Personalized recommendations available.');
+      toast.success('AI analysis complete! Personalized recommendations available.');
     } catch (error) {
       console.error('Error analyzing preferences:', error);
     } finally {
@@ -1516,7 +1516,7 @@ export function AIAppointmentScheduler({
   // Handle time slot selection
   const handleTimeSlotSelect = (slot: TimeSlot) => {
     if (!slot.available) {
-      toast aria-live="polite" aria-atomic="true".error('This time slot is not available');
+      toast.error('This time slot is not available');
       return;
     }
 
@@ -1535,7 +1535,7 @@ export function AIAppointmentScheduler({
   // Handle appointment booking
   const handleBookAppointment = async () => {
     if (!selectedTimeSlot || !appointmentRequest.customerName || !appointmentRequest.customerEmail) {
-      toast aria-live="polite" aria-atomic="true".error('Please fill all required fields');
+      toast.error('Please fill all required fields');
       return;
     }
 
@@ -1557,7 +1557,7 @@ export function AIAppointmentScheduler({
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Success feedback
-      toast aria-live="polite" aria-atomic="true".success('Appointment booked successfully!');
+      toast.success('Appointment booked successfully!');
       onAppointmentBooked?.(appointment);
 
       // Reset form
@@ -1570,7 +1570,7 @@ export function AIAppointmentScheduler({
 
     } catch (error) {
       console.error('Error booking appointment:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to book appointment');
+      toast.error('Failed to book appointment');
     } finally {
       setLoading(false);
     }

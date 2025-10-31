@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 import { cn } from '@/lib/utils';
 import { contentStrategyService } from '@/services/content-strategy.service';
@@ -160,7 +160,7 @@ export const ContentCalendar = ({ className, language = 'en' }: ContentCalendarP
       generateCalendarDays(monthStart, monthEnd, searchResults.results.map(r => r as any));
     } catch (error) {
       console.error('Failed to load content data:', error);
-      toast aria-live="polite" aria-atomic="true".error(t('admin.content.calendar.loadError'));
+      toast.error(t('admin.content.calendar.loadError'));
     } finally {
       setLoading(false);
     }
@@ -227,14 +227,14 @@ export const ContentCalendar = ({ className, language = 'en' }: ContentCalendarP
 
   const clearFilters = () => {
     setFilters({});
-    toast aria-live="polite" aria-atomic="true".success(t('admin.content.calendar.filtersCleared'));
+    toast.success(t('admin.content.calendar.filtersCleared'));
   };
 
   const exportCalendar = () => {
     // Export calendar data as CSV or iCal
     const csvContent = generateCSVExport();
     downloadFile(csvContent, 'content-calendar.csv', 'text/csv');
-    toast aria-live="polite" aria-atomic="true".success(t('admin.content.calendar.exported'));
+    toast.success(t('admin.content.calendar.exported'));
   };
 
   const generateCSVExport = (): string => {

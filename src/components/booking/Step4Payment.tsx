@@ -8,7 +8,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { getStripe, createPaymentIntent } from '@/lib/stripe';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { logger } from '@/lib/logger';
 
@@ -54,7 +54,7 @@ export const Step4Payment = ({
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [isLoadingStripe, setIsLoadingStripe] = useState(false);
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const stripePromise = getStripe();
 
   // Loyalty integration state
@@ -151,7 +151,7 @@ export const Step4Payment = ({
         timestamp: new Date().toISOString(),
       });
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Payment initialization failed',
         description: 'Unable to initialize payment. Please try again or contact support.',
         variant: 'destructive',

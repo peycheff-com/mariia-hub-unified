@@ -17,7 +17,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Star, MessageSquare, ThumbsUp, ThumbsDown, Send, Loader2, CheckCircle } from 'lucide-react';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 import {
   FeedbackSurvey,
@@ -125,7 +125,7 @@ export function FeedbackSurvey({
       setSubmission(newSubmission);
     } catch (error) {
       console.error('Error initializing survey:', error);
-      toast aria-live="polite" aria-atomic="true".error(t('feedback.survey.initError'));
+      toast.error(t('feedback.survey.initError'));
     }
   };
 
@@ -203,7 +203,7 @@ export function FeedbackSurvey({
 
   const handleNext = async () => {
     if (!validateCurrentQuestion()) {
-      toast aria-live="polite" aria-atomic="true".error(t('feedback.survey.validationError'));
+      toast.error(t('feedback.survey.validationError'));
       return;
     }
 
@@ -222,7 +222,7 @@ export function FeedbackSurvey({
 
   const handleSubmit = async () => {
     if (!submission) {
-      toast aria-live="polite" aria-atomic="true".error(t('feedback.survey.noSubmission'));
+      toast.error(t('feedback.survey.noSubmission'));
       return;
     }
 
@@ -247,12 +247,12 @@ export function FeedbackSurvey({
         responses: apiResponses
       });
 
-      toast aria-live="polite" aria-atomic="true".success(t('feedback.survey.thankYou'));
+      toast.success(t('feedback.survey.thankYou'));
       onSubmit?.(completedSubmission);
 
     } catch (error) {
       console.error('Error submitting survey:', error);
-      toast aria-live="polite" aria-atomic="true".error(t('feedback.survey.submitError'));
+      toast.error(t('feedback.survey.submitError'));
     } finally {
       setIsSubmitting(false);
     }

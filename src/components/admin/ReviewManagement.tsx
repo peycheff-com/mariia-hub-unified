@@ -3,7 +3,7 @@ import { Star, Check, X, Eye, EyeOff } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -28,7 +28,7 @@ interface Review {
 const ReviewManagement = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     loadReviews();
@@ -70,7 +70,7 @@ const ReviewManagement = () => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -88,13 +88,13 @@ const ReviewManagement = () => {
       .eq("id", reviewId);
 
     if (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Success",
         description: !currentStatus ? "Review approved" : "Review unapproved",
       });
@@ -109,13 +109,13 @@ const ReviewManagement = () => {
       .eq("id", reviewId);
 
     if (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Success",
         description: !currentStatus ? "Review featured" : "Review unfeatured",
       });
@@ -132,13 +132,13 @@ const ReviewManagement = () => {
       .eq("id", reviewId);
 
     if (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Success",
         description: "Review deleted",
       });

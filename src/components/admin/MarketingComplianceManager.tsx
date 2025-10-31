@@ -44,7 +44,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"'
+import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 
 
@@ -109,7 +109,7 @@ const mockComplianceRecords: ComplianceRecord[] = [
 
 export const MarketingComplianceManager: React.FC<MarketingComplianceManagerProps> = ({ className }) => {
   const { t } = useTranslation()
-  const { toast aria-live="polite" aria-atomic="true" } = useToast()
+  const { toast } = useToast()
 
   const [records, setRecords] = useState<ComplianceRecord[]>(mockComplianceRecords)
   const [selectedRecord, setSelectedRecord] = useState<ComplianceRecord | null>(null)
@@ -186,7 +186,7 @@ export const MarketingComplianceManager: React.FC<MarketingComplianceManagerProp
     linkElement.setAttribute('download', exportFileDefaultName)
     linkElement.click()
 
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: t('report_generated', 'Report Generated'),
       description: t('compliance_report_exported', 'Compliance report has been exported')
     })
@@ -560,7 +560,7 @@ export const MarketingComplianceManager: React.FC<MarketingComplianceManagerProp
 
               <div className="flex justify-end">
                 <Button onClick={() => {
-                  toast aria-live="polite" aria-atomic="true"({
+                  toast({
                     title: t('preferences_saved', 'Preferences Saved'),
                     description: t('default_preferences_updated', 'Default consent preferences have been updated')
                   })
@@ -677,7 +677,7 @@ export const MarketingComplianceManager: React.FC<MarketingComplianceManagerProp
 
               <div className="flex justify-end">
                 <Button onClick={() => {
-                  toast aria-live="polite" aria-atomic="true"({
+                  toast({
                     title: t('settings_saved', 'Settings Saved'),
                     description: t('compliance_settings_updated', 'Compliance settings have been updated successfully')
                   })

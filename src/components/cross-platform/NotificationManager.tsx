@@ -49,8 +49,8 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
       const notification aria-live="polite" aria-atomic="true" = event.detail as CrossPlatformNotification;
 
       // Check if notification aria-live="polite" aria-atomic="true"s are enabled and within quiet hours
-      if (shouldShowNotification(notification aria-live="polite" aria-atomic="true")) {
-        addNotification(notification aria-live="polite" aria-atomic="true");
+      if (shouldShowNotification(notification)) {
+        addNotification(notification);
       }
     };
 
@@ -63,7 +63,7 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
     };
   }, [crossPlatformPreferences]);
 
-  const shouldShowNotification = (notification aria-live="polite" aria-atomic="true": CrossPlatformNotification): boolean => {
+  const shouldShowNotification = (notification: CrossPlatformNotification): boolean => {
     // Check if notification aria-live="polite" aria-atomic="true"s are enabled
     if (!crossPlatformPreferences.enableNotifications) {
       return false;
@@ -95,29 +95,29 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
     return true;
   };
 
-  const addNotification = useCallback((notification aria-live="polite" aria-atomic="true": CrossPlatformNotification) => {
-    const toast aria-live="polite" aria-atomic="true": NotificationToast = {
+  const addNotification = useCallback((notification: CrossPlatformNotification) => {
+    const toast: NotificationToast = {
       ...notification aria-live="polite" aria-atomic="true",
-      id: `toast aria-live="polite" aria-atomic="true"_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       read: false,
       createdAt: new Date()
     };
 
     setNotifications(prev => {
-      const updated = [toast aria-live="polite" aria-atomic="true", ...prev].slice(0, maxVisible);
+      const updated = [toast, ...prev].slice(0, maxVisible);
       return updated;
     });
 
     // Auto-remove after duration
     const timeout = setTimeout(() => {
-      removeNotification(toast aria-live="polite" aria-atomic="true".id);
+      removeNotification(toast.id);
     }, duration);
 
-    timeoutRefs.current.set(toast aria-live="polite" aria-atomic="true".id, timeout);
+    timeoutRefs.current.set(toast.id, timeout);
 
     // Show native notification aria-live="polite" aria-atomic="true" if supported and permitted
     if (permissionStatus === 'granted') {
-      showNativeNotification(notification aria-live="polite" aria-atomic="true");
+      showNativeNotification(notification);
     }
   }, [maxVisible, duration, permissionStatus]);
 
@@ -144,15 +144,15 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
     timeoutRefs.current.clear();
   }, []);
 
-  const showNativeNotification = (notification aria-live="polite" aria-atomic="true": CrossPlatformNotification) => {
+  const showNativeNotification = (notification: CrossPlatformNotification) => {
     if ('Notification' in window && permissionStatus === 'granted') {
-      const nativeNotification = new Notification(notification aria-live="polite" aria-atomic="true".title, {
-        body: notification aria-live="polite" aria-atomic="true".message,
+      const nativeNotification = new Notification(notification.title, {
+        body: notification.message,
         icon: '/favicon.ico',
-        tag: notification aria-live="polite" aria-atomic="true".id,
+        tag: notification.id,
         badge: '/favicon.ico',
-        requireInteraction: notification aria-live="polite" aria-atomic="true".priority >= 7,
-        actions: notification aria-live="polite" aria-atomic="true".type === 'booking_reminder' ? [
+        requireInteraction: notification.priority >= 7,
+        actions: notification.type === 'booking_reminder' ? [
           { action: 'confirm', title: 'Confirm' },
           { action: 'reschedule', title: 'Reschedule' }
         ] : undefined
@@ -164,9 +164,9 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
         nativeNotification.close();
 
         // Mark as read in our system
-        const toast aria-live="polite" aria-atomic="true" = notification aria-live="polite" aria-atomic="true"s.find(n => n.id === notification aria-live="polite" aria-atomic="true".id);
-        if (toast aria-live="polite" aria-atomic="true") {
-          markAsRead(toast aria-live="polite" aria-atomic="true".id);
+        const toast = notifications.find(n => n.id === notification.id);
+        if (toast) {
+          markAsRead(toast.id);
         }
       };
 
@@ -246,19 +246,19 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
     <>
       {/* Notification Container */}
       <div className={cn('fixed z-50 space-y-2', getPositionClasses(), className)}>
-        {notification aria-live="polite" aria-atomic="true"s.map((notification aria-live="polite" aria-atomic="true") => (
+        {notifications.map((notification) => (
           <div
-            key={notification aria-live="polite" aria-atomic="true".id}
+            key={notification.id}
             className={cn(
               'relative w-80 rounded-lg border shadow-lg backdrop-blur-sm transition-all duration-300 transform',
-              getNotificationColor(notification aria-live="polite" aria-atomic="true".type),
-              notification aria-live="polite" aria-atomic="true".read ? 'opacity-75' : 'opacity-100'
+              getNotificationColor(notification.type),
+              notification.read ? 'opacity-75' : 'opacity-100'
             )}
-            onMouseEnter={() => markAsRead(notification aria-live="polite" aria-atomic="true".id)}
+            onMouseEnter={() => markAsRead(notification.id)}
           >
             {/* Close Button */}
             <button
-              onClick={() => removeNotification(notification aria-live="polite" aria-atomic="true".id)}
+              onClick={() => removeNotification(notification.id)}
               className="absolute top-2 right-2 p-1 rounded-full hover:bg-black/10 transition-colors"
             >
               <X className="h-4 w-4 text-gray-600" />
@@ -269,25 +269,25 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
               <div className="flex items-start gap-3">
                 {/* Icon */}
                 <div className="flex-shrink-0">
-                  {getNotificationIcon(notification aria-live="polite" aria-atomic="true".type)}
+                  {getNotificationIcon(notification.type)}
                 </div>
 
                 {/* Text Content */}
                 <div className="flex-1 min-w-0">
                   <h4 className="text-sm font-semibold text-gray-900 truncate">
-                    {notification aria-live="polite" aria-atomic="true".title}
+                    {notification.title}
                   </h4>
                   <p className="text-sm text-gray-600 mt-1">
-                    {notification aria-live="polite" aria-atomic="true".message}
+                    {notification.message}
                   </p>
 
                   {/* Timestamp */}
                   <p className="text-xs text-gray-500 mt-2">
-                    {notification aria-live="polite" aria-atomic="true".createdAt.toLocaleTimeString()}
+                    {notification.createdAt.toLocaleTimeString()}
                   </p>
 
                   {/* Priority Indicator */}
-                  {notification aria-live="polite" aria-atomic="true".priority >= 7 && (
+                  {notification.priority >= 7 && (
                     <div className="flex items-center gap-1 mt-2">
                       <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                       <span className="text-xs text-red-600">High Priority</span>
@@ -297,12 +297,12 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
               </div>
 
               {/* Action Buttons */}
-              {notification aria-live="polite" aria-atomic="true".type === 'booking_reminder' && !notification aria-live="polite" aria-atomic="true".read && (
+              {notification.type === 'booking_reminder' && !notification.read && (
                 <div className="flex gap-2 mt-3">
                   <button
                     onClick={() => {
                       // Handle confirm action
-                      removeNotification(notification aria-live="polite" aria-atomic="true".id);
+                      removeNotification(notification.id);
                     }}
                     className="flex-1 px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors"
                   >
@@ -311,7 +311,7 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
                   <button
                     onClick={() => {
                       // Handle reschedule action
-                      removeNotification(notification aria-live="polite" aria-atomic="true".id);
+                      removeNotification(notification.id);
                     }}
                     className="flex-1 px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded hover:bg-gray-300 transition-colors"
                   >
@@ -335,9 +335,9 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
           )}
         >
           <Bell className="h-5 w-5 text-gray-600" />
-          {notification aria-live="polite" aria-atomic="true"s.length > 0 && !notification aria-live="polite" aria-atomic="true"s.every(n => n.read) && (
+          {notifications.length > 0 && !notifications.every(n => n.read) && (
             <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-              {notification aria-live="polite" aria-atomic="true"s.filter(n => !n.read).length}
+              {notifications.filter(n => !n.read).length}
             </span>
           )}
         </button>
@@ -452,7 +452,7 @@ export const NotificationManager: React.FC<NotificationManagerProps> = ({
             </div>
 
             {/* Clear All Button */}
-            {notification aria-live="polite" aria-atomic="true"s.length > 0 && (
+            {notifications.length > 0 && (
               <button
                 onClick={clearAll}
                 className="w-full px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors text-sm"

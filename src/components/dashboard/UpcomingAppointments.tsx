@@ -20,7 +20,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 import { bookingService, Booking } from '@/services/booking.service';
 import { cn } from '@/lib/utils';
 import {
@@ -43,7 +43,7 @@ const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const { formatPrice } = useCurrency();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
   // Fetch upcoming bookings
@@ -72,7 +72,7 @@ const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
       // Navigate to reschedule page
       window.location.href = `/reschedule?token=${token}`;
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('dashboard.appointments.rescheduleError', 'Reschedule Error'),
         description: error.message || t('dashboard.appointments.rescheduleErrorDesc', 'Failed to generate reschedule link'),
         variant: 'destructive',
@@ -91,7 +91,7 @@ const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
     try {
       await bookingService.cancelBooking(bookingId, 'Client cancellation');
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('dashboard.appointments.cancelled', 'Appointment Cancelled'),
         description: t('dashboard.appointments.cancelledDesc', 'Your appointment has been cancelled'),
       });
@@ -99,7 +99,7 @@ const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
       // Refetch bookings
       refetch();
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('dashboard.appointments.cancelError', 'Cancellation Error'),
         description: error.message || t('dashboard.appointments.cancelErrorDesc', 'Failed to cancel appointment'),
         variant: 'destructive',
@@ -123,7 +123,7 @@ const UpcomingAppointments: React.FC<UpcomingAppointmentsProps> = ({
 
       window.open(calendarUrl, '_blank');
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('dashboard.appointments.calendarError', 'Calendar Error'),
         description: t('dashboard.appointments.calendarErrorDesc', 'Failed to add to calendar'),
         variant: 'destructive',

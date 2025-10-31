@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CalendarConnection {
@@ -40,7 +40,7 @@ interface CalendarSyncProps {
 
 export function CalendarSync({ bookingId, className = '' }: CalendarSyncProps) {
   const { t } = useTranslation();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const [connections, setConnections] = useState<CalendarConnection[]>([]);
   const [syncing, setSyncing] = useState(false);
   const [conflicts, setConflicts] = useState<CalendarEvent[]>([]);
@@ -149,7 +149,7 @@ export function CalendarSync({ bookingId, className = '' }: CalendarSyncProps) {
       window.location.href = data.authUrl;
     } catch (error) {
       console.error('Error connecting calendar:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('calendar.connectError'),
         description: t('calendar.connectErrorDesc'),
         variant: 'destructive',
@@ -167,13 +167,13 @@ export function CalendarSync({ bookingId, className = '' }: CalendarSyncProps) {
       if (error) throw error;
 
       await loadCalendarConnections();
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('calendar.disconnected'),
         description: t('calendar.disconnectedDesc'),
       });
     } catch (error) {
       console.error('Error disconnecting calendar:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('calendar.disconnectError'),
         description: t('calendar.disconnectErrorDesc'),
         variant: 'destructive',
@@ -191,7 +191,7 @@ export function CalendarSync({ bookingId, className = '' }: CalendarSyncProps) {
       if (error) throw error;
 
       await loadCalendarConnections();
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: enabled ? t('calendar.syncEnabled') : t('calendar.syncDisabled'),
         description: enabled ? t('calendar.syncEnabledDesc') : t('calendar.syncDisabledDesc'),
       });
@@ -214,7 +214,7 @@ export function CalendarSync({ bookingId, className = '' }: CalendarSyncProps) {
 
       const data = await response.json();
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('calendar.syncComplete'),
         description: t('calendar.syncCompleteDesc', { count: data.syncedEvents || 0 }),
       });
@@ -225,7 +225,7 @@ export function CalendarSync({ bookingId, className = '' }: CalendarSyncProps) {
       }
     } catch (error) {
       console.error('Error syncing:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('calendar.syncError'),
         description: t('calendar.syncErrorDesc'),
         variant: 'destructive',
@@ -247,13 +247,13 @@ export function CalendarSync({ bookingId, className = '' }: CalendarSyncProps) {
 
       if (!response.ok) throw new Error('Failed to add event');
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('calendar.eventAdded'),
         description: t('calendar.eventAddedDesc'),
       });
     } catch (error) {
       console.error('Error adding event:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('calendar.addEventError'),
         description: t('calendar.addEventErrorDesc'),
         variant: 'destructive',

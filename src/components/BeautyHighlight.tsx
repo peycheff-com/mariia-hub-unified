@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Star, MapPin, Clock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import BeforeAfterSlider from "@/components/BeforeAfterSlider";
+import { BeforeAfterSlider } from "@/components/media/BeforeAfterSlider";
 
 const BeautyHighlight = () => {
   return (

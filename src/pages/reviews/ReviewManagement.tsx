@@ -26,7 +26,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import { Review, ReviewVerification } from '@/types/review';
 import ReviewAnalytics from '@/components/reviews/ReviewAnalytics';
 import ReviewVerificationSystem from '@/components/reviews/ReviewVerificationSystem';
@@ -39,7 +39,7 @@ import { EnhancedReviewAggregator, scheduleReviewAggregation } from '@/integrati
 const ReviewManagement: React.FC = () => {
   const { tab = 'overview' } = useParams();
   const navigate = useNavigate();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -89,7 +89,7 @@ const ReviewManagement: React.FC = () => {
       }
     } catch (error) {
       console.error('Error loading data:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to load review data',
         variant: 'destructive',
@@ -141,14 +141,14 @@ const ReviewManagement: React.FC = () => {
           break;
       }
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: `Review ${action}d successfully`,
       });
 
       loadData();
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: `Failed to ${action} review`,
         variant: 'destructive',
@@ -160,13 +160,13 @@ const ReviewManagement: React.FC = () => {
     setIsAggregating(true);
     try {
       const aggregatedReviews = await scheduleReviewAggregation();
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: `Aggregated ${aggregatedReviews.length} reviews from social platforms`,
       });
       loadData();
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to aggregate reviews',
         variant: 'destructive',
@@ -208,7 +208,7 @@ const ReviewManagement: React.FC = () => {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to export reviews',
         variant: 'destructive',

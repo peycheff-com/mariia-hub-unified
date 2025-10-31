@@ -3,7 +3,7 @@ import { Mail, Phone, MapPin, ArrowRight, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import { ContactFormSchema } from "@/schemas";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 
 
 const ContactSection = () => {
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
@@ -62,7 +62,7 @@ const ContactSection = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Validation Error",
         description: "Please fix the errors in the form",
         variant: "destructive"
@@ -85,9 +85,9 @@ const ContactSection = () => {
 
     window.location.href = `mailto:hi@mariiaborysevych.com?subject=${subject}&body=${body}`;
 
-    toast aria-live="polite" aria-atomic="true"({
-      title: t('contactSection.toast aria-live="polite" aria-atomic="true".title'),
-      description: t('contactSection.toast aria-live="polite" aria-atomic="true".description'),
+    toast({
+      title: t('contactSection.toast.title'),
+      description: t('contactSection.toast.description'),
     });
 
     // Reset form

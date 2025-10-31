@@ -130,7 +130,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 import { supportAutomationService } from '@/services/support-automation.service';
 import {
@@ -290,7 +290,7 @@ export function TicketIntelligenceSystem({
       ]);
     } catch (error) {
       console.error('Error loading data:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to load ticket intelligence data');
+      toast.error('Failed to load ticket intelligence data');
     } finally {
       setLoading(false);
     }
@@ -663,7 +663,7 @@ export function TicketIntelligenceSystem({
         const newInsight = await generateNewInsight();
         if (newInsight) {
           setInsights(prev => [newInsight, ...prev]);
-          toast aria-live="polite" aria-atomic="true".success('New AI insight detected!');
+          toast.success('New AI insight detected!');
         }
       }
     } catch (error) {
@@ -762,65 +762,65 @@ export function TicketIntelligenceSystem({
       }
     } catch (error) {
       console.error('Error handling ticket action:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to perform action');
+      toast.error('Failed to perform action');
     }
   };
 
   const analyzeTicket = async (ticketId: string) => {
     try {
-      toast aria-live="polite" aria-atomic="true".loading('Analyzing ticket with AI...');
+      toast.loading('Analyzing ticket with AI...');
       // Simulate AI analysis
       await new Promise(resolve => setTimeout(resolve, 3000));
-      toast aria-live="polite" aria-atomic="true".success('Ticket analysis complete!');
+      toast.success('Ticket analysis complete!');
     } catch (error) {
       console.error('Error analyzing ticket:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to analyze ticket');
+      toast.error('Failed to analyze ticket');
     }
   };
 
   const autoCategorizeTicket = async (ticketId: string) => {
     try {
       if (!autoCategorizationEnabled) {
-        toast aria-live="polite" aria-atomic="true".error('Auto-categorization is disabled');
+        toast.error('Auto-categorization is disabled');
         return;
       }
 
-      toast aria-live="polite" aria-atomic="true".loading('Auto-categorizing ticket...');
+      toast.loading('Auto-categorizing ticket...');
       // Simulate categorization
       await new Promise(resolve => setTimeout(resolve, 2000));
-      toast aria-live="polite" aria-atomic="true".success('Ticket categorized successfully!');
+      toast.success('Ticket categorized successfully!');
     } catch (error) {
       console.error('Error categorizing ticket:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to categorize ticket');
+      toast.error('Failed to categorize ticket');
     }
   };
 
   const smartRouteTicket = async (ticketId: string) => {
     try {
       if (!smartRoutingEnabled) {
-        toast aria-live="polite" aria-atomic="true".error('Smart routing is disabled');
+        toast.error('Smart routing is disabled');
         return;
       }
 
-      toast aria-live="polite" aria-atomic="true".loading('Smart routing ticket...');
+      toast.loading('Smart routing ticket...');
       // Simulate routing
       await new Promise(resolve => setTimeout(resolve, 1500));
-      toast aria-live="polite" aria-atomic="true".success('Ticket routed to optimal agent!');
+      toast.success('Ticket routed to optimal agent!');
     } catch (error) {
       console.error('Error routing ticket:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to route ticket');
+      toast.error('Failed to route ticket');
     }
   };
 
   const escalateTicket = async (ticketId: string) => {
     try {
-      toast aria-live="polite" aria-atomic="true".loading('Escalating ticket...');
+      toast.loading('Escalating ticket...');
       // Simulate escalation
       await new Promise(resolve => setTimeout(resolve, 1000));
-      toast aria-live="polite" aria-atomic="true".success('Ticket escalated successfully!');
+      toast.success('Ticket escalated successfully!');
     } catch (error) {
       console.error('Error escalating ticket:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to escalate ticket');
+      toast.error('Failed to escalate ticket');
     }
   };
 
@@ -833,18 +833,18 @@ export function TicketIntelligenceSystem({
               ? { ...insight, acknowledged: true, acknowledgedAt: new Date().toISOString() }
               : insight
           ));
-          toast aria-live="polite" aria-atomic="true".success('Insight acknowledged');
+          toast.success('Insight acknowledged');
           break;
         case 'investigate':
           // Navigate to detailed investigation view
-          toast aria-live="polite" aria-atomic="true".info('Investigation feature coming soon');
+          toast.info('Investigation feature coming soon');
           break;
         default:
           console.log('Unknown action:', action);
       }
     } catch (error) {
       console.error('Error handling insight action:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to perform action');
+      toast.error('Failed to perform action');
     }
   };
 
@@ -855,10 +855,10 @@ export function TicketIntelligenceSystem({
           ? { ...rec, applied: true, appliedAt: new Date().toISOString() }
           : rec
       ));
-      toast aria-live="polite" aria-atomic="true".success('Recommendation applied successfully!');
+      toast.success('Recommendation applied successfully!');
     } catch (error) {
       console.error('Error applying recommendation:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to apply recommendation');
+      toast.error('Failed to apply recommendation');
     }
   };
 

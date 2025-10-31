@@ -34,7 +34,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 interface StaffMember {
   id: string;
@@ -82,7 +82,7 @@ const StaffManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -138,7 +138,7 @@ const StaffManagement = () => {
       setStaff(staffResult.data || []);
       setRoles(rolesResult.data || []);
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message,
         variant: 'destructive'
@@ -185,7 +185,7 @@ const StaffManagement = () => {
 
       if (result.error) throw result.error;
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: `Staff member ${editingStaff ? 'updated' : 'created'} successfully`
       });
@@ -194,7 +194,7 @@ const StaffManagement = () => {
       resetForm();
       loadData();
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message,
         variant: 'destructive'
@@ -214,14 +214,14 @@ const StaffManagement = () => {
 
       if (error) throw error;
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: `Staff member ${currentStatus ? 'deactivated' : 'activated'}`
       });
 
       loadData();
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message,
         variant: 'destructive'
@@ -242,14 +242,14 @@ const StaffManagement = () => {
 
       if (error) throw error;
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: 'Staff member deleted successfully'
       });
 
       loadData();
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message,
         variant: 'destructive'

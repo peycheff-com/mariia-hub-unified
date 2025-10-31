@@ -2,7 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect, ReactNode } fr
 import { supabase } from '@/integrations/supabase/client';
 import { loyaltyService } from '@/services/loyalty.service';
 import { useAuth } from './AuthContext';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 // Types based on the migration schema
 export interface LoyaltyTier {
@@ -580,14 +580,14 @@ export function LoyaltyProvider({ children }: LoyaltyProviderProps) {
       );
 
       if (transactionId) {
-        toast aria-live="polite" aria-atomic="true".success(`Earned ${points} points!`);
+        toast.success(`Earned ${points} points!`);
         await loadLoyaltyData(); // Refresh data
       }
 
       return transactionId;
     } catch (error) {
       console.error('Error earning points:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to earn points');
+      toast.error('Failed to earn points');
       return null;
     }
   };
@@ -608,14 +608,14 @@ export function LoyaltyProvider({ children }: LoyaltyProviderProps) {
       );
 
       if (transactionId) {
-        toast aria-live="polite" aria-atomic="true".success(`Redeemed ${points} points!`);
+        toast.success(`Redeemed ${points} points!`);
         await loadLoyaltyData(); // Refresh data
       }
 
       return transactionId;
     } catch (error) {
       console.error('Error redeeming points:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to redeem points');
+      toast.error('Failed to redeem points');
       return null;
     }
   };
@@ -627,14 +627,14 @@ export function LoyaltyProvider({ children }: LoyaltyProviderProps) {
       const redemption = await loyaltyService.redeemReward(state.member.id, rewardId, notes);
 
       if (redemption) {
-        toast aria-live="polite" aria-atomic="true".success(`Successfully redeemed ${redemption.reward?.title}!`);
+        toast.success(`Successfully redeemed ${redemption.reward?.title}!`);
         await loadLoyaltyData(); // Refresh data
       }
 
       return redemption;
     } catch (error: any) {
       console.error('Error redeeming reward:', error);
-      toast aria-live="polite" aria-atomic="true".error(error.message || 'Failed to redeem reward');
+      toast.error(error.message || 'Failed to redeem reward');
       return null;
     }
   };
@@ -657,14 +657,14 @@ export function LoyaltyProvider({ children }: LoyaltyProviderProps) {
       );
 
       if (referral) {
-        toast aria-live="polite" aria-atomic="true".success('Referral created successfully!');
+        toast.success('Referral created successfully!');
         await loadLoyaltyData(); // Refresh data
       }
 
       return referral;
     } catch (error) {
       console.error('Error creating referral:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to create referral');
+      toast.error('Failed to create referral');
       return null;
     }
   };
@@ -681,11 +681,11 @@ export function LoyaltyProvider({ children }: LoyaltyProviderProps) {
   const processSuccessfulReferral = async (referralId: string, refereeUserId: string): Promise<void> => {
     try {
       await loyaltyService.processSuccessfulReferral(referralId, refereeUserId);
-      toast aria-live="polite" aria-atomic="true".success('Referral completed! Points awarded.');
+      toast.success('Referral completed! Points awarded.');
       await loadLoyaltyData(); // Refresh data
     } catch (error) {
       console.error('Error processing referral:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to process referral');
+      toast.error('Failed to process referral');
     }
   };
 
@@ -700,7 +700,7 @@ export function LoyaltyProvider({ children }: LoyaltyProviderProps) {
       return success;
     } catch (error) {
       console.error('Error updating preferences:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to update preferences');
+      toast.error('Failed to update preferences');
       return false;
     }
   };

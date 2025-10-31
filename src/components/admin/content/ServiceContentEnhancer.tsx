@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -288,7 +288,7 @@ export const ServiceContentEnhancer = ({
       setServices(data || []);
     } catch (error) {
       console.error('Failed to load services:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to load services');
+      toast.error('Failed to load services');
     } finally {
       setLoading(false);
     }
@@ -445,7 +445,7 @@ export const ServiceContentEnhancer = ({
     };
 
     setContentEnhancements([enhancement, ...contentEnhancements]);
-    toast aria-live="polite" aria-atomic="true".success('Content suggestions generated successfully');
+    toast.success('Content suggestions generated successfully');
   };
 
   const handleSaveFAQ = async () => {
@@ -469,14 +469,14 @@ export const ServiceContentEnhancer = ({
           .eq('id', editingFAQ.id);
 
         if (error) throw error;
-        toast aria-live="polite" aria-atomic="true".success('FAQ updated successfully');
+        toast.success('FAQ updated successfully');
       } else {
         const { error } = await supabase
           .from('service_faqs')
           .insert([faqData]);
 
         if (error) throw error;
-        toast aria-live="polite" aria-atomic="true".success('FAQ created successfully');
+        toast.success('FAQ created successfully');
       }
 
       await loadServiceFAQs(selectedService.id);
@@ -485,7 +485,7 @@ export const ServiceContentEnhancer = ({
       resetFAQForm();
     } catch (error) {
       console.error('Failed to save FAQ:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to save FAQ');
+      toast.error('Failed to save FAQ');
     }
   };
 
@@ -509,14 +509,14 @@ export const ServiceContentEnhancer = ({
           .eq('id', editingContent.id);
 
         if (error) throw error;
-        toast aria-live="polite" aria-atomic="true".success('Content updated successfully');
+        toast.success('Content updated successfully');
       } else {
         const { error } = await supabase
           .from('service_content')
           .insert([contentData]);
 
         if (error) throw error;
-        toast aria-live="polite" aria-atomic="true".success('Content created successfully');
+        toast.success('Content created successfully');
       }
 
       await loadServiceContent(selectedService.id);
@@ -525,7 +525,7 @@ export const ServiceContentEnhancer = ({
       resetContentForm();
     } catch (error) {
       console.error('Failed to save content:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to save content');
+      toast.error('Failed to save content');
     }
   };
 
@@ -560,11 +560,11 @@ export const ServiceContentEnhancer = ({
         .eq('id', faqId);
 
       if (error) throw error;
-      toast aria-live="polite" aria-atomic="true".success('FAQ deleted successfully');
+      toast.success('FAQ deleted successfully');
       await loadServiceFAQs(selectedService?.id || '');
     } catch (error) {
       console.error('Failed to delete FAQ:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to delete FAQ');
+      toast.error('Failed to delete FAQ');
     }
   };
 
@@ -576,11 +576,11 @@ export const ServiceContentEnhancer = ({
         .eq('id', contentId);
 
       if (error) throw error;
-      toast aria-live="polite" aria-atomic="true".success('Content deleted successfully');
+      toast.success('Content deleted successfully');
       await loadServiceContent(selectedService?.id || '');
     } catch (error) {
       console.error('Failed to delete content:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to delete content');
+      toast.error('Failed to delete content');
     }
   };
 
@@ -647,7 +647,7 @@ export const ServiceContentEnhancer = ({
         });
     });
 
-    toast aria-live="polite" aria-atomic="true".success(`Generated ${templates.length} ${category} FAQs`);
+    toast.success(`Generated ${templates.length} ${category} FAQs`);
   };
 
   const resetFAQForm = () => {

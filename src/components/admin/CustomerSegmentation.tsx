@@ -46,7 +46,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Progress } from '@/components/ui/progress'
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"'
+import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 
 
@@ -136,7 +136,7 @@ const mockSegments: CustomerSegment[] = [
 
 export const CustomerSegmentation: React.FC<CustomerSegmentationProps> = ({ className }) => {
   const { t } = useTranslation()
-  const { toast aria-live="polite" aria-atomic="true" } = useToast()
+  const { toast } = useToast()
 
   const [segments, setSegments] = useState<CustomerSegment[]>(mockSegments)
   const [selectedSegment, setSelectedSegment] = useState<CustomerSegment | null>(null)
@@ -174,7 +174,7 @@ export const CustomerSegmentation: React.FC<CustomerSegmentationProps> = ({ clas
   // Handle segment creation
   const handleCreateSegment = () => {
     if (!formData.name) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('error', 'Error'),
         description: t('segment_name_required', 'Segment name is required'),
         variant: 'destructive'
@@ -197,7 +197,7 @@ export const CustomerSegmentation: React.FC<CustomerSegmentationProps> = ({ clas
     setShowCreateDialog(false)
     resetForm()
 
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: t('success', 'Success'),
       description: t('segment_created', 'Segment created successfully')
     })
@@ -220,7 +220,7 @@ export const CustomerSegmentation: React.FC<CustomerSegmentationProps> = ({ clas
     setSelectedSegment(updatedSegment)
     setShowEditDialog(false)
 
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: t('success', 'Success'),
       description: t('segment_updated', 'Segment updated successfully')
     })
@@ -237,7 +237,7 @@ export const CustomerSegmentation: React.FC<CustomerSegmentationProps> = ({ clas
       setSelectedSegment(null)
     }
 
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: t('segment_deleted', 'Segment Deleted'),
       description: t('segment_deleted_description', 'The segment has been deleted')
     })
@@ -257,7 +257,7 @@ export const CustomerSegmentation: React.FC<CustomerSegmentationProps> = ({ clas
       ))
       setIsCalculating(null)
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('calculation_complete', 'Calculation Complete'),
         description: t('segment_calculated', 'Segment has been recalculated with new customers')
       })

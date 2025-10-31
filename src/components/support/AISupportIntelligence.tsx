@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { useTranslation } from 'react-i18next';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import {
   Brain,
   Bot,
@@ -981,7 +981,7 @@ const AISupportIntelligence: React.FC<AISupportIntelligenceProps> = ({
   focusArea = 'routing'
 }) => {
   const { t } = useTranslation();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // State management
   const [activeTab, setActiveTab] = useState(focusArea);
@@ -1038,7 +1038,7 @@ const AISupportIntelligence: React.FC<AISupportIntelligenceProps> = ({
 
     } catch (error) {
       console.error('Failed to initialize AI system:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "AI System Initialization Failed",
         description: "Unable to load AI intelligence data",
         variant: "destructive"
@@ -1354,7 +1354,7 @@ const AISupportIntelligence: React.FC<AISupportIntelligenceProps> = ({
     setRefreshing(true);
     await initializeAISystem();
     setRefreshing(false);
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: "AI Intelligence Refreshed",
       description: "All AI models and predictions have been updated"
     });

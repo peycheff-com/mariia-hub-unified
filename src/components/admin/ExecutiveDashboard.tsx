@@ -26,7 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import { businessIntelligenceService } from "@/services/business-intelligence.service";
 import { ExecutiveDashboardData, AnalyticsFilters } from "@/types/analytics";
 
@@ -91,7 +91,7 @@ const ExecutiveDashboard = () => {
   const [dashboardData, setDashboardData] = useState<ExecutiveDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState<'today' | 'week' | 'month' | 'year'>('month');
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     loadExecutiveData();
@@ -112,7 +112,7 @@ const ExecutiveDashboard = () => {
         throw new Error(response.error);
       }
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to load executive dashboard data',
         variant: 'destructive'

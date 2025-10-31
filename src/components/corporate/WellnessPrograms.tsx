@@ -130,7 +130,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 import {
@@ -210,7 +210,7 @@ export const WellnessPrograms: React.FC<WellnessProgramsProps> = ({
   className
 }) => {
   const { programs, enrollments, createProgram, updateProgram, deleteProgram, enrollEmployee, loadPrograms, loadEnrollments } = useCorporate();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // State
   const [searchQuery, setSearchQuery] = useState('');
@@ -333,7 +333,7 @@ export const WellnessPrograms: React.FC<WellnessProgramsProps> = ({
   const handleSaveProgram = async () => {
     try {
       if (!formData.program_name || !formData.program_description) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Validation Error',
           description: 'Please fill in all required fields',
           variant: 'destructive'
@@ -348,13 +348,13 @@ export const WellnessPrograms: React.FC<WellnessProgramsProps> = ({
 
       if (selectedProgram) {
         await updateProgram(selectedProgram.id, programData);
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Success',
           description: 'Program updated successfully'
         });
       } else {
         await createProgram(programData);
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Success',
           description: 'Program created successfully'
         });
@@ -366,7 +366,7 @@ export const WellnessPrograms: React.FC<WellnessProgramsProps> = ({
       resetForm();
       await loadPrograms(corporateAccountId);
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to save program',
         variant: 'destructive'
@@ -380,13 +380,13 @@ export const WellnessPrograms: React.FC<WellnessProgramsProps> = ({
 
     try {
       await deleteProgram(programId);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: 'Program deleted successfully'
       });
       await loadPrograms(corporateAccountId);
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to delete program',
         variant: 'destructive'
@@ -403,7 +403,7 @@ export const WellnessPrograms: React.FC<WellnessProgramsProps> = ({
         selectedEmployees.map(employeeId => enrollEmployee(selectedProgram.id, employeeId))
       );
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Success',
         description: `${selectedEmployees.length} employees enrolled successfully`
       });
@@ -413,7 +413,7 @@ export const WellnessPrograms: React.FC<WellnessProgramsProps> = ({
       setSelectedProgram(null);
       await loadEnrollments({ program_id: selectedProgram.id });
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to enroll employees',
         variant: 'destructive'

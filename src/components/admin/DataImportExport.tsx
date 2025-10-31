@@ -11,7 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import { dataImportExportService, ImportResult, ExportOptions } from '@/services/dataImportExport.service';
 import { cn } from '@/lib/utils';
 
@@ -27,7 +27,7 @@ export const DataImportExport: React.FC<DataImportExportProps> = ({ className })
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [exportOptions, setExportOptions] = useState<ExportOptions>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // Handle file selection
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,7 +36,7 @@ export const DataImportExport: React.FC<DataImportExportProps> = ({ className })
       setImportFile(file);
       setImportResult(null);
     } else {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Invalid file type',
         description: 'Please select a CSV file',
         variant: 'destructive'
@@ -58,8 +58,8 @@ export const DataImportExport: React.FC<DataImportExportProps> = ({ className })
 
       setImportResult(result);
 
-      // Show summary toast aria-live="polite" aria-atomic="true"
-      toast aria-live="polite" aria-atomic="true"({
+      // Show summary toast
+      toast({
         title: dryRun ? 'Import Preview' : 'Import Complete',
         description: dryRun
           ? `Found ${result.totalRows} records ready to import`
@@ -67,7 +67,7 @@ export const DataImportExport: React.FC<DataImportExportProps> = ({ className })
         variant: result.failed > 0 ? 'destructive' : 'default'
       });
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Import failed',
         description: error instanceof Error ? error.message : 'Unknown error occurred',
         variant: 'destructive'
@@ -91,12 +91,12 @@ export const DataImportExport: React.FC<DataImportExportProps> = ({ className })
       a.click();
       URL.revokeObjectURL(url);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Export complete',
         description: 'Bookings exported successfully'
       });
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Export failed',
         description: error instanceof Error ? error.message : 'Unknown error occurred',
         variant: 'destructive'

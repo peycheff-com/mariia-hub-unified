@@ -22,7 +22,7 @@ import {
   Globe,
   Clock
 } from 'lucide-react';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -77,10 +77,10 @@ const UserEditProfile: React.FC = () => {
     mutationFn: (data: ProfileFormData) => profileService.updateProfile(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
-      toast aria-live="polite" aria-atomic="true".success(t('user.profile.updateSuccess'));
+      toast.success(t('user.profile.updateSuccess'));
     },
     onError: (error) => {
-      toast aria-live="polite" aria-atomic="true".error(t('user.profile.updateError'));
+      toast.error(t('user.profile.updateError'));
       console.error(error);
     },
   });
@@ -91,10 +91,10 @@ const UserEditProfile: React.FC = () => {
     onSuccess: (url) => {
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       setAvatarPreview(url);
-      toast aria-live="polite" aria-atomic="true".success(t('user.profile.avatarUpdateSuccess'));
+      toast.success(t('user.profile.avatarUpdateSuccess'));
     },
     onError: () => {
-      toast aria-live="polite" aria-atomic="true".error(t('user.profile.avatarUpdateError'));
+      toast.error(t('user.profile.avatarUpdateError'));
     },
   });
 
@@ -141,7 +141,7 @@ const UserEditProfile: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        toast aria-live="polite" aria-atomic="true".error(t('user.profile.avatarSizeError'));
+        toast.error(t('user.profile.avatarSizeError'));
         return;
       }
       const reader = new FileReader();
@@ -209,9 +209,9 @@ const UserEditProfile: React.FC = () => {
                 <Globe className="h-4 w-4" />
                 {t('user.profile.tabs.preferences')}
               </TabsTrigger>
-              <TabsTrigger value="notification aria-live="polite" aria-atomic="true"s" className="flex items-center gap-2">
+              <TabsTrigger value="notifications" className="flex items-center gap-2">
                 <Bell className="h-4 w-4" />
-                {t('user.profile.tabs.notification aria-live="polite" aria-atomic="true"s')}
+                {t('user.profile.tabs.notifications')}
               </TabsTrigger>
             </TabsList>
 
@@ -573,25 +573,25 @@ const UserEditProfile: React.FC = () => {
             </TabsContent>
 
             {/* Notifications Tab */}
-            <TabsContent value="notification aria-live="polite" aria-atomic="true"s">
+            <TabsContent value="notification s">
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('user.profile.notification aria-live="polite" aria-atomic="true"s.title')}</CardTitle>
+                  <CardTitle>{t('user.profile.notifications.title')}</CardTitle>
                   <CardDescription>
-                    {t('user.profile.notification aria-live="polite" aria-atomic="true"s.description')}
+                    {t('user.profile.notifications.description')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {[
-                    { key: 'booking_reminder', label: t('user.profile.notification aria-live="polite" aria-atomic="true"s.bookingReminder'), description: t('user.profile.notification aria-live="polite" aria-atomic="true"s.bookingReminderDesc') },
-                    { key: 'booking_confirmation', label: t('user.profile.notification aria-live="polite" aria-atomic="true"s.bookingConfirmation'), description: t('user.profile.notification aria-live="polite" aria-atomic="true"s.bookingConfirmationDesc') },
-                    { key: 'promotional', label: t('user.profile.notification aria-live="polite" aria-atomic="true"s.promotional'), description: t('user.profile.notification aria-live="polite" aria-atomic="true"s.promotionalDesc') },
-                    { key: 'review_request', label: t('user.profile.notification aria-live="polite" aria-atomic="true"s.reviewRequest'), description: t('user.profile.notification aria-live="polite" aria-atomic="true"s.reviewRequestDesc') },
-                  ].map((notification aria-live="polite" aria-atomic="true") => (
-                    <div key={notification aria-live="polite" aria-atomic="true".key} className="flex items-center justify-between">
+                    { key: 'booking_reminder', label: t('user.profile.notifications.bookingReminder'), description: t('user.profile.notifications.bookingReminderDesc') },
+                    { key: 'booking_confirmation', label: t('user.profile.notifications.bookingConfirmation'), description: t('user.profile.notifications.bookingConfirmationDesc') },
+                    { key: 'promotional', label: t('user.profile.notifications.promotional'), description: t('user.profile.notifications.promotionalDesc') },
+                    { key: 'review_request', label: t('user.profile.notifications.reviewRequest'), description: t('user.profile.notifications.reviewRequestDesc') },
+                  ].map((notification) => (
+                    <div key={notification.key} className="flex items-center justify-between">
                       <div className="space-y-1">
-                        <p className="font-medium">{notification aria-live="polite" aria-atomic="true".label}</p>
-                        <p className="text-sm text-gray-600">{notification aria-live="polite" aria-atomic="true".description}</p>
+                        <p className="font-medium">{notification.label}</p>
+                        <p className="text-sm text-gray-600">{notification.description}</p>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Badge variant="outline" className="text-xs">
@@ -605,17 +605,17 @@ const UserEditProfile: React.FC = () => {
                   <Separator />
 
                   <div>
-                    <Label className="text-base font-medium">{t('user.profile.notification aria-live="polite" aria-atomic="true"s.quietHours')}</Label>
+                    <Label className="text-base font-medium">{t('user.profile.notifications.quietHours')}</Label>
                     <p className="text-sm text-gray-600 mb-4">
-                      {t('user.profile.notification aria-live="polite" aria-atomic="true"s.quietHoursDesc')}
+                      {t('user.profile.notifications.quietHoursDesc')}
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="quiet-start">{t('user.profile.notification aria-live="polite" aria-atomic="true"s.quietStart')}</Label>
+                        <Label htmlFor="quiet-start">{t('user.profile.notifications.quietStart')}</Label>
                         <Input id="quiet-start" type="time" defaultValue="22:00" />
                       </div>
                       <div>
-                        <Label htmlFor="quiet-end">{t('user.profile.notification aria-live="polite" aria-atomic="true"s.quietEnd')}</Label>
+                        <Label htmlFor="quiet-end">{t('user.profile.notifications.quietEnd')}</Label>
                         <Input id="quiet-end" type="time" defaultValue="08:00" />
                       </div>
                     </div>

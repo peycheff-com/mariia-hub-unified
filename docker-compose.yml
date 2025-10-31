@@ -43,6 +43,8 @@ services:
     networks:
       - mariia-hub-network
     restart: unless-stopped
+    profiles:
+      - dev
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
@@ -219,6 +221,26 @@ services:
       timeout: 10s
       retries: 3
       start_period: 5s
+
+  # Test stage for CI
+  app-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: testing
+      args:
+        BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+        BUILD_VERSION: ${BUILD_VERSION:-local-test}
+        CI: true
+    container_name: mariia-hub-app-test
+    environment:
+      - NODE_ENV=test
+      - CI=true
+    profiles:
+      - test
+    networks:
+      - mariia-hub-network
+    command: ["echo", "Test stage ready"]
 
 # Networks
 networks:

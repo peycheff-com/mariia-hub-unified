@@ -41,7 +41,7 @@ import { CommunityEngagement } from '@/components/marketing/CommunityEngagement'
 import { marketingService } from '@/services/marketing.service';
 import { MarketingDashboard as DashboardData } from '@/types/marketing';
 import { format } from 'date-fns';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 interface UnifiedMarketingHubProps {
   className?: string;
@@ -70,7 +70,7 @@ export const UnifiedMarketingHub: React.FC<UnifiedMarketingHubProps> = ({ classN
       setDashboardData(data);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
-      toast aria-live="polite" aria-atomic="true".error('Failed to load dashboard data');
+      toast.error('Failed to load dashboard data');
     } finally {
       setIsLoading(false);
     }
@@ -78,11 +78,11 @@ export const UnifiedMarketingHub: React.FC<UnifiedMarketingHubProps> = ({ classN
 
   const refreshData = () => {
     loadData();
-    toast aria-live="polite" aria-atomic="true".success('Dashboard data refreshed');
+    toast.success('Dashboard data refreshed');
   };
 
   const exportReport = () => {
-    toast aria-live="polite" aria-atomic="true".success('Marketing report exported successfully');
+    toast.success('Marketing report exported successfully');
   };
 
   const formatCurrency = (amount: number) => {
@@ -227,18 +227,18 @@ export const UnifiedMarketingHub: React.FC<UnifiedMarketingHubProps> = ({ classN
           <CardTitle className="flex items-center gap-2">
             <Bell className="w-5 h-5" />
             Real-time Notifications
-            <Badge variant="secondary">{notification aria-live="polite" aria-atomic="true"s.length}</Badge>
+            <Badge variant="secondary">{notifications.length}</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-32">
             <div className="space-y-2">
-              {notification aria-live="polite" aria-atomic="true"s.map((notification aria-live="polite" aria-atomic="true") => (
-                <div key={notification aria-live="polite" aria-atomic="true".id} className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
-                  {getNotificationIcon(notification aria-live="polite" aria-atomic="true".type)}
+              {notifications.map((notification) => (
+                <div key={notification.id} className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
+                  {getNotificationIcon(notification.type)}
                   <div className="flex-1">
-                    <p className="text-sm">{notification aria-live="polite" aria-atomic="true".message}</p>
-                    <p className="text-xs text-muted-foreground">{notification aria-live="polite" aria-atomic="true".time}</p>
+                    <p className="text-sm">{notification.message}</p>
+                    <p className="text-xs text-muted-foreground">{notification.time}</p>
                   </div>
                 </div>
               ))}

@@ -8,7 +8,7 @@ import { BookingStep } from '@/types/booking';
 
 // Import existing booking components
 import { Step1Choose } from '@/components/booking/Step1Choose';
-import { Step2Time } from '@/components/booking/Step2Time';
+import { Step2TimeWithCapacity as Step2Time } from '@/components/booking/Step2TimeWithCapacity';
 import { Step3Details } from '@/components/booking/Step3Details';
 import { Step4Payment } from '@/components/booking/Step4Payment';
 

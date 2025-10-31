@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 
 interface ContentWorkflowProps {
   contentType?: 'blog' | 'service' | 'page' | 'all';
@@ -71,7 +71,7 @@ const ContentWorkflow: React.FC<ContentWorkflowProps> = ({ contentType = 'all' }
   const [selectedTab, setSelectedTab] = useState('queue');
   const [reviewComment, setReviewComment] = useState('');
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // Mock data - replace with actual Supabase queries
   useEffect(() => {
@@ -249,7 +249,7 @@ const ContentWorkflow: React.FC<ContentWorkflowProps> = ({ contentType = 'all' }
         )
       );
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Content approved',
         description: `${item.title} has been approved and is ready for publication.`,
       });
@@ -258,7 +258,7 @@ const ContentWorkflow: React.FC<ContentWorkflowProps> = ({ contentType = 'all' }
       setIsReviewDialogOpen(false);
       setSelectedItem(null);
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to approve content',
         variant: 'destructive',
@@ -299,7 +299,7 @@ const ContentWorkflow: React.FC<ContentWorkflowProps> = ({ contentType = 'all' }
         )
       );
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Content rejected',
         description: `${item.title} has been returned to the author for revisions.`,
       });
@@ -308,7 +308,7 @@ const ContentWorkflow: React.FC<ContentWorkflowProps> = ({ contentType = 'all' }
       setIsReviewDialogOpen(false);
       setSelectedItem(null);
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: 'Failed to reject content',
         variant: 'destructive',

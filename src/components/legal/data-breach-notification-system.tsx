@@ -48,7 +48,7 @@ interface BreachIncident {
   affectedUsers: number;
   dataTypes: string[];
   mitigationActions: string[];
-  notification aria-live="polite" aria-atomic="true"sSent: {
+  notificationsSent: {
     supervisory_authority: boolean;
     affected_users: boolean;
     staff: boolean;
@@ -98,7 +98,7 @@ export function DataBreachNotificationSystem() {
         t('breach.action2', 'Implementation of multi-factor authentication'),
         t('breach.action3', 'System security audit and penetration testing'),
       ],
-      notification aria-live="polite" aria-atomic="true"sSent: {
+      notificationsSent: {
         supervisory_authority: true,
         affected_users: false,
         staff: true,
@@ -123,7 +123,7 @@ export function DataBreachNotificationSystem() {
         t('breach.action5', 'Implementation of advanced email security'),
         t('breach.action6', 'Password policy enforcement'),
       ],
-      notification aria-live="polite" aria-atomic="true"sSent: {
+      notificationsSent: {
         supervisory_authority: false,
         affected_users: false,
         staff: true,
@@ -378,7 +378,7 @@ The Mariia Hub Team`,
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="incidents">{t('breach.incidents', 'Incidents')}</TabsTrigger>
-            <TabsTrigger value="notification aria-live="polite" aria-atomic="true"s">{t('breach.notification aria-live="polite" aria-atomic="true"s', 'Notifications')}</TabsTrigger>
+            <TabsTrigger value="notification s">{t('breach.notification aria-live="polite" aria-atomic="true"s', 'Notifications')}</TabsTrigger>
             <TabsTrigger value="templates">{t('breach.templates', 'Templates')}</TabsTrigger>
             <TabsTrigger value="procedures">{t('breach.procedures', 'Procedures')}</TabsTrigger>
             <TabsTrigger value="contacts">{t('breach.contacts', 'Contacts')}</TabsTrigger>
@@ -610,7 +610,7 @@ The Mariia Hub Team`,
             </Card>
           </TabsContent>
 
-          <TabsContent value="notification aria-live="polite" aria-atomic="true"s" className="space-y-6">
+          <TabsContent value="notification s" className="space-y-6">
             <h2 className="text-2xl font-semibold mb-4">
               {t('breach.notification aria-live="polite" aria-atomic="true"_management', 'Notification Management')}
             </h2>

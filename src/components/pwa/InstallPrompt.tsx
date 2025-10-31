@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -18,7 +18,7 @@ interface BeforeInstallPromptEvent extends Event {
 
 export function InstallPrompt() {
   const { t } = useTranslation();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -53,7 +53,7 @@ export function InstallPrompt() {
       setShowPrompt(false);
       setDeferredPrompt(null);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('pwa.installSuccess'),
         description: t('pwa.installSuccessDesc'),
       });
@@ -77,7 +77,7 @@ export function InstallPrompt() {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
-  }, [dismissed, toast aria-live="polite" aria-atomic="true", t]);
+  }, [dismissed, toast, t]);
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
@@ -97,7 +97,7 @@ export function InstallPrompt() {
       setDeferredPrompt(null);
     } catch (error) {
       console.error('Error during PWA installation:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('pwa.installError'),
         description: t('pwa.installErrorDesc'),
         variant: 'destructive',
@@ -125,7 +125,7 @@ export function InstallPrompt() {
       instructions = t('pwa.desktopInstructions');
     }
 
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: t('pwa.installInstructions'),
       description: instructions,
       duration: 10000,

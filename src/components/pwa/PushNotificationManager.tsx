@@ -25,7 +25,7 @@ import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/components/ui/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/components/ui/use-toast';
 
 interface PushNotificationManagerProps {
   className?: string;
@@ -61,7 +61,7 @@ interface ScheduledNotification {
 
 export function PushNotificationManager({ className = '' }: PushNotificationManagerProps) {
   const { t } = useTranslation();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [subscription, setSubscription] = useState<PushSubscription | null>(null);
@@ -121,13 +121,13 @@ export function PushNotificationManager({ className = '' }: PushNotificationMana
       const stored = localStorage.getItem('scheduled-notification aria-live="polite" aria-atomic="true"s');
       if (stored) {
         const notification aria-live="polite" aria-atomic="true"s = JSON.parse(stored);
-        setScheduledNotifications(notification aria-live="polite" aria-atomic="true"s.map((n: any) => ({
+        setScheduledNotifications(notifications.map((n: any) => ({
           ...n,
           scheduledTime: new Date(n.scheduledTime)
         })));
       }
     } catch (error) {
-      console.error('Failed to load scheduled notification aria-live="polite" aria-atomic="true"s:', error);
+      console.error('Failed to load scheduled notifications:', error);
     }
   };
 
@@ -145,7 +145,7 @@ export function PushNotificationManager({ className = '' }: PushNotificationMana
 
   const requestNotificationPermission = async () => {
     if (!('Notification' in window)) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('pushNotifications.notSupported'),
         description: t('pushNotifications.notSupportedDesc'),
         variant: 'destructive',
@@ -170,7 +170,7 @@ export function PushNotificationManager({ className = '' }: PushNotificationMana
           setPreferences(updatedPrefs);
           saveNotificationPreferences(updatedPrefs);
 
-          toast aria-live="polite" aria-atomic="true"({
+          toast({
             title: t('pushNotifications.enabled'),
             description: t('pushNotifications.enabledDesc'),
           });
@@ -180,7 +180,7 @@ export function PushNotificationManager({ className = '' }: PushNotificationMana
           return true;
         }
       } else if (permission === 'denied') {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: t('pushNotifications.denied'),
           description: t('pushNotifications.deniedDesc'),
           variant: 'destructive',
@@ -188,7 +188,7 @@ export function PushNotificationManager({ className = '' }: PushNotificationMana
       }
     } catch (error) {
       console.error('Failed to request notification aria-live="polite" aria-atomic="true" permission:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('pushNotifications.error'),
         description: t('pushNotifications.errorDesc'),
         variant: 'destructive',
@@ -229,7 +229,7 @@ export function PushNotificationManager({ className = '' }: PushNotificationMana
 
       return subscription;
     } catch (error) {
-      console.error('Failed to subscribe to push notification aria-live="polite" aria-atomic="true"s:', error);
+      console.error('Failed to subscribe to push notifications:', error);
       return null;
     }
   };
@@ -258,7 +258,7 @@ export function PushNotificationManager({ className = '' }: PushNotificationMana
         },
         body: JSON.stringify({
           subscription,
-          notification aria-live="polite" aria-atomic="true": {
+          notification: {
             title: t('pushNotifications.welcomeTitle'),
             body: t('pushNotifications.welcomeBody'),
             icon: '/icon-192x192.png',
@@ -272,7 +272,7 @@ export function PushNotificationManager({ className = '' }: PushNotificationMana
         }),
       });
     } catch (error) {
-      console.error('Failed to send welcome notification aria-live="polite" aria-atomic="true":', error);
+      console.error('Failed to send welcome notification:', error);
     }
   };
 
@@ -285,7 +285,7 @@ export function PushNotificationManager({ className = '' }: PushNotificationMana
 
     if (reminderTime <= new Date()) return;
 
-    const notification aria-live="polite" aria-atomic="true": ScheduledNotification = {
+    const notification: ScheduledNotification = {
       id: `reminder-${appointmentData.id}`,
       type: 'appointment-reminder',
       title: t('pushNotifications.appointmentReminderTitle'),
@@ -320,7 +320,7 @@ export function PushNotificationManager({ className = '' }: PushNotificationMana
     scheduledTime: Date;
     type: string;
   }) => {
-    const notification aria-live="polite" aria-atomic="true": ScheduledNotification = {
+    const notification: ScheduledNotification = {
       id: `promo-${Date.now()}`,
       type: promotionData.type,
       title: promotionData.title,
@@ -339,7 +339,7 @@ export function PushNotificationManager({ className = '' }: PushNotificationMana
 
   const testNotification = async (type: string) => {
     if (!subscription || permission !== 'granted') {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('pushNotifications.notEnabled'),
         description: t('pushNotifications.enableFirst'),
         variant: 'destructive',
@@ -399,17 +399,17 @@ export function PushNotificationManager({ className = '' }: PushNotificationMana
         },
         body: JSON.stringify({
           subscription,
-          notification aria-live="polite" aria-atomic="true": notification aria-live="polite" aria-atomic="true"Data,
+          notification: notification aria-live="polite" aria-atomic="true"Data,
         }),
       });
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: t('pushNotifications.testSent'),
         description: t('pushNotifications.testSentDesc'),
       });
     } catch (error) {
-      console.error('Failed to send test notification aria-live="polite" aria-atomic="true":', error);
-      toast aria-live="polite" aria-atomic="true"({
+      console.error('Failed to send test notification:', error);
+      toast({
         title: t('pushNotifications.testFailed'),
         description: t('pushNotifications.testFailedDesc'),
         variant: 'destructive',
@@ -461,7 +461,7 @@ export function PushNotificationManager({ className = '' }: PushNotificationMana
           body: JSON.stringify({ subscription }),
         });
       } catch (error) {
-        console.error('Failed to unsubscribe from notification aria-live="polite" aria-atomic="true"s:', error);
+        console.error('Failed to unsubscribe from notifications:', error);
       }
     }
 
@@ -469,7 +469,7 @@ export function PushNotificationManager({ className = '' }: PushNotificationMana
     setPermission('denied');
     updatePreferences({ enabled: false });
 
-    toast aria-live="polite" aria-atomic="true"({
+    toast({
       title: t('pushNotifications.disabled'),
       description: t('pushNotifications.disabledDesc'),
     });
@@ -647,16 +647,16 @@ export function PushNotificationManager({ className = '' }: PushNotificationMana
                           <h3 className="font-medium">{t('pushNotifications.scheduledNotifications')}</h3>
                           {scheduledNotifications.length > 0 ? (
                             scheduledNotifications.map(notification aria-live="polite" aria-atomic="true" => (
-                              <div key={notification aria-live="polite" aria-atomic="true".id} className="p-3 border rounded-lg">
+                              <div key={notification.id} className="p-3 border rounded-lg">
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <div className="font-medium">{notification aria-live="polite" aria-atomic="true".title}</div>
-                                    <div className="text-sm text-muted-foreground">{notification aria-live="polite" aria-atomic="true".body}</div>
+                                    <div className="font-medium">{notification.title}</div>
+                                    <div className="text-sm text-muted-foreground">{notification.body}</div>
                                     <div className="text-xs text-muted-foreground mt-1">
-                                      {notification aria-live="polite" aria-atomic="true".scheduledTime.toLocaleString()}
+                                      {notification.scheduledTime.toLocaleString()}
                                     </div>
                                   </div>
-                                  <Badge variant="outline">{notification aria-live="polite" aria-atomic="true".type}</Badge>
+                                  <Badge variant="outline">{notification.type}</Badge>
                                 </div>
                               </div>
                             ))

@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import { useFeedback, useFeedbackTemplates } from '@/hooks/useFeedback';
 import { Enums } from '@/integrations/supabase/types';
 import { cn } from '@/lib/utils';
@@ -126,7 +126,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
   onComplete,
   className,
 }) => {
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const { submitFeedback, submitting } = useFeedback({ bookingId, serviceId });
   const { getTemplate } = useFeedbackTemplates();
   const [open, setOpen] = useState(false);
@@ -176,7 +176,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
     event.preventDefault();
 
     if (!formData.content.trim()) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Validation Error',
         description: 'Please provide feedback content',
         variant: 'destructive',
@@ -209,7 +209,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
           await uploadAttachments(result.id, formData.attachments);
         }
 
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Thank you for your feedback!',
           description: 'Your feedback has been submitted successfully.',
         });
@@ -230,7 +230,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
         });
       }
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message || 'Failed to submit feedback',
         variant: 'destructive',

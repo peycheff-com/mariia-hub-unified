@@ -7,7 +7,7 @@ import {
   MessageSquare, TrendingUp, Target, Calendar, Filter, Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -272,7 +272,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [selectedExportFormat, setSelectedExportFormat] = useState(exportFormats[0]);
 
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
 
   // Auto-save functionality
   useEffect(() => {
@@ -331,14 +331,14 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     try {
       await onAutoSave(content);
       setLastSaved(new Date());
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Auto-saved',
         description: 'Your content has been automatically saved.',
         duration: 2000,
       });
     } catch (error) {
       console.error('Auto-save failed:', error);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Auto-save failed',
         description: 'Unable to save content automatically.',
         variant: 'destructive',
@@ -346,7 +346,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     } finally {
       setIsAutoSaving(false);
     }
-  }, [content, onAutoSave, isAutoSaving, toast aria-live="polite" aria-atomic="true"]);
+  }, [content, onAutoSave, isAutoSaving, toast]);
 
   const handleContentChange = useCallback((newContent: string) => {
     setContent(newContent);
@@ -486,12 +486,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
       setAiSuggestions(suggestions.slice(0, 3));
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'AI Analysis Complete',
         description: 'Content optimization suggestions are available',
       });
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'AI Analysis Failed',
         description: 'Unable to generate AI suggestions',
         variant: 'destructive'
@@ -499,7 +499,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     } finally {
       setIsAiProcessing(false);
     }
-  }, [enableAiAssistance, toast aria-live="polite" aria-atomic="true"]);
+  }, [enableAiAssistance, toast]);
 
   const createVersion = useCallback(async (changeDescription: string) => {
     if (!versionHistoryEnabled) return;
@@ -588,20 +588,20 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Export Successful',
         description: `Content exported as ${format.toUpperCase()}`,
       });
 
       setExportDialogOpen(false);
     } catch (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Export Failed',
         description: 'Unable to export content',
         variant: 'destructive'
       });
     }
-  }, [content, toast aria-live="polite" aria-atomic="true"]);
+  }, [content, toast]);
 
   // Helper functions
   const extractKeywords = (text: string): Record<string, number> => {
@@ -673,12 +673,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     if (editorRef.current) {
       editorRef.current.setContent(template.content);
       setContent(template.content);
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Template applied',
         description: `${template.name} template has been applied.`,
       });
     }
-  }, [toast aria-live="polite" aria-atomic="true"]);
+  }, [toast]);
 
   const insertImage = useCallback(() => {
     if (editorRef.current) {

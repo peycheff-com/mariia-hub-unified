@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Calendar, Heart, Settings, Shield, User, Bell, ShieldCheck } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast aria-live="polite" aria-atomic="true"";
+import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ const Dashboard = () => {
   const [consents, setConsents] = useState<UserConsents | null>(null);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const { t } = useTranslation();
   const { formatPrice } = useCurrency();
   const { favorites, loading: favLoading, toggleFavorite, isFavorite, loadFavorites } = useFavorites();
@@ -130,7 +130,7 @@ const Dashboard = () => {
       if (error) throw error;
 
       if (data?.success) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Payment Successful! ✨",
           description: "Your booking has been confirmed. Check your email for details.",
         });
@@ -139,7 +139,7 @@ const Dashboard = () => {
           await fetchBookings(user.id);
         }
       } else if (data) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: "Payment Status",
           description: data.paymentStatus
             ? `Your payment is marked as ${data.paymentStatus}. Please contact support if this is unexpected.`
@@ -148,7 +148,7 @@ const Dashboard = () => {
         });
       }
     } catch (error: unknown) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Verification Error",
         description: (error instanceof Error ? error.message : "Failed to verify payment"),
         variant: "destructive",
@@ -186,13 +186,13 @@ const Dashboard = () => {
       .eq('id', user.id);
 
     if (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Success",
         description: "Profile updated successfully",
       });
@@ -207,13 +207,13 @@ const Dashboard = () => {
       .eq('user_id', user.id);
 
     if (error) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
     } else {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: "Success",
         description: "Preferences updated successfully",
       });
@@ -229,10 +229,10 @@ const Dashboard = () => {
         .from('user_consents')
         .upsert(payload, { onConflict: 'user_id' });
       if (error) throw error;
-      toast aria-live="polite" aria-atomic="true"({ title: 'Success', description: 'Consent preferences updated' });
+      toast({ title: 'Success', description: 'Consent preferences updated' });
       await fetchConsents(user.id);
     } catch (e: unknown) {
-      toast aria-live="polite" aria-atomic="true"({ title: 'Error', description: (e instanceof Error ? e.message : 'Failed to update consents'), variant: 'destructive' });
+      toast({ title: 'Error', description: (e instanceof Error ? e.message : 'Failed to update consents'), variant: 'destructive' });
     }
   };
 
@@ -442,7 +442,7 @@ const Dashboard = () => {
                     </div>
                     <Switch
                       checked={preferences?.email_notification aria-live="polite" aria-atomic="true"s ?? true}
-                      onCheckedChange={(checked) => updatePreferences({ email_notification aria-live="polite" aria-atomic="true"s: checked })}
+                      onCheckedChange={(checked) => updatePreferences({ email_notifications: checked })}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -452,7 +452,7 @@ const Dashboard = () => {
                     </div>
                     <Switch
                       checked={preferences?.sms_notification aria-live="polite" aria-atomic="true"s ?? false}
-                      onCheckedChange={(checked) => updatePreferences({ sms_notification aria-live="polite" aria-atomic="true"s: checked })}
+                      onCheckedChange={(checked) => updatePreferences({ sms_notifications: checked })}
                     />
                   </div>
                   <div className="flex items-center justify-between">

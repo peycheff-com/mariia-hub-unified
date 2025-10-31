@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast aria-live="polite" aria-atomic="true"';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 
@@ -27,7 +27,7 @@ interface AutoSlotGeneratorProps {
 }
 
 export const AutoSlotGenerator = ({ serviceType, onComplete }: AutoSlotGeneratorProps) => {
-  const { toast aria-live="polite" aria-atomic="true" } = useToast();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [generating, setGenerating] = useState(false);
 
@@ -70,7 +70,7 @@ export const AutoSlotGenerator = ({ serviceType, onComplete }: AutoSlotGenerator
 
   const generateSlots = async () => {
     if (config.selectedDays.length === 0) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'No days selected',
         description: 'Please select at least one day',
         variant: 'destructive',
@@ -79,7 +79,7 @@ export const AutoSlotGenerator = ({ serviceType, onComplete }: AutoSlotGenerator
     }
 
     if (timeBlocks.length === 0) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'No time blocks',
         description: 'Please add at least one time block',
         variant: 'destructive',
@@ -151,21 +151,21 @@ export const AutoSlotGenerator = ({ serviceType, onComplete }: AutoSlotGenerator
       }
 
       if (successCount > 0) {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'Slots Generated',
           description: `Successfully created ${successCount} slot${successCount !== 1 ? 's' : ''}${errorCount > 0 ? ` (${errorCount} skipped due to conflicts)` : ''}`,
         });
         setOpen(false);
         onComplete();
       } else {
-        toast aria-live="polite" aria-atomic="true"({
+        toast({
           title: 'No slots created',
           description: 'All time slots already exist or conflicts detected',
           variant: 'destructive',
         });
       }
     } catch (error: any) {
-      toast aria-live="polite" aria-atomic="true"({
+      toast({
         title: 'Error',
         description: error.message || 'Failed to generate slots',
         variant: 'destructive',

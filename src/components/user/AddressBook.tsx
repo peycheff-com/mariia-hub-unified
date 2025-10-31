@@ -19,7 +19,7 @@ import {
   Globe,
   Phone
 } from 'lucide-react';
-import { toast aria-live="polite" aria-atomic="true" } from 'sonner';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -67,10 +67,10 @@ const AddressBook: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-addresses'] });
       setIsAddDialogOpen(false);
-      toast aria-live="polite" aria-atomic="true".success(t('user.addressBook.addSuccess'));
+      toast.success(t('user.addressBook.addSuccess'));
     },
     onError: () => {
-      toast aria-live="polite" aria-atomic="true".error(t('user.addressBook.addError'));
+      toast.error(t('user.addressBook.addError'));
     },
   });
 
@@ -81,10 +81,10 @@ const AddressBook: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-addresses'] });
       setEditingAddress(null);
-      toast aria-live="polite" aria-atomic="true".success(t('user.addressBook.updateSuccess'));
+      toast.success(t('user.addressBook.updateSuccess'));
     },
     onError: () => {
-      toast aria-live="polite" aria-atomic="true".error(t('user.addressBook.updateError'));
+      toast.error(t('user.addressBook.updateError'));
     },
   });
 
@@ -93,10 +93,10 @@ const AddressBook: React.FC = () => {
     mutationFn: (id: string) => addressService.deleteAddress(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-addresses'] });
-      toast aria-live="polite" aria-atomic="true".success(t('user.addressBook.deleteSuccess'));
+      toast.success(t('user.addressBook.deleteSuccess'));
     },
     onError: () => {
-      toast aria-live="polite" aria-atomic="true".error(t('user.addressBook.deleteError'));
+      toast.error(t('user.addressBook.deleteError'));
     },
   });
 
@@ -105,10 +105,10 @@ const AddressBook: React.FC = () => {
     mutationFn: (id: string) => addressService.setDefaultAddress(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-addresses'] });
-      toast aria-live="polite" aria-atomic="true".success(t('user.addressBook.setDefaultSuccess'));
+      toast.success(t('user.addressBook.setDefaultSuccess'));
     },
     onError: () => {
-      toast aria-live="polite" aria-atomic="true".error(t('user.addressBook.setDefaultError'));
+      toast.error(t('user.addressBook.setDefaultError'));
     },
   });
 
