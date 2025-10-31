@@ -1,0 +1,188 @@
+# Supabase Configuration
+supabase_access_token = "sbp_your_supabase_access_token_here"
+organization_id = "your_organization_id_here"
+project_name = "mariia-hub-unified"
+
+# Database Configuration
+database_password = "" # Leave empty to auto-generate secure password
+region = "eu-west-1"
+plan = "pro"
+
+# Features
+enable_postgrest = true
+enable_database_backup = true
+enable_realtime = true
+enable_storage = true
+enable_edge_functions = true
+
+# Authentication Configuration
+jwt_expiry = "3600"
+refresh_token_expiry = "2592000"
+site_url = "https://mariaborysevych.com"
+redirect_urls = [
+  "https://staging.mariaborysevych.com",
+  "http://localhost:8080",
+  "https://mariaborysevych.vercel.app"
+]
+
+# User Management
+enable_anonymous_signups = false
+enable_email_confirmations = true
+enable_phone_signups = false
+password_min_length = 8
+password_required_chars = ["uppercase", "lowercase", "numbers"]
+session_timeout = 3600
+max_request_duration = 300
+
+# Email Templates
+email_template_confirm_signup = {
+  subject = "Confirm your signup for Mariia Hub"
+  content = "<h2>Confirm your signup</h2><p>Follow this link to confirm your signup:</p><p><a href=\"{{ .ConfirmationURL }}\">Confirm your email</a></p>"
+}
+
+email_template_reset_password = {
+  subject = "Reset your password for Mariia Hub"
+  content = "<h2>Reset your password</h2><p>Follow this link to reset your password:</p><p><a href=\"{{ .ConfirmationURL }}\">Reset password</a></p>"
+}
+
+email_template_invite = {
+  subject = "You've been invited to join Mariia Hub"
+  content = "<h2>You're invited!</h2><p>Follow this link to accept your invitation:</p><p><a href=\"{{ .ConfirmationURL }}\">Accept invitation</a></p>"
+}
+
+email_template_change_email = {
+  subject = "Confirm your new email address"
+  content = "<h2>Confirm your email change</h2><p>Follow this link to confirm your new email address:</p><p><a href=\"{{ .ConfirmationURL }}\">Confirm email change</a></p>"
+}
+
+# OAuth Providers
+enable_oauth_providers = {
+  google   = false
+  github   = false
+  facebook = false
+  twitter  = false
+  apple    = false
+  azure    = false
+  bitbucket = false
+}
+
+# Database Configuration
+database_extensions = [
+  "uuid-ossp",
+  "pgcrypto",
+  "pg_stat_statements",
+  "pg_trgm",
+  "btree_gin",
+  "btree_gist",
+  "citext",
+  "hstore",
+  "pgjwt",
+  "postgis"
+]
+
+# Backup Configuration
+backup_retention_days = 30
+enable_pitr = true
+
+# Connection Pooling
+enable_connection_pooling = true
+connection_pool_size = 15
+
+# Storage Configuration
+storage_buckets = [
+  {
+    name = "service-images"
+    public = true
+    allowed_mime_types = ["image/*"]
+    file_size_limit = 5242880 # 5MB
+  },
+  {
+    name = "profile-images"
+    public = true
+    allowed_mime_types = ["image/*"]
+    file_size_limit = 2097152 # 2MB
+  },
+  {
+    name = "documents"
+    public = false
+    allowed_mime_types = ["application/pdf", "image/*"]
+    file_size_limit = 10485760 # 10MB
+  },
+  {
+    name = "backup-files"
+    public = false
+    allowed_mime_types = ["application/zip", "application/x-sqlite3"]
+    file_size_limit = 104857600 # 100MB
+  }
+]
+
+# Security Configuration
+rate_limiting = {
+  enabled = true
+  requests_per_second = 100
+  burst_size = 200
+}
+
+enable_security_headers = true
+enable_rls = true
+enable_audit_logging = true
+log_level = "warn"
+
+# CORS Configuration
+enable_cors = true
+cors_origins = [
+  "https://mariaborysevych.com",
+  "https://staging.mariaborysevych.com",
+  "http://localhost:8080",
+  "https://*.vercel.app"
+]
+cors_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+cors_headers = [
+  "apikey",
+  "authorization",
+  "content-type",
+  "x-client-info",
+  "x-request-id"
+]
+
+# Custom Headers
+custom_headers = {
+  "X-Frame-Options" = "DENY"
+  "X-Content-Type-Options" = "nosniff"
+  "Referrer-Policy" = "strict-origin-when-cross-origin"
+  "X-XSS-Protection" = "1; mode=block"
+  "Permissions-Policy" = "geolocation=(), microphone=(), camera=()"
+}
+
+# Monitoring Configuration
+enable_monitoring = true
+alert_email = "alerts@mariaborysevych.com"
+
+# Webhook Configuration
+enable_webhooks = true
+webhook_events = ["INSERT", "UPDATE", "DELETE"]
+
+# Custom Domain (optional)
+custom_domain = ""
+
+# SMTP Configuration (optional)
+enable_smtp = false
+# smtp_config = {
+#   host = "smtp.sendgrid.net"
+#   port = 587
+#   user = "apikey"
+#   password = "your_sendgrid_api_key"
+#   sender_name = "Mariia Hub"
+#   sender_email = "noreply@mariaborysevych.com"
+# }
+
+# Resource Tags
+tags = {
+  "project"     = "mariia-hub"
+  "environment" = "production"
+  "managed_by"  = "terraform"
+  "owner"       = "ivanborysevych"
+  "cost_center" = "engineering"
+  "backup"      = "enabled"
+  "compliance"  = "gdpr"
+}

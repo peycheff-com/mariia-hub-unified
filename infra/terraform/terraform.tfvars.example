@@ -1,0 +1,91 @@
+# Vercel Configuration
+vercel_api_token = "vercel_token_your_token_here"
+vercel_team_id = "team_your_team_id_here" # Optional
+
+# Cloudflare Configuration
+cloudflare_api_token = "cloudflare_token_your_token_here"
+cloudflare_account_id = "your_cloudflare_account_id"
+
+# Domain Configuration
+domain_name = "mariaborysevych.com"
+project_name = "mariia-hub-unified"
+environment = "production"
+
+# Supabase Configuration
+supabase_project_url = "https://your-project.supabase.co"
+supabase_anon_key = "your_supabase_anon_key"
+supabase_service_role_key = "your_supabase_service_role_key"
+
+# Stripe Configuration
+stripe_publishable_key = "pk_live_your_publishable_key"
+stripe_secret_key = "sk_live_your_secret_key"
+stripe_webhook_secret = "whsec_your_webhook_secret"
+
+# Analytics Configuration
+ga4_measurement_id = "G-XXXXXXXXXX"
+ga4_api_secret = "your_ga4_api_secret"
+
+# Error Monitoring
+sentry_dsn = "https://your_sentry_dsn.ingest.sentry.io/project_id"
+
+# AI Services
+lovable_api_key = "your_lovable_api_key"
+openai_api_key = "sk-your_openai_api_key"
+
+# Email Services
+resend_api_key = "re_your_resend_api_key"
+
+# Social Media Integrations
+google_places_api_key = "your_google_places_api_key"
+instagram_access_token = "your_instagram_access_token"
+whatsapp_access_token = "your_whatsapp_access_token"
+
+# Monitoring and Logging
+datadog_api_key = "your_datadog_api_key"
+slack_webhook_url = "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+
+# GitHub Configuration
+github_token = "ghp_your_github_token"
+github_repository = "ivanborysevych/mariia-hub-unified"
+
+# Feature Flags
+enable_analytics = true
+enable_ai_features = true
+enable_social_integrations = false
+enable_backup_notifications = true
+enable_monitoring = true
+
+# Performance Settings
+custom_cdn_url = "" # Leave empty for Vercel Edge Network
+staging_domain = "staging"
+development_domain = "dev"
+
+# Deployment Settings
+deployment_regions = ["fra1", "iad1", "hnd1"]
+build_timeout = 600
+function_memory = 512
+function_timeout = 30
+
+# Security and Performance
+rate_limit_api = 100
+cache_ttl_assets = 31536000
+cache_ttl_pages = 300
+
+# Edge Features
+enable_edge_functions = true
+enable_image_optimization = true
+enable_web_vitals = true
+enable_speed_insights = true
+
+# Additional Services
+hotjar_id = "your_hotjar_site_id"
+
+# Resource Tags
+tags = {
+  "project"     = "mariia-hub"
+  "environment" = "production"
+  "managed_by"  = "terraform"
+  "owner"       = "ivanborysevych"
+  "cost_center" = "engineering"
+  "backup"      = "enabled"
+}
